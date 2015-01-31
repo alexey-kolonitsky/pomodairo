@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config:BaseConfigPanel
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:config="com.pomodairo.components.config.*"
+	creationComplete="init()">
+
+
+<mx:Script>
+        <![CDATA[
+        	import com.pomodairo.PomodoroEventDispatcher;
+        	import com.pomodairo.db.Storage;
+        	import com.pomodairo.events.ConfigurationUpdatedEvent;
+			import com.pomodairo.events.TodoistEvent;
+			import com.pomodairo.todoist.TodoistClient;
+
+			import mx.controls.Alert;
+
+
+			//-------------------------
+			// Panel States
+			//-------------------------
+
+			public static const DISABLED:String = "disabled";
+			public static const LOGIN:String = "login.normal";
+			public static const LOGIN_PROCESS:String = "login.process";
+			public static const LOGIN_FAIL:String = "login.fail";
+			public static const CONFIG:String = "config.normal";
+			public static const CONFIG_CHANGED:String = "config.changed";
+			public static const CONFIG_SAVING:String = "config.saving";
+
+			//-------------------------
+			// Stored Fields IDs
+			//-------------------------
+
+        	public static const ENABLED:String = "todoist.enabled";
+			public static const USERNAME:String = "todoist.username";
+			public static const PASSWORD:String = "todoist.password";
+			public static const PROJECT:String = "todoist.project";
+
+			//-------------------------
+			// Stored Fields
+			//-------------------------
+
+        	private var todoistEnabled:Boolean = false;
+        	private var todoistUsername:String;
+			private var todoistPassword:String;
+			private var defaultProject:String;
+
+			private var client:TodoistClient;
+			private var state:String;
+
+        	private function init():void
+        	{
+        		populate();
+				initClient();
+        	}
+
+        	override public function populate():void
+        	{
+        		var props:Dictionary = Storage.instance.config;
+
+        		if (props[ENABLED] != null) {
+        			todoistEnabled = props[ENABLED] == "true";
+					enabledCheckbox.selected = todoistEnabled;
+				}
+
+				if (props[USERNAME] != null) {
+					todoistUsername = props[USERNAME];
+					loginName.text = todoistUsername;
+				}
+
+				if (props[PASSWORD] != null) {
+					todoistPassword = props[PASSWORD];
+					loginPassword.text = todoistPassword;
+				}
+
+				if (props[PROJECT] != null) {
+					defaultProject = props[PROJECT];
+					projectList.selectedItem = defaultProject;
+				}
+        	}
+
+            override public function notifyConfiguration():void
+            {
+            	// Notify the world
+            	PomodoroEventDispatcher.getInstance().dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ENABLED, ""+todoistEnabled));
+            }
+
+			private function initClient():void
+			{
+				client = new TodoistClient();
+				client.addEventListener(TodoistEvent.CONNECTED, client_connectedHandler);
+				client.addEventListener(ErrorEvent.ERROR, client_errorHandler);
+
+				if (todoistEnabled)
+					client.connect(todoistUsername, todoistPassword);
+			}
+
+			private function updateState():void
+			{
+				saveButton.visible = false;
+				loginButton.visible = false;
+				todoistLoginForm.visible = false;
+				promptLabel.visible = false;
+				todoistConfigForm.visible = false;
+
+				switch (state)
+				{
+					case DISABLED:
+						promptLabel.visible = true;
+						break;
+
+					case LOGIN:
+					case LOGIN_PROCESS:
+					case LOGIN_FAIL:
+						loginName.text = todoistUsername;
+						loginPassword.text = todoistPassword;
+						loginButton.visible = true;
+						todoistLoginForm.visible = true;
+						break;
+
+					case CONFIG:
+					case CONFIG_CHANGED:
+					case CONFIG_SAVING:
+						saveButton.visible = true;
+						todoistConfigForm.visible = true;
+						break;
+				}
+			}
+
+			private function login():void
+			{
+				todoistUsername = loginName.text;
+				todoistPassword = loginPassword.text;
+
+				client.connect(todoistUsername, todoistPassword);
+			}
+
+
+			public function save():void
+		    {
+				todoistEnabled = enabledCheckbox.selected;
+
+				Storage.instance.setConfigurationValue(ENABLED, ""+todoistEnabled);
+				exit();
+
+				notifyConfiguration();
+		    }
+
+			private function onEnableTwitterChanged(event:Event):void
+			{
+				todoistEnabled = enabledCheckbox.selected;
+
+				if (todoistEnabled)
+					client.connect(todoistUsername, todoistPassword);
+
+				else
+					client.disconnect();
+			}
+
+			private function client_connectedHandler(event:TodoistEvent):void
+			{
+				client.getItems(defaultProject);
+			}
+
+			private function client_itemsHandler(event:TodoistEvent):void
+			{
+				trace("TodoistConfigPanel items count: " + client.items);
+			}
+
+			private function client_errorHandler(event:ErrorEvent):void
+			{
+				switch (event.errorID)
+				{
+					//TODO: AUTHORIZATION FAIL
+				}
+			}
+
+
+
+        ]]>
+    </mx:Script>
+
+	<mx:CheckBox id="enabledCheckbox" x="8" y="8" label="Use Todoist"
+		change="onEnableTwitterChanged(event)"/>
+
+	<mx:Text id="promptLabel"
+		text="Todoist allow you to load your tasks and adit them from pomodairo interface"
+		left="8" top="32" right="8" bottom="40"/>
+
+	<mx:VBox id="todoistLoginForm"
+	   	left="8" top="32" right="8" verticalGap="0">
+
+		<mx:Label id="loginTitleLabel" width="100%"
+			text="Login"/>
+
+		<mx:TextInput id="loginName" width="100%"
+			text="Login name"/>
+
+		<mx:TextInput id="loginPassword" width="100%"
+			displayAsPassword="true"
+			text="Login password"/>
+
+	</mx:VBox>
+
+	<mx:VBox id="todoistConfigForm"
+	   	left="8" top="32" right="8" verticalGap="0">
+
+		<mx:Label text="Select project to add taskt from it" width="100%" />
+
+		<mx:List id="projectList" width="100%" />
+
+	</mx:VBox>
+
+
+	<mx:Button id="saveButton" right="80" bottom="8" width="64" label="Save" click="save()" />
+	<mx:Button id="loginButton" right="80" bottom="8" width="64" label="Login" click="login()" />
+	<mx:Button id="exitButton" right="8" bottom="8" width="64" label="Cancel" click="exit()"/>
+
+	
+</config:BaseConfigPanel>

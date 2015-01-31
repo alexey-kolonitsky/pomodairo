@@ -2,15 +2,15 @@ package com.pomodairo.todoist {
 public class TodoistItem
 {
 	public var dueDate:String;
-	public var userId:String;
-	public var collapsed:String;
-	public var inHistory:String;
-	public var priority:String;
-	public var itemOrder:String;
+	public var userId:uint;
+	public var collapsed:int;
+	public var inHistory:int;
+	public var priority:int;
+	public var itemOrder:int;
 	public var content:String;
-	public var indent:String;
-	public var id:String;
-	public var projectId:String;
+	public var indent:uint;
+	public var id:uint;
+	public var projectId:uint;
 	public var checked:Boolean;
 	public var dateString:String;
 
