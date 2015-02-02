@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config:BaseConfigPanel
-	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
 	xmlns:config="com.pomodairo.components.config.*"
+
 	creationComplete="init()">
 
 
-<mx:Script>
+	<fx:Script>
         <![CDATA[
         	import com.pomodairo.PomodoroEventDispatcher;
         	import com.pomodairo.db.Storage;
         	import com.pomodairo.events.ConfigurationUpdatedEvent;
+			import com.pomodairo.events.TodoistError;
 			import com.pomodairo.events.TodoistEvent;
 			import com.pomodairo.todoist.TodoistClient;
 
 			import mx.controls.Alert;
 
+
+			public static const MSG_ERROR_LOGIN:String = "Wrong login data. Check you login and password and try again";
+			public static const MSG_INVALID_LOGIN:String = "Login and password can't be empty";
 
 			//-------------------------
 			// Panel States
@@ -24,6 +31,7 @@
 			public static const LOGIN:String = "login.normal";
 			public static const LOGIN_PROCESS:String = "login.process";
 			public static const LOGIN_FAIL:String = "login.fail";
+			public static const LOGIN_INVALID:String = "login.invalid";
 			public static const CONFIG:String = "config.normal";
 			public static const CONFIG_CHANGED:String = "config.changed";
 			public static const CONFIG_SAVING:String = "config.saving";
@@ -44,7 +52,7 @@
         	private var todoistEnabled:Boolean = false;
         	private var todoistUsername:String;
 			private var todoistPassword:String;
-			private var defaultProject:String;
+			private var defaultProject:int;
 
 			private var client:TodoistClient;
 			private var state:String;
@@ -75,7 +83,7 @@
 				}
 
 				if (props[PROJECT] != null) {
-					defaultProject = props[PROJECT];
+					defaultProject = parseInt(props[PROJECT]);
 					projectList.selectedItem = defaultProject;
 				}
         	}
@@ -90,10 +98,15 @@
 			{
 				client = new TodoistClient();
 				client.addEventListener(TodoistEvent.CONNECTED, client_connectedHandler);
-				client.addEventListener(ErrorEvent.ERROR, client_errorHandler);
+				client.addEventListener(TodoistError.ERROR_LOGIN, client_errorHandler);
 
-				if (todoistEnabled)
+				if (todoistEnabled) {
+					state = LOGIN;
 					client.connect(todoistUsername, todoistPassword);
+				} else {
+					state = DISABLED;
+				}
+				updateState();
 			}
 
 			private function updateState():void
@@ -103,6 +116,8 @@
 				todoistLoginForm.visible = false;
 				promptLabel.visible = false;
 				todoistConfigForm.visible = false;
+				loginWrongBox.visible = false;
+				loginWrongBox.includeInLayout = false;
 
 				switch (state)
 				{
@@ -110,11 +125,44 @@
 						promptLabel.visible = true;
 						break;
 
-					case LOGIN:
-					case LOGIN_PROCESS:
-					case LOGIN_FAIL:
+					case LOGIN_INVALID:
+						loginName.enabled = true;
 						loginName.text = todoistUsername;
 						loginPassword.text = todoistPassword;
+						loginPassword.enabled = true;
+						loginButton.visible = true;
+						todoistLoginForm.visible = true;
+						loginWrongBox.visible = true;
+						loginWrongBox.includeInLayout = true;
+						loginWrongMessage.text = MSG_ERROR_LOGIN;
+						break;
+
+					case LOGIN_FAIL:
+						loginName.enabled = true;
+						loginName.text = todoistUsername;
+						loginPassword.text = todoistPassword;
+						loginPassword.enabled = true;
+						loginButton.visible = true;
+						todoistLoginForm.visible = true;
+						loginWrongBox.visible = true;
+						loginWrongBox.includeInLayout = true;
+						loginWrongMessage.text = MSG_ERROR_LOGIN;
+						break;
+
+					case LOGIN:
+						loginName.enabled = true;
+						loginName.text = todoistUsername;
+						loginPassword.enabled = true;
+						loginPassword.text = todoistPassword;
+						loginButton.visible = true;
+						todoistLoginForm.visible = true;
+						break;
+
+					case LOGIN_PROCESS:
+						loginName.text = todoistUsername;
+						loginName.enabled = false;
+						loginPassword.text = todoistPassword;
+						loginPassword.enabled = false;
 						loginButton.visible = true;
 						todoistLoginForm.visible = true;
 						break;
@@ -133,7 +181,16 @@
 				todoistUsername = loginName.text;
 				todoistPassword = loginPassword.text;
 
-				client.connect(todoistUsername, todoistPassword);
+				var isValid:Boolean = validateLoginForm();
+
+				if (isValid) {
+					state = LOGIN_PROCESS;
+					client.connect(todoistUsername, todoistPassword);
+				} else {
+					state = LOGIN_INVALID;
+				}
+
+				updateState();
 			}
 
 
@@ -147,20 +204,23 @@
 				notifyConfiguration();
 		    }
 
-			private function onEnableTwitterChanged(event:Event):void
+			private function onEnabledChanged(event:Event):void
 			{
 				todoistEnabled = enabledCheckbox.selected;
 
-				if (todoistEnabled)
-					client.connect(todoistUsername, todoistPassword);
-
-				else
+				if (todoistEnabled) {
+					state = LOGIN;
+				} else {
 					client.disconnect();
+					state = DISABLED;
+				}
+
+				updateState();
 			}
 
 			private function client_connectedHandler(event:TodoistEvent):void
 			{
-				client.getItems(defaultProject);
+				client.getItems();
 			}
 
 			private function client_itemsHandler(event:TodoistEvent):void
@@ -168,28 +228,45 @@
 				trace("TodoistConfigPanel items count: " + client.items);
 			}
 
-			private function client_errorHandler(event:ErrorEvent):void
+			private function client_errorHandler(event:TodoistError):void
 			{
-				switch (event.errorID)
-				{
-					//TODO: AUTHORIZATION FAIL
+				switch (event.type) {
+					case TodoistError.ERROR_LOGIN:
+						state = LOGIN_FAIL;
+						break;
 				}
+
+				updateState();
+			}
+
+			private function validateLoginForm():Boolean
+			{
+				if (loginName.text == null || loginName.text == "")
+					return false;
+
+				if (loginPassword.text == null || loginPassword.text == "")
+					return false;
+
+				return true;
 			}
 
 
 
         ]]>
-    </mx:Script>
+    </fx:Script>
 
 	<mx:CheckBox id="enabledCheckbox" x="8" y="8" label="Use Todoist"
-		change="onEnableTwitterChanged(event)"/>
+		change="onEnabledChanged(event)"/>
 
 	<mx:Text id="promptLabel"
 		text="Todoist allow you to load your tasks and adit them from pomodairo interface"
-		left="8" top="32" right="8" bottom="40"/>
+		left="8" top="32" right="8" height="80"/>
 
-	<mx:VBox id="todoistLoginForm"
-	   	left="8" top="32" right="8" verticalGap="0">
+	<s:VGroup id="todoistLoginForm" left="8" top="32" right="8" gap="0">
+
+		<s:BorderContainer id="loginWrongBox" width="100%" backgroundColor="#ff5b47" color="#ffffff" borderVisible="false">
+			<mx:Label id="loginWrongMessage" width="100%"/>
+		</s:BorderContainer>
 
 		<mx:Label id="loginTitleLabel" width="100%"
 			text="Login"/>
@@ -201,21 +278,18 @@
 			displayAsPassword="true"
 			text="Login password"/>
 
-	</mx:VBox>
+	</s:VGroup>
 
-	<mx:VBox id="todoistConfigForm"
-	   	left="8" top="32" right="8" verticalGap="0">
+	<s:VGroup id="todoistConfigForm" left="8" top="32" right="8" gap="0">
 
 		<mx:Label text="Select project to add taskt from it" width="100%" />
 
 		<mx:List id="projectList" width="100%" />
 
-	</mx:VBox>
-
+	</s:VGroup>
 
 	<mx:Button id="saveButton" right="80" bottom="8" width="64" label="Save" click="save()" />
 	<mx:Button id="loginButton" right="80" bottom="8" width="64" label="Login" click="login()" />
-	<mx:Button id="exitButton" right="8" bottom="8" width="64" label="Cancel" click="exit()"/>
-
+	<mx:Button id="exitButton" right="10" bottom="10" width="64" label="Cancel" click="exit()"/>
 	
 </config:BaseConfigPanel>

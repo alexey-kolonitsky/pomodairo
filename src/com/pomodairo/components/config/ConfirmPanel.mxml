@@ -10,7 +10,7 @@
 		import com.pomodairo.db.Storage;
 
 		import mx.core.Application;
-		import mx.core.WindowedApplication;
+		import spark.components.WindowedApplication;
 
 		private function btnExit_clickHandler(event:MouseEvent):void
 		{

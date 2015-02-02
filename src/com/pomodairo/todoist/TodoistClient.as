@@ -1,7 +1,13 @@
 package com.pomodairo.todoist
 {
+	import com.pomodairo.events.TodoistError;
+	import com.pomodairo.events.TodoistError;
+	import com.pomodairo.events.TodoistEvent;
+
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.IOErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLVariables;
@@ -22,6 +28,9 @@ package com.pomodairo.todoist
 		private static const API_URL_COMPLETE_ITEMS:String = "getCompletedItems";
 		private static const API_URL_UNCOMPLETE:String = "getUncompletedItems";
 		private static const API_URL_DELETE_ITEMS:String = "deleteItems";
+
+
+		private static const ERROR_LOGIN:String = "LOGIN_ERROR";
 
 		private var startPage:String;
 
@@ -44,7 +53,7 @@ package com.pomodairo.todoist
 
 		private var fullname:String;
 		private var email:String;
-		private var defaultProject:String;
+		private var defaultProject:int;
 
 		public var items:Vector.<TodoistItem>;
 
@@ -78,7 +87,7 @@ package com.pomodairo.todoist
 			this.apiToken = "";
 			this.fullname = "";
 			this.email = "";
-			this.defaultProject = "";
+			this.defaultProject = 0;
 			this.token = "";
 
 			items.length = 0;
@@ -101,8 +110,9 @@ package com.pomodairo.todoist
 			call(API_URL_DELETE_ITEMS, deleteItems_completeHandler, item);
 		}
 
-		public function getItems(project:String):void
+		public function getItems(project:int = -1):void
 		{
+			var projectId:int = project != -1 ? project : defaultProject;
 			call(API_URL_UNCOMPLETE, loadItems_completeHandler, {project_id: project, token: token});
 		}
 
@@ -122,6 +132,7 @@ package com.pomodairo.todoist
 
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, callback);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
 			loader.load(requst);
 		}
 
@@ -129,6 +140,12 @@ package com.pomodairo.todoist
 		{
 			var loader:URLLoader = event.currentTarget as URLLoader;
 			var data:Object = JSON.parse(String(loader.data));
+
+			if (data == ERROR_LOGIN) {
+				trace("TodoistClient login_completeHandler login failed");
+				dispatchEvent(new TodoistError(TodoistError.ERROR_LOGIN));
+				return;
+			}
 
 			this.startPage = data.start_page;
 			this.avatarSmall = data.svatar_small;
@@ -141,7 +158,8 @@ package com.pomodairo.todoist
 
 			_isConnected = true;
 
-			trace("TodoistClient login_completeHandler ");
+			trace("TodoistClient login_completeHandler login successful");
+			dispatchEvent(new TodoistEvent(TodoistEvent.CONNECTED));
 		}
 
 
@@ -178,6 +196,11 @@ package com.pomodairo.todoist
 				var item:Object = ar[i];
 				items.push(new TodoistItem(item));
 			}
+		}
+
+		private function errorHandler(event:IOErrorEvent):void
+		{
+
 		}
 	}
 }
