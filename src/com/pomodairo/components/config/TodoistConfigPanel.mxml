@@ -16,6 +16,9 @@
 			import com.pomodairo.events.TodoistError;
 			import com.pomodairo.events.TodoistEvent;
 			import com.pomodairo.todoist.TodoistClient;
+			import com.pomodairo.todoist.TodoistProject;
+
+			import mx.collections.ArrayCollection;
 
 			import mx.controls.Alert;
 
@@ -61,7 +64,16 @@
         	{
         		populate();
 				initClient();
+				initGUI();
         	}
+
+			private function initGUI():void
+			{
+				enabledCheckbox.selected = todoistEnabled;
+				loginName.text = todoistUsername;
+				loginPassword.text = todoistPassword;
+				projectList.selectedItem = defaultProject;
+			}
 
         	override public function populate():void
         	{
@@ -69,22 +81,18 @@
 
         		if (props[ENABLED] != null) {
         			todoistEnabled = props[ENABLED] == "true";
-					enabledCheckbox.selected = todoistEnabled;
 				}
 
 				if (props[USERNAME] != null) {
 					todoistUsername = props[USERNAME];
-					loginName.text = todoistUsername;
 				}
 
 				if (props[PASSWORD] != null) {
 					todoistPassword = props[PASSWORD];
-					loginPassword.text = todoistPassword;
 				}
 
 				if (props[PROJECT] != null) {
 					defaultProject = parseInt(props[PROJECT]);
-					projectList.selectedItem = defaultProject;
 				}
         	}
 
@@ -98,10 +106,12 @@
 			{
 				client = new TodoistClient();
 				client.addEventListener(TodoistEvent.CONNECTED, client_connectedHandler);
+				client.addEventListener(TodoistEvent.PROJECTS_CHANGED, client_projectsChangedHandler);
+				client.addEventListener(TodoistEvent.ITEMS_CHANGED, client_itemsChangedHandler);
 				client.addEventListener(TodoistError.ERROR_LOGIN, client_errorHandler);
 
 				if (todoistEnabled) {
-					state = LOGIN;
+					state = LOGIN_PROCESS;
 					client.connect(todoistUsername, todoistPassword);
 				} else {
 					state = DISABLED;
@@ -196,9 +206,7 @@
 
 			public function save():void
 		    {
-				todoistEnabled = enabledCheckbox.selected;
-
-				Storage.instance.setConfigurationValue(ENABLED, ""+todoistEnabled);
+				saveProperties();
 				exit();
 
 				notifyConfiguration();
@@ -211,6 +219,7 @@
 				if (todoistEnabled) {
 					state = LOGIN;
 				} else {
+					Storage.instance.setConfigurationValue(ENABLED, "false");
 					client.disconnect();
 					state = DISABLED;
 				}
@@ -220,12 +229,28 @@
 
 			private function client_connectedHandler(event:TodoistEvent):void
 			{
-				client.getItems();
+				saveProperties();
+				client.getProjects();
 			}
 
-			private function client_itemsHandler(event:TodoistEvent):void
+			private function client_projectsChangedHandler(event:TodoistEvent):void
 			{
-				trace("TodoistConfigPanel items count: " + client.items);
+				projectList.dataProvider = client.projects;
+
+				for each (var project:TodoistProject in client.projects) {
+					if (project.id == client.defaultProject) {
+						projectList.selectedItem = project;
+						break;
+					}
+				}
+
+				state = CONFIG;
+				updateState();
+			}
+
+			private function client_itemsChangedHandler(event:TodoistEvent):void
+			{
+				trace();
 			}
 
 			private function client_errorHandler(event:TodoistError):void
@@ -250,46 +275,53 @@
 				return true;
 			}
 
+			private function saveProperties():void
+			{
+				Storage.instance.setConfigurationValue(ENABLED, String(todoistEnabled));
+				Storage.instance.setConfigurationValue(USERNAME, todoistUsername);
+				Storage.instance.setConfigurationValue(PASSWORD, todoistPassword);
+			}
+
 
 
         ]]>
     </fx:Script>
 
-	<mx:CheckBox id="enabledCheckbox" x="8" y="8" label="Use Todoist"
+	<mx:CheckBox id="enabledCheckbox" x="10" y="10" label="Use Todoist"
 		change="onEnabledChanged(event)"/>
 
 	<mx:Text id="promptLabel"
 		text="Todoist allow you to load your tasks and adit them from pomodairo interface"
 		left="8" top="32" right="8" height="80"/>
 
-	<s:VGroup id="todoistLoginForm" left="8" top="32" right="8" gap="0">
+	<s:VGroup id="todoistLoginForm" left="10" top="32" right="10" gap="0">
 
 		<s:BorderContainer id="loginWrongBox" width="100%" backgroundColor="#ff5b47" color="#ffffff" borderVisible="false">
 			<mx:Label id="loginWrongMessage" width="100%"/>
 		</s:BorderContainer>
 
-		<mx:Label id="loginTitleLabel" width="100%"
+		<mx:Label id="loginTitleLabel" width="80%"
 			text="Login"/>
 
-		<mx:TextInput id="loginName" width="100%"
+		<mx:TextInput id="loginName" width="80%"
 			text="Login name"/>
 
-		<mx:TextInput id="loginPassword" width="100%"
+		<mx:TextInput id="loginPassword" width="80%"
 			displayAsPassword="true"
 			text="Login password"/>
 
 	</s:VGroup>
 
-	<s:VGroup id="todoistConfigForm" left="8" top="32" right="8" gap="0">
+	<s:VGroup id="todoistConfigForm" left="10" top="32" right="10" gap="0">
 
-		<mx:Label text="Select project to add taskt from it" width="100%" />
+		<mx:Label text="Select project to add taskt from it" width="80%" />
 
-		<mx:List id="projectList" width="100%" />
+		<s:List id="projectList" width="80%" contentBackgroundAlpha="0.0"/>
 
 	</s:VGroup>
 
-	<mx:Button id="saveButton" right="80" bottom="8" width="64" label="Save" click="save()" />
-	<mx:Button id="loginButton" right="80" bottom="8" width="64" label="Login" click="login()" />
+	<mx:Button id="saveButton" right="80" bottom="10" width="64" label="Save" click="save()" />
+	<mx:Button id="loginButton" right="80" bottom="10" width="64" label="Login" click="login()" />
 	<mx:Button id="exitButton" right="10" bottom="10" width="64" label="Cancel" click="exit()"/>
 	
 </config:BaseConfigPanel>

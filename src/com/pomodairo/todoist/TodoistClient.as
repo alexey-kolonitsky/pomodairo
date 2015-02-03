@@ -7,20 +7,24 @@ package com.pomodairo.todoist
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import flash.events.HTTPStatusEvent;
 	import flash.events.IOErrorEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLVariables;
 
+	import mx.collections.ArrayCollection;
+
 	public class TodoistClient extends EventDispatcher
 	{
 		private static const API_URL_PREFIX:String = "https://api.todoist.com/API";
+		private static const API_HTTPS_PREFIX:String = "https://api.todoist.com/API";
 
 		// Users
 		private static const API_URL_LOGIN:String = "login";
 
 		// Projects
-		private static const API_URL_GET_PROJECTS:String = "getProject";
+		private static const API_URL_GET_PROJECTS:String = "getProjects";
 
 		// Items
 		private static const API_URL_ADD_ITEM:String = "addItem";
@@ -31,6 +35,7 @@ package com.pomodairo.todoist
 
 
 		private static const ERROR_LOGIN:String = "LOGIN_ERROR";
+		private static const ERROR_LOAD_PROJECT:String = "ERROR_PROJECT_NOT_FOUND";
 
 		private var startPage:String;
 
@@ -53,15 +58,19 @@ package com.pomodairo.todoist
 
 		private var fullname:String;
 		private var email:String;
-		private var defaultProject:int;
+		public var defaultProject:int;
 
 		public var items:Vector.<TodoistItem>;
+
+		[Bindable]
+		public var projects:ArrayCollection;
 
 		private var _isConnected:Boolean = false;
 
 		public function TodoistClient()
 		{
 			items = new Vector.<TodoistItem>();
+			projects = new ArrayCollection([]);
 		}
 
 		public function isConnected():Boolean
@@ -71,12 +80,14 @@ package com.pomodairo.todoist
 
 		/**
 		 * Send authorization request to Todoist API
+		 *
 		 * @param userName
 		 * @param password
 		 */
 		public function connect(userName:String, password:String):void
 		{
-			call(API_URL_LOGIN, login_completeHandler, {email: userName, password: password});
+			trace("TodistClient connect " + userName + " / " + password);
+			callSecure(API_URL_LOGIN, login_completeHandler, {email: userName, password: password});
 		}
 
 		public function disconnect():void
@@ -113,7 +124,12 @@ package com.pomodairo.todoist
 		public function getItems(project:int = -1):void
 		{
 			var projectId:int = project != -1 ? project : defaultProject;
-			call(API_URL_UNCOMPLETE, loadItems_completeHandler, {project_id: project, token: token});
+			callSecure(API_URL_UNCOMPLETE, loadItems_completeHandler, {project_id: projectId, token: token});
+		}
+
+		public function getProjects():void
+		{
+			call(API_URL_GET_PROJECTS, loadProjects_completeHandler, {token: token});
 		}
 
 
@@ -123,17 +139,33 @@ package com.pomodairo.todoist
 		//
 		//-------------------------------------------------------------------
 
-		private function call(method:String, callback:Function, data:Object):void
+		private function createURLRequest(method:String, data:Object, useHTTPS:Boolean = false):URLRequest
 		{
 			var requst:URLRequest = new URLRequest(API_URL_PREFIX + "/" + method);
 			requst.data = new URLVariables();
 			for (var key:String in data)
 				requst.data[key] = data[key];
 
+			return requst;
+		}
+
+		private function callSecure(method:String, callback:Function, data:Object):void
+		{
+			var request:URLRequest = createURLRequest(method, data, true);
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, callback);
 			loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
-			loader.load(requst);
+			loader.load(request);
+		}
+
+		private function call(method:String, callback:Function, data:Object):void
+		{
+			var request:URLRequest = createURLRequest(method, data, false);
+			var loader:URLLoader = new URLLoader();
+			loader.addEventListener(Event.COMPLETE, callback);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+			loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, httpStatusHandler);
+			loader.load(request);
 		}
 
 		private function login_completeHandler(event:Event):void
@@ -187,6 +219,29 @@ package com.pomodairo.todoist
 			trace("TodoistClient loadItems_completeHandler ");
 
 			var loader:URLLoader = event.currentTarget as URLLoader;
+			if (loader.data == ERROR_LOAD_PROJECT) {
+				trace("TodoistClient login_completeHandler login failed");
+				dispatchEvent(new TodoistError(TodoistError.ERROR_API, loader.data));
+				return;
+			}
+
+			var data:Object = JSON.parse(String(loader.data));
+			var ar:Array = data as Array;
+			var n:int = ar.length;
+			for (var i:int = 0; i < n; i++)
+			{
+				var item:Object = ar[i];
+				items.push(new TodoistItem(item));
+			}
+
+			dispatchEvent(new TodoistEvent(TodoistEvent.ITEMS_CHANGED));
+		}
+
+		private function loadProjects_completeHandler(event:Event):void
+		{
+			trace("TodoistClient loadProjects_completeHandler ");
+
+			var loader:URLLoader = event.currentTarget as URLLoader;
 			var data:Object = JSON.parse(String(loader.data));
 			var ar:Array = data as Array;
 
@@ -194,12 +249,24 @@ package com.pomodairo.todoist
 			for (var i:int = 0; i < n; i++)
 			{
 				var item:Object = ar[i];
-				items.push(new TodoistItem(item));
+				projects.addItem(new TodoistProject(item));
 			}
+
+			dispatchEvent(new TodoistEvent(TodoistEvent.PROJECTS_CHANGED));
 		}
 
 		private function errorHandler(event:IOErrorEvent):void
 		{
+			dispatchEvent(new TodoistError(TodoistError.ERROR_API, event.text));
+		}
+
+		private function httpStatusHandler(event:HTTPStatusEvent):void
+		{
+			switch (event.status) {
+				case 400:
+					dispatchEvent(new TodoistError(TodoistError.ERROR_API, "Bad request"));
+					break;
+			}
 
 		}
 	}

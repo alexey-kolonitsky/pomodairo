@@ -5,6 +5,7 @@ package com.pomodairo.events
 	public class TodoistError extends ErrorEvent
 	{
 		public static const  ERROR_LOGIN:String = "LOGIN_ERROR";
+		public static const  ERROR_API:String = "API_ERROR";
 
 		public function TodoistError(type:String, text:String="", id:int=0)
 		{

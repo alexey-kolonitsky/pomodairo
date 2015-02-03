@@ -4,7 +4,9 @@ package com.pomodairo.events
 
 	public class TodoistEvent extends Event
 	{
-		public static const CONNECTED:String = "connected";
+		public static const CONNECTED:String = "todoist.connected";
+		public static const PROJECTS_CHANGED:String = "todoist.project_chagned";
+		public static const ITEMS_CHANGED:String = "todoist.items_changed";
 
 		public function TodoistEvent(type:String)
 		{
