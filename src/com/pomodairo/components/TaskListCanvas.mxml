@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="320" height="300"
-	initialize="init()"	horizontalScrollPolicy="off" verticalScrollPolicy="off">
+	initialize="init()"	horizontalScrollPolicy="off" verticalScrollPolicy="off"
+	backgroundAlpha="0">
 	
 	<mx:Script>
 		<![CDATA[

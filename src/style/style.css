@@ -24,13 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace "library://ns.adobe.com/flex/mx";
 
 /*
 //------------------------------
 //  Application
 //------------------------------
 */
-Application
+WindowedApplication
 {
 	backgroundGradientAlphas: 1.0, 1.0;
 	backgroundGradientColors: #333333, #333333;
@@ -585,29 +587,6 @@ Menu
 	selectionColor: #444444;
 	shadowDistance: 0;
 }
-
-
-/*
-//------------------------------
-//  MenuBar
-//------------------------------
-*/
-MenuBar
-{
-
-	backgroundSkin: Embed(source="kingnarestyle.swf", symbol="MenuBar_backgroundSkin");
-	itemUpSkin: Embed(source="kingnarestyle.swf", symbol="MenuBar_itemUpSkin");
-	itemOverSkin: Embed(source="kingnarestyle.swf", symbol="MenuBar_itemOverSkin");
-	itemDownSkin: Embed(source="kingnarestyle.swf", symbol="MenuBar_itemDownSkin");
-	color: #AAAAAA;
-	backgroundColor:#ffffff;
-	textSelectedColor:#ffffff;
-	textRollOverColor:#ffffff;
-	rollOverColor:#ffffff;
-	menuStyleName: "dropDown";
-	disabledColor: #AAB3B3;
-}
-
 
 /*
 //------------------------------
