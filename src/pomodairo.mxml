@@ -239,7 +239,38 @@
 			public static const ABOUT_DIALOG_ID:String = "about";
 			public static const CONFIRM_DIALOG_ID:String = "confirm";
 
-			private var dialogList:Object = { }
+			private var dialogList:Object = { };
+            private var myMenu:Menu;
+
+            public var xmlMenu:XMLList = <>
+                <menuitem label="Menu">
+                    <menuitem label="Config">
+                        <menuitem label="Configuration" action={CONFIG_DIALOG_ID}/>
+                        <menuitem label="Sounds" action={SOUND_DIALOG_ID}/>
+                        <menuitem label="Timing" action={TIMING_DIALOG_ID}/>
+                        <menuitem label="Twitter" action={TWITTER_DIALOG_ID}/>
+                        <menuitem label="Advanced" action={ADVANCED_DIALOG_ID}/>
+                    </menuitem>
+                    <menuitem label="Statistics" action={STATISTIC_DIALOG_ID}/>
+                    <menuitem label="Pomodairo" action={ABOUT_DIALOG_ID}/>
+                </menuitem>
+            </>;
+
+            private function showMenu(event:MouseEvent):void {
+                var targetButton:Button = event.currentTarget as Button;
+
+                // Calculate position of Menu in Application's coordinates.
+                var position:Point = new Point(targetButton.x, targetButton.y + targetButton.height);
+                position = targetButton.localToGlobal(position);
+                position = this.globalToLocal(position);
+
+                if (myMenu == null) {
+                    myMenu = Menu.createMenu(this, xmlMenu, false);
+                    myMenu.labelField = "@label";
+                    myMenu.addEventListener(MenuEvent.ITEM_CLICK, menuClick);
+                }
+                myMenu.show(position.x, position.y);
+            }
 
             private function menuClick(event:MenuEvent):void {
 				var action:String = event.item.@action;
@@ -293,20 +324,6 @@
     			END OF MENU STUFF
 	   	  	---------------------------------------------------- */
 
-			[Bindable]
-			public var xmlMenu:XMLList = <>
-				<menuitem label="Menu">
-					<menuitem label="Config">
-						<menuitem label="Configuration" action={CONFIG_DIALOG_ID}/>
-						<menuitem label="Sounds" action={SOUND_DIALOG_ID}/>
-						<menuitem label="Timing" action={TIMING_DIALOG_ID}/>
-						<menuitem label="Twitter" action={TWITTER_DIALOG_ID}/>
-						<menuitem label="Advanced" action={ADVANCED_DIALOG_ID}/>
-					</menuitem>
-					<menuitem label="Statistics" action={STATISTIC_DIALOG_ID}/>
-					<menuitem label="Pomodairo" action={ABOUT_DIALOG_ID}/>
-				</menuitem>
-			</>
 
 			private function lblClose_clickHandler(event:MouseEvent):void
 			{
@@ -321,22 +338,6 @@
 
 				showPopup(dialogList[CONFIRM_DIALOG_ID]);
 			}
-
-            var myMenu:Menu;
-
-            private function showMenu(event:MouseEvent):void {
-                var targetButton:Button = event.currentTarget as Button;
-
-                // Calculate position of Menu in Application's coordinates.
-                var position:Point = new Point(targetButton.x, targetButton.y + targetButton.height);
-                position = targetButton.localToGlobal(position);
-                position = this.globalToLocal(position);
-
-                myMenu = Menu.createMenu(this, xmlMenu, false);
-                myMenu.labelField = "@label";
-                myMenu.addEventListener(MenuEvent.ITEM_CLICK, menuClick);
-                myMenu.show(position.x, position.y);
-            }
         ]]>
     </mx:Script>
 
@@ -364,8 +365,7 @@
 	
 	<mx:Canvas id="taskListPanel" x="0" y="{SHORT_HEIGHT}" height="100%" width="100%" visible="false" showEffect="fadein" hideEffect="fadeout"
 		backgroundAlpha="0">
-		<ns1:TaskListCanvas x="0" y="0" height="100%" width="100%" app="{this}">
-		</ns1:TaskListCanvas>
+		<ns1:TaskListCanvas x="0" y="0" height="100%" width="100%" app="{this}" />
 	</mx:Canvas>
 	
 </mx:WindowedApplication>

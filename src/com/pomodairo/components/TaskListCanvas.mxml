@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="320" height="300"
-	initialize="init()"	horizontalScrollPolicy="off" verticalScrollPolicy="off"
-	backgroundAlpha="0">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+           xmlns:s="spark.components.*" width="320" height="300"
+           initialize="init()" horizontalScrollPolicy="off"
+           verticalScrollPolicy="off"
+           backgroundAlpha="0">
 	
 	<mx:Script>
 		<![CDATA[
-			import mx.core.WindowedApplication;
-			import mx.managers.PopUpManager;
+        import mx.collections.ArrayCollection;
+        import mx.core.WindowedApplication;
+            import mx.events.PropertyChangeEvent;
+            import mx.managers.PopUpManager;
 			import mx.controls.Alert;
 			import com.pomodairo.events.PomodoroEvent;
 			import com.pomodairo.PomodoroEventDispatcher;
@@ -64,7 +68,13 @@
 				db.initAndOpenDatabase();
 				populateTaskMenu();
 				pomodorosDataGrid.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+                db.addEventListener(Storage.DATASET_CHANGED, dataset_changedHandler);
+                pomodorosDataGrid.dataProvider = new ArrayCollection(db.dataset);
 			}
+
+            private function dataset_changedHandler(event:Event):void {
+                pomodorosDataGrid.dataProvider = new ArrayCollection(db.dataset);
+            }
 			private function populateTaskMenu():void
 			{
 				var menuitem:NativeMenuItem = new NativeMenuItem("Show...");
@@ -105,7 +115,7 @@
 
 			private function updatePrios():void
 			{
-				var i:int = pomodorosDataGrid.rowCount - 1;
+				var i:int = pomodorosDataGrid.selectedIndex - 1;
 				for each (var pom:Pomodoro in pomodorosDataGrid.dataProvider) {
 					pom.ordinal = i--;
 					db.updateOrdinal(pom);
@@ -283,27 +293,19 @@
 	
 	<mx:Number id="lastRollOverIndex" />
 
-	<mx:DataGrid id="pomodorosDataGrid"
-		dataProvider="{db.dataset}"
+	<s:List id="pomodorosDataGrid"
 		top="0" right="0" bottom="44" left="0"
-		editable="false"
 		rightClick="displayMenu(event);"
-		itemRollOver="lastRollOverIndex = event.rowIndex"
-		itemClick="onStartPomodoroClicked(event);"
+        itemRenderer="com.pomodairo.components.PomodoroListRenderer"
+		itemRollOver="lastRollOverIndex = event.itemIndex"
+		click="onStartPomodoroClicked(event);"
+        contentBackgroundAlpha="0"
 		dragMoveEnabled="true"
 		dragEnabled="true"
 		dropEnabled="true"
 		dragComplete="onDragComplete(event)"
-		change="onUsersDataGridChanged(event)" width="100%" >
-		<mx:columns>
-			<mx:DataGridColumn width="125" headerText="Name" dataField="name" itemRenderer="com.pomodairo.components.CustomRenderer" />
-			<mx:DataGridColumn width="28" headerText="E" dataField="estimated" dataTipField="estimatedDescription" showDataTips="true" itemRenderer="com.pomodairo.components.CustomRenderer" />
-			<mx:DataGridColumn width="28" headerText="P" dataField="pomodoros" dataTipField="pomodorosDescription" showDataTips="true" itemRenderer="com.pomodairo.components.CustomRenderer" />
-			<mx:DataGridColumn width="28" headerText="U" dataField="unplanned" dataTipField="unplannedDescription" showDataTips="true" itemRenderer="com.pomodairo.components.CustomRenderer" />
-			<mx:DataGridColumn width="28" headerText="I" dataField="interruptions" dataTipField="interruptionsDescription" showDataTips="true" itemRenderer="com.pomodairo.components.CustomRenderer" />
-			<!-- Useful for debugging ordinal stuff --> <!-- <mx:DataGridColumn width="28" headerText="S" dataField="ordinal" dataTipField="ordinalDescription" showDataTips="true" itemRenderer="com.pomodairo.components.CustomRenderer" /> -->
-		</mx:columns>
-	</mx:DataGrid>
+		change="onUsersDataGridChanged(event)" width="100%">
+	</s:List>
 
 	<mx:Canvas id="resizeLine" bottom="0" left="0" right="0" height="44"
 		backgroundColor="0xFFFFFF" backgroundAlpha="0.2"

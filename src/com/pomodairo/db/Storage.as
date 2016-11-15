@@ -12,6 +12,8 @@ package com.pomodairo.db
 	import flash.data.SQLResult;
 	import flash.data.SQLStatement;
 	import flash.errors.SQLError;
+	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.SQLErrorEvent;
 	import flash.events.SQLEvent;
 	import flash.filesystem.File;
@@ -19,8 +21,10 @@ package com.pomodairo.db
 	
 	import mx.collections.ArrayCollection;
 
-	public class Storage
+	public class Storage extends EventDispatcher
 	{
+		public static const DATASET_CHANGED:String = "datasetChanged";
+
 		/** Database default file name  */
 		public static var DATABASE_FILE:String = "pomodairo-1.1.db";
 		
@@ -397,6 +401,7 @@ package com.pomodairo.db
 		    {
 		    	dataset = result.data;
 		    }
+			dispatchEvent(new Event(DATASET_CHANGED));
 		}
 		
 		private function onDBStatementInsertResult(event:SQLEvent):void
