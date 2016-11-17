@@ -601,7 +601,7 @@ package com.pomodairo.db
 		
 		public function setConfiguration(prop:ConfigProperty):void
 		{
-			dbCfgStatement.text = "REPLACE INTO Config (name,value) VALUES (':name',':value')";
+			dbCfgStatement.text = "REPLACE INTO Config (name,value) VALUES (:name, :value)";
 			dbCfgStatement.parameters[":name"] = prop.name;
 			dbCfgStatement.parameters[":value"] = prop.value;
 			dbCfgStatement.addEventListener(SQLEvent.RESULT, onConfigInsertResult);
@@ -610,7 +610,7 @@ package com.pomodairo.db
 		
 		public function removeConfiguration(key:String):void
 		{
-			dbCfgStatement.text = "DELETE FROM Config WHERE name=':name'";
+			dbCfgStatement.text = "DELETE FROM Config WHERE name=:name";
 			dbCfgStatement.parameters[":name"] = key;
 			dbCfgStatement.execute();
 		}

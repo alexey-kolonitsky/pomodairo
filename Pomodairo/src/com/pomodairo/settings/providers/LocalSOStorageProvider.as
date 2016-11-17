@@ -2,12 +2,15 @@
  * Created by akalanitski on 16.11.2016.
  */
 package com.pomodairo.settings.providers {
-import com.pomodairo.ConfigProperty;
+	import com.pomodairo.ConfigProperty;
 
-import flash.data.EncryptedLocalStore;
-import flash.utils.ByteArray;
+	import flash.data.EncryptedLocalStore;
+	import flash.utils.ByteArray;
 
-public class LocalSOStorageProvider implements IProvider {
+	/**
+	 * Local encrypted storage
+	 */
+	public class LocalSOStorageProvider implements IProvider {
 
 		// Store database location in local store
 		public function setString(key:String, value:String):void {

@@ -160,6 +160,7 @@
 				var evt:PomodoroEvent = new PomodoroEvent(PomodoroEvent.SELECTED);
 				evt.pomodoro = pom;
 				PomodoroEventDispatcher.instance.dispatchEvent(evt);
+				onPomodoroSelected(evt);
 			} else {
 				trace("TaskListCanvas onStartPomodoroClicked pomodoro not selected");
 			}
@@ -274,6 +275,28 @@
 			cursorManager.removeAllCursors();
 			cursorId = -1;
 		}
+
+		private function newInterruption():void {
+			var input:PomoItemInput = new PomoItemInput();
+			input.type = Pomodoro.TYPE_INTERRUPTION;
+			input.reference = taskManager.activeTask;
+			PopUpManager.addPopUp(input, this, true);
+			PopUpManager.centerPopUp(input);
+		}
+
+		private function newUnplanned():void {
+			var input:PomoItemInput = new PomoItemInput();
+			input.type = Pomodoro.TYPE_UNPLANNED;
+			input.reference = taskManager.activeTask;
+			PopUpManager.addPopUp(input, this, true);
+			PopUpManager.centerPopUp(input);
+		}
+
+		private function onPomodoroSelected(event:PomodoroEvent):void {
+			trace("Pomodoro selected: " + event.pomodoro.name);
+			unplannedButton.enabled = true;
+			interruptionButton.enabled = true;
+		}
 		]]>
 	</mx:Script>
 	
@@ -298,7 +321,10 @@
 		mouseDown="resizeLine_mouseDownHandler(event)"
 		rollOver="resizeLine_rollOverHandler(event)"
 		rollOut="resizeLine_rollOutHandler(event)"/>
-	
-	<mx:Button id="addPomoButton" label="Add New" click="onAddPomodoroClicked()" width="91" height="24" right="10" bottom="10"/>
 
+	<s:HGroup bottom="0" left="0" right="0" height="44" verticalAlign="middle" horizontalAlign="center">
+		<mx:Button id="addPomoButton" label="Add New" click="onAddPomodoroClicked()" />
+		<mx:Button id="unplannedButton"  label="Unplanned" click="newUnplanned()" toolTip="Add unplanned" enabled="false"/>
+		<mx:Button id="interruptionButton"  label="Interruption" click="newInterruption()" toolTip="Add interruption" enabled="false"/>
+	</s:HGroup>
 </mx:Canvas>

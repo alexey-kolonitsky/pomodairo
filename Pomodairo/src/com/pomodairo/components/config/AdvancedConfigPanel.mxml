@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <panels:BaseConfigPanel
-	xmlns:panels="com.pomodairo.components.config.*"
-	xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="init()">
+		xmlns:panels="com.pomodairo.components.config.*"
+		xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:s="spark.components.*"
+		creationComplete="init()">
 
 	<mx:Script>
         <![CDATA[
@@ -33,16 +34,14 @@
 
 		override public function populate():void {
 			dataFileLocation = getDatabaseLocation();
-
 		}
 
 		private function applyGuiValues():void {
-
 			dataFileLocationInput.text = dataFileLocation;
 		}
 
 
-		public function save():void {
+		override public function save():void {
 			dataFileLocation = dataFileLocationInput.text;
 			ConfigManager.instance.setConfig(ConfigItemName.DATABASE_LOCATION, dataFileLocation);
 			exit();
@@ -66,13 +65,14 @@
 		]]>
     </mx:Script>
 
-	<mx:Label x="10" y="10" color="#A9A9A9" text="Database location:"/>
-	<mx:TextInput id="dataFileLocationInput" x="10" y="26" width="203">
-		<mx:toolTip>Folder that will hold the pomodairo database file. Leave empty for default. NOTE: If you change this you will lose your current data!</mx:toolTip>
-	</mx:TextInput>
-	<mx:Button x="221" y="25" label="Browse" click="selectFile()" icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png')"/>
-
-	<mx:Button x="221" y="90" label="Save" click="save()" width="63"/>
-	<mx:Button x="221" y="121" label="Cancel" click="exit()" />
-	
+	<s:VGroup width="100%">
+		<s:Label color="#A9A9A9" text="Database location:"/>
+		<s:HGroup  width="100%">
+			<mx:TextInput id="dataFileLocationInput" width="100%">
+				<mx:toolTip>Folder that will hold the pomodairo database file. Leave empty for default. NOTE: If you change this you will lose your current data!</mx:toolTip>
+			</mx:TextInput>
+			<mx:Button click="selectFile()"
+				icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png')"/>
+		</s:HGroup>
+	</s:VGroup>
 </panels:BaseConfigPanel>

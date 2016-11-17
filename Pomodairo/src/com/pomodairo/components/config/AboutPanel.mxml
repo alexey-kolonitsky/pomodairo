@@ -37,8 +37,7 @@
 
         ]]>
     </mx:Script>
-	
-	<mx:Button x="221" y="121" label="Close" click="exit()"/>
+
 	<mx:Image x="151" y="51" source="assets/paypal.gif" click="openPaypal()" buttonMode="true" useHandCursor="true"/>
 	<mx:Text x="10" y="36" text="Pomodairo is freeware and will remain free. However if you find Pomodairo useful then consider making a donation. Thank you!" height="108" width="133"/>
 	<mx:Label x="99" y="10" text="version {version}"/>

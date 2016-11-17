@@ -2,19 +2,18 @@
  * Created by akalanitski on 16.11.2016.
  */
 package com.pomodairo.settings.providers {
-import com.pomodairo.ConfigProperty;
+	import com.pomodairo.ConfigProperty;
 
 	import flash.data.EncryptedLocalStore;
 	import flash.events.EventDispatcher;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	import flash.utils.ByteArray;
 
-import mx.utils.StringUtil;
+	import mx.utils.StringUtil;
 
-public class LocalFSStorageProvider extends EventDispatcher implements IProvider {
-
+	/**
+	 * Local file-system storage
+	 */
+	public class LocalFSStorageProvider extends EventDispatcher implements IProvider {
 
 		[Embed(source="/assets/settings.properties",mimeType="application/octet-stream")]
 		private var settingsProperties:Class;

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config:BaseConfigPanel
-	xmlns:mx="http://www.adobe.com/2006/mxml"
-	xmlns:config="com.pomodairo.components.config.*"
-	creationComplete="init()" >
+		xmlns:mx="http://www.adobe.com/2006/mxml"
+		xmlns:config="com.pomodairo.components.config.*"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		creationComplete="init()">
 
 <mx:Script>
         <![CDATA[
@@ -50,7 +51,7 @@
 		longBreakSelect.value = longBreakInterval;
 	}
 
-	public function save():void {
+	override public function save():void {
 		pomodoroLength = pomodoroSlider.value;
 		shortBreakLength = shortBreakSlider.value;
 		longBreakLength = longBreakSlider.value;
@@ -74,18 +75,27 @@
 	}
 	]]>
     </mx:Script>
-	<mx:Button x="221" y="90" label="Save" click="save()" width="63"/>
-	<mx:Button x="221" y="121" label="Cancel" click="exit()"/>
-	
-	<mx:Label x="10" y="6" text="Pomodoro length" color="#A9A9A9"/>
-	<mx:HSlider id="pomodoroSlider" x="10" y="15" snapInterval="1" minimum="1" maximum="60"/>
-	
-	<mx:Label x="10" y="48.3" text="Short break length" color="#A9A9A9"/>
-	<mx:HSlider id="shortBreakSlider" x="10" y="57" snapInterval="1" minimum="1" maximum="30"/>
-	
-	<mx:Label x="10" y="91.3" text="Long break length" color="#A9A9A9"/>
-	<mx:HSlider id="longBreakSlider" x="10" y="100" snapInterval="1" minimum="1" maximum="60"/>
-	<mx:NumericStepper x="228" y="25" value="4" minimum="1" maximum="30" enabled="true" id="longBreakSelect" toolTip="Number of pomodoros until a long break"/>
-	<mx:Label x="176" y="7" text="Long break interval"/>
+
+	<s:VGroup width="100%" top="0" left="0">
+		<s:HGroup width="100%">
+			<s:Label text="Pomodoro length" color="#A9A9A9"/>
+			<mx:HSlider id="pomodoroSlider" snapInterval="1" minimum="1" maximum="60"/>
+		</s:HGroup>
+
+		<s:HGroup width="100%">
+			<s:Label text="Short break length" color="#A9A9A9"/>
+			<mx:HSlider id="shortBreakSlider" snapInterval="1" minimum="1" maximum="30"/>
+		</s:HGroup>
+
+		<s:HGroup width="100%">
+			<mx:Label text="Long break length" color="#A9A9A9"/>
+			<mx:HSlider id="longBreakSlider" snapInterval="1" minimum="1" maximum="60"/>
+		</s:HGroup>
+
+		<s:HGroup width="100%">
+			<mx:Label text="Long break interval"/>
+			<mx:NumericStepper  value="4" minimum="1" maximum="30" enabled="true" id="longBreakSelect" toolTip="Number of pomodoros until a long break"/>
+		</s:HGroup>
+	</s:VGroup>
 	
 </config:BaseConfigPanel>

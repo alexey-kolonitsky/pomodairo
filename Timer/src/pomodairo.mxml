@@ -5,7 +5,7 @@
     xmlns:ns1="com.pomodairo.components.*"
 	showFlexChrome="false" layout="absolute"
 	verticalScrollPolicy="off" horizontalScrollPolicy="off"
-	height="150" width="400"
+	height="150" width="320"
 	backgroundColor="#292929"
 	showStatusBar="false"
 	title="{timerCanvas.appTitle}"
@@ -27,15 +27,9 @@
 		import com.pomodairo.TaskManager;
 		import com.pomodairo.components.PomoItemInput;
 		import com.pomodairo.components.StatisticsWindow;
-		import com.pomodairo.components.config.AboutPanel;
-		import com.pomodairo.components.config.AdvancedConfigPanel;
 		import com.pomodairo.components.config.BaseConfigPanel;
-		import com.pomodairo.components.config.ConfigPanel;
 		import com.pomodairo.components.config.ConfirmPanel;
 		import com.pomodairo.components.config.SettingsPanel;
-		import com.pomodairo.components.config.SoundConfigPanel;
-		import com.pomodairo.components.config.TimingConfigPanel;
-		import com.pomodairo.components.config.TwitterConfigPanel;
 		import com.pomodairo.db.Storage;
 		import com.pomodairo.events.ConfigurationUpdatedEvent;
 		import com.pomodairo.events.GuiChangeEvent;
@@ -44,15 +38,11 @@
 		import com.pomodairo.settings.ConfigManager;
 		import com.pomodairo.twitter.TwitterManager;
 
-		import mx.controls.Menu;
-
 		import mx.core.IFlexDisplayObject;
-
 		import mx.events.MenuEvent;
 		import mx.managers.PopUpManager;
 
-
-		public static const MIN_WIDTH:Number = 400;
+		public static const MIN_WIDTH:Number = 320;
 
 		public static const MINI_HEIGHT:Number = 52;
 		public static const SHORT_HEIGHT:Number = 150;
@@ -61,9 +51,7 @@
 		private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
 
 		private var taskManager:TaskManager = TaskManager.instance;
-
 		private var twitterManager:TwitterManager = new TwitterManager();
-		private var settingsManager:ConfigManager = new ConfigManager();
 
 		private function beforeInit():void {
 
@@ -81,7 +69,7 @@
 				}
 			}
 
-			var setHeight:Number =  ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
+			var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
 			if (setHeight >= MINI_HEIGHT && setHeight < Capabilities.screenResolutionY) {
 				this.height = setHeight;
 			}
@@ -91,22 +79,15 @@
 				this.width = setWidth;
 			}
 
-			dialogList[CONFIG_DIALOG_ID] = new SettingsPanel(); //new ConfigPanel();
-			dialogList[ADVANCED_DIALOG_ID] = new AdvancedConfigPanel();
-			dialogList[SOUND_DIALOG_ID] = new SoundConfigPanel();
-			dialogList[TIMING_DIALOG_ID] = new TimingConfigPanel();
-			dialogList[ABOUT_DIALOG_ID] = new AboutPanel();
+			dialogList[CONFIG_DIALOG_ID] = new SettingsPanel();
 			dialogList[CONFIRM_DIALOG_ID] = new ConfirmPanel();
 		}
 
 		private function init():void {
 			checkForUpdates();
 			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, closeTaskList);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
 			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, onPomodoroTimeout);
 			PomodoroEventDispatcher.instance.addEventListener(GuiChangeEvent.UPDATED, onGuiChange);
-
-			dialogList[TWITTER_DIALOG_ID] = new TwitterConfigPanel();
 
 			// Display task list on startup
 			toggleTaskList();
@@ -140,11 +121,6 @@
 			nativeWindow.orderToFront();
 		}
 
-		private function onPomodoroSelected(event:PomodoroEvent):void {
-			trace("Pomodoro selected: " + event.pomodoro.name);
-			unplannedButton.enabled = true;
-			interruptionButton.enabled = true;
-		}
 
 		private function toggleTaskList():void {
 			if (!taskListPanel.visible) {
@@ -163,22 +139,6 @@
 			taskListPanel.visible = false;
 		}
 
-		private function newInterruption():void {
-			var input:PomoItemInput = new PomoItemInput();
-			input.type = Pomodoro.TYPE_INTERRUPTION;
-			input.reference = taskManager.activeTask;
-			PopUpManager.addPopUp(input, this, true);
-			PopUpManager.centerPopUp(input);
-		}
-
-		private function newUnplanned():void {
-			var input:PomoItemInput = new PomoItemInput();
-			input.type = Pomodoro.TYPE_UNPLANNED;
-			input.reference = taskManager.activeTask;
-			PopUpManager.addPopUp(input, this, true);
-			PopUpManager.centerPopUp(input);
-		}
-
 		private function beforeClose():void {
 			Storage.instance.setConfigurationValue("window.x", "" + this.nativeWindow.x);
 			Storage.instance.setConfigurationValue("window.y", "" + this.nativeWindow.y);
@@ -189,12 +149,10 @@
 		private function onGuiChange(event:GuiChangeEvent):void {
 			if (event.miniView) {
 				trace("Switch application to mini view");
-//					myMenuBar.visible = myMenuBar.includeInLayout = false;
 				closeTaskList();
 				this.height = MINI_HEIGHT;
 			} else {
 				trace("Switch application to regular view");
-//					myMenuBar.visible = myMenuBar.includeInLayout = true;
 				this.height = SHORT_HEIGHT;
 			}
 		}
@@ -215,53 +173,18 @@
 			if (this.height == MINI_HEIGHT || this.height == SHORT_HEIGHT)
 				return;
 
-			var value:Number =  ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
+			var value:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
 			if (this.height == value)
 				return;
 
 			Storage.instance.setConfigurationValue('window.height', '' + this.height);
 		}
 
-
-		/* ----------------------------------------------------
-		 MENU STUFF
-		 ---------------------------------------------------- */
-
 		public static const STATISTIC_DIALOG_ID:String = "statistic";
-
 		public static const CONFIG_DIALOG_ID:String = "config";
-		public static const TWITTER_DIALOG_ID:String = "twitter";
-		public static const ADVANCED_DIALOG_ID:String = "advancedConfig";
-		public static const SOUND_DIALOG_ID:String = "sound";
-		public static const TIMING_DIALOG_ID:String = "timing";
-		public static const ABOUT_DIALOG_ID:String = "about";
 		public static const CONFIRM_DIALOG_ID:String = "confirm";
 
 		private var dialogList:Object = {};
-		private var myMenu:Menu;
-
-		public var xmlMenu:XMLList = <>
-			<menuitem label="Menu">
-				<menuitem label="Configuration" action={CONFIG_DIALOG_ID}/>
-				<menuitem label="Statistics" action={STATISTIC_DIALOG_ID}/>
-			</menuitem>
-		</>;
-
-		private function showMenu(event:MouseEvent):void {
-			var targetButton:Button = event.currentTarget as Button;
-
-			// Calculate position of Menu in Application's coordinates.
-			var position:Point = new Point(targetButton.x, targetButton.y + targetButton.height);
-			position = targetButton.localToGlobal(position);
-			position = this.globalToLocal(position);
-
-			if (myMenu == null) {
-				myMenu = Menu.createMenu(this, xmlMenu, false);
-				myMenu.labelField = "@label";
-				myMenu.addEventListener(MenuEvent.ITEM_CLICK, menuClick);
-			}
-			myMenu.show(position.x, position.y);
-		}
 
 		private function menuClick(event:MenuEvent):void {
 			var action:String = event.item.@action;
@@ -271,11 +194,6 @@
 					break;
 
 				case CONFIG_DIALOG_ID:
-				case TWITTER_DIALOG_ID:
-				case ADVANCED_DIALOG_ID:
-				case SOUND_DIALOG_ID:
-				case TIMING_DIALOG_ID:
-				case ABOUT_DIALOG_ID:
 				case CONFIRM_DIALOG_ID:
 					var dialog:IFlexDisplayObject = dialogList[action];
 					showPopup(dialog);
@@ -289,6 +207,8 @@
 
 		private function showSettingsPanel():void {
 			var dialog:IFlexDisplayObject = dialogList[CONFIG_DIALOG_ID];
+			dialog.width = stage.stageWidth;
+			dialog.height = stage.stageHeight;
 			showPopup(dialog);
 		}
 
@@ -313,11 +233,6 @@
 			}
 		}
 
-		/* ----------------------------------------------------
-		 END OF MENU STUFF
-		 ---------------------------------------------------- */
-
-
 		private function lblClose_clickHandler(event:MouseEvent):void {
 			if (ConfigManager.instance.getBoolean(ConfigItemName.REMEMBER_POSITION) == false) {
 				close();
@@ -340,11 +255,8 @@
 		<s:HGroup width="100%" height="30">
 			<mx:Button id="statisticButton" icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-41-stats.png')" click="{showStatisticsPanel()}" />
 			<mx:Button id="settingsButton" icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-140-adjust-alt.png')" click="{showSettingsPanel()}" />
-
 			<mx:Spacer width="100%" />
 			<mx:Button click="toggleTaskList()" icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-115-list.png')" toolTip="Open/close task list"/>
-			<mx:Button label="Unplanned" id="unplannedButton" click="newUnplanned()" toolTip="Add unplanned" enabled="false"/>
-			<mx:Button label="Interruption" id="interruptionButton" click="newInterruption()" toolTip="Add interruption" enabled="false"/>
 			<mx:Spacer width="100%" />
 			<mx:Button right="56" top="0" height="22" width="54" id="toggleViewButton" label="view" click="toggleViewState()"/>
 			<mx:Button label="_" click="{minimize()}" color="#FFFFFF" />
@@ -354,7 +266,6 @@
 		<ns1:timer id="timerCanvas" height="120" width="100%" pomodoroLengthInMinutes="25"/>
 
 	</s:VGroup>
-
 	
 	<mx:Canvas id="taskListPanel" x="0" y="{SHORT_HEIGHT}" height="100%" width="100%" visible="false" showEffect="fadein" hideEffect="fadeout"
 		backgroundAlpha="0">

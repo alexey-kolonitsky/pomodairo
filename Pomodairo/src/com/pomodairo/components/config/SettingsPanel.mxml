@@ -4,15 +4,39 @@
 		xmlns:config="com.pomodairo.components.config.*"
 		xmlns:s="spark.components.*" xmlns:layouts="spark.layouts.*"
 		horizontalScrollPolicy="off"
-		width="298" height="500"
->
+		width="100%" >
 
-	<s:VGroup width="298">
-		<config:TimingConfigPanel width="298" height="154" />
-		<config:ConfigPanel width="298" height="154" />
-		<config:SoundConfigPanel width="298" height="154" />
-		<config:AdvancedConfigPanel width="298" height="154" />
-		<config:AboutPanel width="298" height="154" />
+	<mx:Script><![CDATA[
+
+		override public function exit():void {
+			timigConfigPanel.exit();
+			configPanel.exit();
+			soundConfigPanel.exit();
+			advancedConfigPanel.exit();
+			aboutPanel.exit();
+			super.exit();
+		}
+
+		override public function save():void {
+			timigConfigPanel.save();
+			configPanel.save();
+			soundConfigPanel.save();
+			advancedConfigPanel.save();
+			aboutPanel.save();
+			super.save();
+		}
+		]]></mx:Script>
+
+	<s:VGroup width="100%" >
+		<config:TimingConfigPanel id="timigConfigPanel" width="100%" />
+		<config:ConfigPanel id="configPanel" width="100%"  />
+		<config:SoundConfigPanel id="soundConfigPanel" width="100%"  />
+		<config:AdvancedConfigPanel id="advancedConfigPanel" width="100%" />
+		<config:AboutPanel id="aboutPanel" width="100%"  />
+		<s:HGroup width="100%" horizontalAlign="center">
+			<mx:Button label="Save" click="save()" width="63"/>
+			<mx:Button label="Cancel" click="exit()"/>
+		</s:HGroup>
 	</s:VGroup>
 
 </config:BaseConfigPanel>

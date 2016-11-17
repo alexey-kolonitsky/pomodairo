@@ -20,9 +20,13 @@ import mx.managers.PopUpManager;
 
 		}
 
-		protected function exit():void
+		public function exit():void
         {
 			PopUpManager.removePopUp(this);
         }
+
+		public function save():void {
+
+		}
 	}
 }

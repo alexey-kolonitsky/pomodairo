@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config:BaseConfigPanel
-		xmlns:mx="http://www.adobe.com/2006/mxml" width="298" height="154" backgroundColor="#313131"
-		creationComplete="init()" xmlns:config="com.pomodairo.components.config.*">
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:config="com.pomodairo.components.config.*"
+	width="298" height="154" backgroundColor="#313131"
+	creationComplete="init()" >
 
 	<mx:Script>
         <![CDATA[
@@ -42,7 +45,7 @@
 			}
 
 			if (conf.hasConfig(ConfigItemName.CONFIRM_APPLICATION_EXIT)) {
-				confirmApplicationExit = conf.getConfig(ConfigItemName.CONFIRM_APPLICATION_EXIT) == "true";
+				confirmApplicationExit = conf.getBoolean(ConfigItemName.CONFIRM_APPLICATION_EXIT);
 			}
 		}
 
@@ -54,12 +57,14 @@
 			confirmApplicationExitCheckbox.selected = confirmApplicationExit;
 		}
 
-		public function save():void {
+		override public function save():void {
 			rememberPosition = positionCheckbox.selected;
 			alwaysOnTop = alwaysOnTopCheckbox.selected;
 			updateTaskbar = updateTaskbarCheckbox.selected;
 			urlToOpen = urlToOpenInput.text;
 			confirmApplicationExit = confirmApplicationExitCheckbox.selected;
+
+			ConfigManager.instance.setBoolean(ConfigItemName.REMEMBER_POSITION, rememberPosition);
 
 			Storage.instance.setConfigurationValue(ConfigItemName.REMEMBER_POSITION, "" + rememberPosition);
 			Storage.instance.setConfigurationValue(ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop);
@@ -82,22 +87,20 @@
 		]]>
     </mx:Script>
 
-	<mx:CheckBox id="alwaysOnTopCheckbox" x="8" y="8" label="Always on top"  />
-	<mx:CheckBox id="confirmApplicationExitCheckbox" x="8" y="30" label="Confirm application exit" selected="true"/>
+	<s:VGroup width="100%" top="0" left="0">
+		<mx:CheckBox id="alwaysOnTopCheckbox" label="Always on top"  />
+		<mx:CheckBox id="confirmApplicationExitCheckbox" label="Confirm application exit" selected="true"/>
 
-	<mx:CheckBox x="8" y="52" label="Update taskbar" id="updateTaskbarCheckbox"  selected="true">
-		<mx:toolTip>Should the taskbar icon be updated with the current pomodoro and time remaining?</mx:toolTip>
-	</mx:CheckBox>
+		<mx:CheckBox label="Update taskbar" id="updateTaskbarCheckbox"  selected="true">
+			<mx:toolTip>Should the taskbar icon be updated with the current pomodoro and time remaining?</mx:toolTip>
+		</mx:CheckBox>
 
-	<mx:CheckBox x="10" y="74" label="Remember pos." id="positionCheckbox" selected="true"/>
+		<mx:CheckBox x="10" y="74" label="Remember pos." id="positionCheckbox" selected="true"/>
 
-	<mx:Button right="8" top="90" width="64" label="Save" click="save()" />
-	<mx:Button right="8" top="121" width="64" label="Cancel" click="exit()" />
-
-
-	<mx:Label x="8" y="107" color="#A9A9A9" text="URL to open (e.g. to Bugtracker):"/>
-	<mx:TextInput id="urlToOpenInput" x="8" y="122" width="203">
-		<mx:toolTip>URL to open, when clicking on the active task label that contains a hash number (e.g. task name 'Write unit tests #123' could open URL 'bugtracker.mycompany.com?id=123').</mx:toolTip>
-	</mx:TextInput>
+		<mx:Label x="8" y="107" color="#A9A9A9" text="URL to open (e.g. to Bugtracker):"/>
+		<mx:TextInput id="urlToOpenInput" x="8" y="122" width="203">
+			<mx:toolTip>URL to open, when clicking on the active task label that contains a hash number (e.g. task name 'Write unit tests #123' could open URL 'bugtracker.mycompany.com?id=123').</mx:toolTip>
+		</mx:TextInput>
+	</s:VGroup>
 	
 </config:BaseConfigPanel>

@@ -46,6 +46,5 @@ package com.pomodairo.settings {
 				_source.push(item);
 			}
 		}
-
 	}
 }

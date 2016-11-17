@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config:BaseConfigPanel
-	xmlns:mx="http://www.adobe.com/2006/mxml"
-	xmlns:config="com.pomodairo.components.config.*"
-	creationComplete="init()" >
+		xmlns:mx="http://www.adobe.com/2006/mxml"
+		xmlns:config="com.pomodairo.components.config.*"
+		xmlns:s="spark.components.*"
+		creationComplete="init()">
 
 
 <mx:Script>
@@ -67,7 +68,7 @@
 		clockFileLocationInput.text = clockSound;
 	}
 
-	public function save():void {
+	override public function save():void {
 		volume = volumeSlider.value;
 		soundEnabled = soundCheckbox.selected;
 		fadeTicking = fadeTickingCheckbox.selected;
@@ -116,23 +117,36 @@
 	]]>
     </mx:Script>
 
-	<mx:CheckBox id="soundCheckbox" x="178.8" y="15.3" label="Sound enabled"/>
-	<mx:CheckBox id="fadeTickingCheckbox" x="178.8" y="45.3" label="Fade ticking"/>
-	<mx:Button x="221" y="90" label="Save" click="save()" width="63"/>
-	<mx:Button x="221" y="121" label="Cancel" click="exit()"/>
-	<mx:HSlider id="volumeSlider" x="10" y="12" minimum="0" maximum="100" snapInterval="5"/>
-	<mx:Label x="10" y="4" text="Volume" color="#A9A9A9"/>
-	
-	<mx:Label x="10" y="58.7" color="#A9A9A9" text="Alarm Sound:"/>
-	<mx:TextInput id="alarmFileLocationInput" x="10" y="76" width="131">
-		<mx:toolTip>Custom sound file for the alarm. Leave empty for default.</mx:toolTip>
-	</mx:TextInput>
-	<mx:Button x="149" y="76" label="Browse" click="selectAlarmFile()" width="64"/>
-	
-	<mx:Label x="10" y="106" color="#A9A9A9" text="Clock Sound:"/>
-	<mx:TextInput id="clockFileLocationInput" x="10" y="122" width="131">
-		<mx:toolTip>Custom sound file for the clock sound. Leave empty for default.</mx:toolTip>
-	</mx:TextInput>
-	<mx:Button x="149" y="122" label="Browse" click="selectClockFile()" width="64"/>
+	<s:VGroup>
+		<mx:CheckBox id="soundCheckbox" label="Sound enabled" />
+		<mx:CheckBox id="fadeTickingCheckbox" label="Fade ticking"/>
+
+		<s:HGroup width="100%">
+			<mx:Label text="Volume" color="#A9A9A9"/>
+			<mx:HSlider id="volumeSlider" width="100%" minimum="0" maximum="100" snapInterval="5"/>
+		</s:HGroup>
+
+		<mx:Label color="#A9A9A9" text="Alarm Sound:" width="100%"/>
+		<s:HGroup width="100%">
+			<mx:TextInput id="alarmFileLocationInput" width="100%">
+				<mx:toolTip>Custom sound file for the alarm. Leave empty for default.</mx:toolTip>
+			</mx:TextInput>
+
+			<mx:Button
+				icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png')"
+				click="selectAlarmFile()" />
+		</s:HGroup>
+
+
+		<s:Label color="#A9A9A9" text="Clock Sound:" width="100%"/>
+		<s:HGroup>
+			<mx:TextInput id="clockFileLocationInput" width="100%">
+				<mx:toolTip>Custom sound file for the clock sound. Leave empty for default.</mx:toolTip>
+			</mx:TextInput>
+			<mx:Button
+				icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png')"
+				click="selectClockFile()"/>
+		</s:HGroup>
+	</s:VGroup>
 	
 </config:BaseConfigPanel>

@@ -50,7 +50,7 @@
 		groupUsernameField.text = groupUsername;
 	}
 
-	public function save():void {
+	override public function save():void {
 		twitterEnabled = enabledCheckbox.selected;
 		doPost = postCheckbox.selected;
 		groupUsername = groupUsernameField.text;

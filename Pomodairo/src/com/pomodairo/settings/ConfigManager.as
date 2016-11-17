@@ -12,7 +12,7 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 
 	public class ConfigManager {
 
-		public static var _instance:ConfigManager;
+		private static var _instance:ConfigManager;
 
 		public static function get instance():ConfigManager {
 			if (_instance == null) {
@@ -54,8 +54,12 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 			return item.userValue || item.defaultValue;
 		}
 
-		public function getBoolean(key:String):Boolean {
-			return getConfig(key) == "true";
+		public function getBoolean(name:String):Boolean {
+			return getConfig(name) == "true";
+		}
+
+		public function setBoolean(name:String, value:Boolean):void {
+			setConfig(name, value.toString());
 		}
 
 		public function getFloat(key:String):Number {
