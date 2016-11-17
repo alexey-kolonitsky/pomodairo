@@ -6,85 +6,73 @@
 
 <mx:Script>
         <![CDATA[
-        	import com.pomodairo.events.ConfigurationUpdatedEvent;
-        	import com.pomodairo.PomodoroEventDispatcher;
-        	import com.pomodairo.db.Storage;
-        	
-			public static var POMODORO_LENGTH:String = "pomodoroLength";
-			public static var SHORT_BREAK_LENGTH:String = "time.shortBreakLength";
-			public static var LONG_BREAK_LENGTH:String = "time.longBreakLength";
-			public static var LONG_BREAK_INTERVAL:String = "time.longBreakInterval";
-			
-        	private var pomodoroLength:Number = 25;
-			private var shortBreakLength:Number = 5;
-			private var longBreakLength:Number = 20;
-			private var longBreakInterval:Number = 4;
-        	
-        	private function init():void
-        	{
-        		populate();
-        		applyGuiValues();	
-        	}
-        	
-			override public function populate():void
-        	{
-        		var props:Dictionary = Storage.instance.config;
-        		
-        		if (props[POMODORO_LENGTH] != null) 
-        		{
-        			pomodoroLength = props[POMODORO_LENGTH];
-        		}
-				
-				if (props[SHORT_BREAK_LENGTH] != null) 
-				{
-					shortBreakLength = props[SHORT_BREAK_LENGTH];
-				}
-				
-				if (props[LONG_BREAK_LENGTH] != null) 
-				{
-					longBreakLength = props[LONG_BREAK_LENGTH];
-				}
-        		
-				if (props[LONG_BREAK_INTERVAL] != null) 
-				{
-					longBreakInterval = props[LONG_BREAK_INTERVAL];
-				}
-        	}
-        	
-        	private function applyGuiValues():void
-            {
-				pomodoroSlider.value = pomodoroLength;
-				shortBreakSlider.value = shortBreakLength;
-				longBreakSlider.value = longBreakLength;
-				longBreakSelect.value = longBreakInterval;
-            }
-            
-            public function save():void
-            {
-            	pomodoroLength = pomodoroSlider.value;
-				shortBreakLength = shortBreakSlider.value;
-				longBreakLength = longBreakSlider.value;
-				longBreakInterval = longBreakSelect.value;
-            	
-            	Storage.instance.setConfigurationValue(POMODORO_LENGTH, ""+pomodoroLength);
-				Storage.instance.setConfigurationValue(SHORT_BREAK_LENGTH, ""+shortBreakLength);
-				Storage.instance.setConfigurationValue(LONG_BREAK_LENGTH, ""+longBreakLength);
-				Storage.instance.setConfigurationValue(LONG_BREAK_INTERVAL, ""+longBreakInterval);
-            	exit();
-            	
-            	notifyConfiguration();
-            }
-            
-            override public function notifyConfiguration():void
-            {
-            	// Notify the world 
-            	PomodoroEventDispatcher.getInstance().dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, POMODORO_LENGTH, ""+pomodoroLength));
-				PomodoroEventDispatcher.getInstance().dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, SHORT_BREAK_LENGTH, ""+shortBreakLength));
-				PomodoroEventDispatcher.getInstance().dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, LONG_BREAK_LENGTH, ""+longBreakLength));
-				PomodoroEventDispatcher.getInstance().dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, LONG_BREAK_INTERVAL, ""+longBreakInterval));
-            }
-			            
-        ]]>
+	import com.pomodairo.events.ConfigurationUpdatedEvent;
+	import com.pomodairo.PomodoroEventDispatcher;
+	import com.pomodairo.db.Storage;
+	import com.pomodairo.settings.ConfigItemName;
+	import com.pomodairo.settings.ConfigManager;
+
+
+	private var pomodoroLength:Number = 25;
+	private var shortBreakLength:Number = 5;
+	private var longBreakLength:Number = 20;
+	private var longBreakInterval:Number = 4;
+
+	private function init():void {
+		populate();
+		applyGuiValues();
+	}
+
+	override public function populate():void {
+		var conf:ConfigManager = ConfigManager.instance;
+
+		if (conf.hasConfig(ConfigItemName.POMODORO_LENGTH)) {
+			pomodoroLength = conf.getFloat(ConfigItemName.POMODORO_LENGTH);
+		}
+
+		if (conf.getConfig(ConfigItemName.SHORT_BREAK_LENGTH)) {
+			shortBreakLength = conf.getFloat(ConfigItemName.SHORT_BREAK_LENGTH);
+		}
+
+		if (conf.getConfig(ConfigItemName.LONG_BREAK_LENGTH)) {
+			longBreakLength = conf.getFloat(ConfigItemName.LONG_BREAK_LENGTH);
+		}
+
+		if (conf.getConfig(ConfigItemName.LONG_BREAK_INTERVAL)) {
+			longBreakInterval = conf.getFloat(ConfigItemName.LONG_BREAK_INTERVAL);
+		}
+	}
+
+	private function applyGuiValues():void {
+		pomodoroSlider.value = pomodoroLength;
+		shortBreakSlider.value = shortBreakLength;
+		longBreakSlider.value = longBreakLength;
+		longBreakSelect.value = longBreakInterval;
+	}
+
+	public function save():void {
+		pomodoroLength = pomodoroSlider.value;
+		shortBreakLength = shortBreakSlider.value;
+		longBreakLength = longBreakSlider.value;
+		longBreakInterval = longBreakSelect.value;
+
+		Storage.instance.setConfigurationValue(ConfigItemName.POMODORO_LENGTH, "" + pomodoroLength);
+		Storage.instance.setConfigurationValue(ConfigItemName.SHORT_BREAK_LENGTH, "" + shortBreakLength);
+		Storage.instance.setConfigurationValue(ConfigItemName.LONG_BREAK_LENGTH, "" + longBreakLength);
+		Storage.instance.setConfigurationValue(ConfigItemName.LONG_BREAK_INTERVAL, "" + longBreakInterval);
+		exit();
+
+		notifyConfiguration();
+	}
+
+	override public function notifyConfiguration():void {
+		// Notify the world
+		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.POMODORO_LENGTH, "" + pomodoroLength));
+		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.SHORT_BREAK_LENGTH, "" + shortBreakLength));
+		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.LONG_BREAK_LENGTH, "" + longBreakLength));
+		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.LONG_BREAK_INTERVAL, "" + longBreakInterval));
+	}
+	]]>
     </mx:Script>
 	<mx:Button x="221" y="90" label="Save" click="save()" width="63"/>
 	<mx:Button x="221" y="121" label="Cancel" click="exit()"/>

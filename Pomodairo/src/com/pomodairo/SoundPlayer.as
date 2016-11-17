@@ -2,7 +2,8 @@ package com.pomodairo
 {
 	import com.pomodairo.components.config.SoundConfigPanel;
 	import com.pomodairo.events.ConfigurationUpdatedEvent;
-	
+	import com.pomodairo.settings.ConfigItemName;
+
 	import flash.media.Sound;
 	import flash.media.SoundChannel;
 	import flash.media.SoundMixer;
@@ -16,10 +17,10 @@ package com.pomodairo
 
 	public class SoundPlayer
 	{
-		[Embed(source="/alarm.mp3")]
+		[Embed(source="/assets/alarm.mp3")]
 		public var alarmClass:Class;
 		
-		[Embed(source="/ticking.mp3")]
+		[Embed(source="/assets/ticking.mp3")]
 		public var tickClass:Class;
 		
 		private var soundEnabled:Boolean = true;
@@ -36,7 +37,7 @@ package com.pomodairo
 		
 		public function SoundPlayer()
 		{
-			PomodoroEventDispatcher.getInstance().addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);   	
+			PomodoroEventDispatcher.instance.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
 		}
 		
 		private function onConfigurationChange(e:ConfigurationUpdatedEvent):void {
@@ -44,7 +45,7 @@ package com.pomodairo
 				soundEnabled = e.configElement.value == "true";
 			}
 			
-			if (e.configElement.name == SoundConfigPanel.FADE_TICKING_SOUND) {
+			if (e.configElement.name == ConfigItemName.FADE_TICKING_SOUND) {
 				fadeSound = e.configElement.value == "true";
 			}
 			
@@ -53,12 +54,12 @@ package com.pomodairo
 				SoundMixer.soundTransform = new SoundTransform(volume);
 			}
 			
-			if (e.configElement.name == SoundConfigPanel.ALARM_SOUND_FILE) {
+			if (e.configElement.name == ConfigItemName.ALARM_SOUND_FILE) {
 				trace("Load custom alarm sound: "+e.configElement.value);
 				alarmSoundChannel = loadSound(e.configElement.value);
 			}
 			
-			if (e.configElement.name == SoundConfigPanel.CLOCK_SOUND_FILE) {
+			if (e.configElement.name == ConfigItemName.CLOCK_SOUND_FILE) {
 				trace("Load custom clock sound: "+e.configElement.value);
 				clockCustomSound = e.configElement.value;
 				clockSoundChannel = loadSound(e.configElement.value);

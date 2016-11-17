@@ -2,12 +2,14 @@ package com.pomodairo
 {
 	import com.pomodairo.db.Storage;
 import com.pomodairo.events.PomodoroEvent;
+import com.pomodairo.settings.ConfigManager;
 
 import mx.collections.ArrayCollection;
 	
 	public class TaskManager
 	{
-	
+		public static const DEFAULT_SETTINGS_FILE_PATH:String = "assets/settings.properties";
+
 		public static var instance:TaskManager = new TaskManager();
 		
 		[Bindable]
@@ -17,7 +19,12 @@ import mx.collections.ArrayCollection;
 		
 		private var openTasks:ArrayCollection = new ArrayCollection();
 
+		private var configManager:ConfigManager = ConfigManager.instance;
+
 		public function TaskManager() {
+			configManager.defaultSettingsFilePath = DEFAULT_SETTINGS_FILE_PATH;
+			configManager.initialize();
+
 			db.initAndOpenDatabase();
 			openTasks = db.getOpenPomodoros();
 		}
@@ -56,7 +63,7 @@ import mx.collections.ArrayCollection;
 			else {
 				trace("Task '"+task.name+"' is not in list of open tasks.");
 				var event:PomodoroEvent = new PomodoroEvent(PomodoroEvent.LIST_EMPTY);
-				PomodoroEventDispatcher.getInstance().dispatchEvent(event);
+				PomodoroEventDispatcher.instance.dispatchEvent(event);
 			}
 		}
 		

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config:BaseConfigPanel
+		xmlns:mx="http://www.adobe.com/2006/mxml"
+		xmlns:config="com.pomodairo.components.config.*"
+		xmlns:s="spark.components.*" xmlns:layouts="spark.layouts.*"
+		horizontalScrollPolicy="off"
+		width="298" height="500"
+>
+
+	<s:VGroup width="298">
+		<config:TimingConfigPanel width="298" height="154" />
+		<config:ConfigPanel width="298" height="154" />
+		<config:SoundConfigPanel width="298" height="154" />
+		<config:AdvancedConfigPanel width="298" height="154" />
+		<config:AboutPanel width="298" height="154" />
+	</s:VGroup>
+
+</config:BaseConfigPanel>

@@ -2,7 +2,10 @@ package com.pomodairo.twitter
 { 
         import com.pomodairo.components.config.TwitterConfigPanel;
         import com.pomodairo.db.Storage;
-        import com.swfjunkie.tweetr.Tweetr;
+import com.pomodairo.settings.ConfigItemName;
+import com.pomodairo.settings.ConfigItemName;
+import com.pomodairo.settings.ConfigManager;
+import com.swfjunkie.tweetr.Tweetr;
         import com.swfjunkie.tweetr.events.TweetEvent;
         import com.swfjunkie.tweetr.oauth.OAuth;
         import com.swfjunkie.tweetr.oauth.events.OAuthEvent;
@@ -26,8 +29,7 @@ package com.pomodairo.twitter
         public class TwitterClient 
         { 
 			
-			public static var OAUTH_TOKEN:String = "twitter.oauth.token";
-			public static var OAUTH_TOKEN_SECRET:String = "twitter.oauth.tokenSecret";
+
 			
 			private var tweetr:Tweetr;
 			private var oauth:OAuth;
@@ -56,12 +58,13 @@ package com.pomodairo.twitter
 				oauth.addEventListener(OAuthEvent.ERROR, handleOAuthEvent);
 				
 				// Check if we have OAuth shared keys stored that we can use
-				var props:Dictionary = Storage.instance.config;
+				var cfg:ConfigManager = ConfigManager.instance;
 				
-				if (props[OAUTH_TOKEN] != null && props[OAUTH_TOKEN_SECRET]) {
+				if (cfg.hasConfig(ConfigItemName.OAUTH_TOKEN)
+					&& cfg.hasConfig(ConfigItemName.OAUTH_TOKEN_SECRET)) {
 					// Use stored credentials
-					oauth.oauthToken = props[OAUTH_TOKEN];
-					oauth.oauthTokenSecret = props[OAUTH_TOKEN_SECRET];
+					oauth.oauthToken = cfg.getConfig(ConfigItemName.OAUTH_TOKEN);
+					oauth.oauthTokenSecret = cfg.getConfig(ConfigItemName.OAUTH_TOKEN_SECRET);
 					tweetr.oAuth = oauth;
 					
 				} else {
@@ -75,8 +78,8 @@ package com.pomodairo.twitter
 			}
 			
 			public function clearSharedCredentials():void {
-				Storage.instance.removeConfiguration(OAUTH_TOKEN);
-				Storage.instance.removeConfiguration(OAUTH_TOKEN_SECRET);
+				ConfigManager.instance.clearConfig(ConfigItemName.OAUTH_TOKEN);
+				Storage.instance.removeConfiguration(ConfigItemName.OAUTH_TOKEN_SECRET);
 			}
 			
 			//--------------------------------------------------------------------------
@@ -92,8 +95,8 @@ package com.pomodairo.twitter
 					htmlLoader.stage.nativeWindow.close();
 					tweetr.oAuth = oauth;
 					// Save shared keys in the database
-					Storage.instance.setConfigurationValue(OAUTH_TOKEN, ""+oauth.oauthToken);
-					Storage.instance.setConfigurationValue(OAUTH_TOKEN_SECRET, ""+oauth.oauthTokenSecret);
+					ConfigManager.instance.setConfig(ConfigItemName.OAUTH_TOKEN, oauth.oauthToken);
+					ConfigManager.instance.setConfig(ConfigItemName.OAUTH_TOKEN_SECRET, oauth.oauthTokenSecret);
 				}
 				else
 				{

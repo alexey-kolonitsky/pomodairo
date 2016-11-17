@@ -5,7 +5,8 @@ package com.pomodairo.twitter
 	import com.pomodairo.components.config.TwitterConfigPanel;
 	import com.pomodairo.events.ConfigurationUpdatedEvent;
 	import com.pomodairo.events.PomodoroEvent;
-	import com.swfjunkie.tweetr.Tweetr;
+import com.pomodairo.settings.ConfigItemName;
+import com.swfjunkie.tweetr.Tweetr;
 	import com.swfjunkie.tweetr.oauth.OAuth;
 	import com.swfjunkie.tweetr.oauth.events.OAuthEvent;
 	
@@ -50,18 +51,18 @@ package com.pomodairo.twitter
 		
 		public function TwitterManager()
 		{
-			PomodoroEventDispatcher.getInstance().addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.START_POMODORO, onStartPomodoro);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.TIME_OUT, onDonePomodoro);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.START_BREAK, onStartBreak);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.STOP_POMODORO, onStopPomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, onStartPomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, onDonePomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_BREAK, onStartBreak);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.STOP_POMODORO, onStopPomodoro);
             reloadTimer.addEventListener(TimerEvent.TIMER, reloadTweets);
             
          	twitter = new TwitterClient();
 		}
 		
 		private function onConfigurationChange(e:ConfigurationUpdatedEvent):void {
-			if (e.configElement.name == TwitterConfigPanel.ENABLED) 
+			if (e.configElement.name == ConfigItemName.ENABLED)
 			{
 				twitterEnabled = e.configElement.value == "true";
 				
@@ -77,12 +78,12 @@ package com.pomodairo.twitter
 				}
 			}
 			
-			if (e.configElement.name == TwitterConfigPanel.POST_POMODOROS) 
+			if (e.configElement.name == ConfigItemName.POST_POMODOROS)
 			{
 				postUpdate = e.configElement.value == "true";
 			}
 			
-			if (e.configElement.name == TwitterConfigPanel.GROUP_USERNAME) 
+			if (e.configElement.name == ConfigItemName.GROUP_USERNAME)
 			{
 				groupUsername = e.configElement.value;
 				checkStart();

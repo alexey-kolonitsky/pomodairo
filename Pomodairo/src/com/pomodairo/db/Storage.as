@@ -6,7 +6,9 @@ package com.pomodairo.db
 	import com.pomodairo.RegexUtils;
 	import com.pomodairo.components.config.AdvancedConfigPanel;
 	import com.pomodairo.events.PomodoroEvent;
-	
+	import com.pomodairo.settings.ConfigItemName;
+	import com.pomodairo.settings.ConfigManager;
+
 	import flash.data.SQLConnection;
 	import flash.data.SQLMode;
 	import flash.data.SQLResult;
@@ -45,26 +47,21 @@ package com.pomodairo.db
 		public var datasetStatistics5:Array;
 		[Bindable]
 		public var datasetStatistics6:Array;
-		
-		[Bindable]
-		public var config:Dictionary = new Dictionary();
 
-		/** Database file location path */
-		private var databaseFolderLocation:String;
 			
 		private var sqlConnectionFile:File;
 		private var sqlConnection:SQLConnection;
 		private var dbCfgStatement:SQLStatement;
+
 		
 		public function Storage() {
-			databaseFolderLocation = AdvancedConfigPanel.getDatabaseLocation();
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.START_POMODORO, startPomodoro);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.TIME_OUT, completeCurrentPomodoro);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.NEW_INTERRUPTION, addInterruption);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.NEW_UNPLANNED, addUnplanned);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.NEW_POMODORO, addNewPomodoro);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.DONE, closePomodoro);
-			PomodoroEventDispatcher.getInstance().addEventListener(PomodoroEvent.EDITED, editPomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, startPomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, completeCurrentPomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.NEW_INTERRUPTION, addInterruption);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.NEW_UNPLANNED, addUnplanned);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.NEW_POMODORO, addNewPomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.DONE, closePomodoro);
+			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.EDITED, editPomodoro);
 		}
 		
 		private function startPomodoro(e:PomodoroEvent):void {
@@ -98,6 +95,9 @@ package com.pomodairo.db
 		}
 		
 		public function initAndOpenDatabase():void {
+
+			/** Database file location path */
+			var databaseFolderLocation:String = ConfigManager.instance.getConfig(ConfigItemName.DATABASE_LOCATION);
 
 			if (databaseFolderLocation == null || databaseFolderLocation == "") {
 				sqlConnectionFile = File.userDirectory.resolvePath(DATABASE_FILE);
@@ -576,15 +576,10 @@ package com.pomodairo.db
 			dbCfgStatement.execute();
 		}
 		
-		private function getSelectConfigResult(event:SQLEvent):void
-		{
+		private function getSelectConfigResult(event:SQLEvent):void {
 			var result:SQLResult = dbCfgStatement.getResult();
-		    if (result != null)
-		    {
-		    	for each (var cfg:ConfigProperty in result.data) 
-		    	{
-		    		config[cfg.name] = cfg.value;	
-		    	}
+		    if (result != null) {
+				ConfigManager.instance.setUserValueFrom(result.data);
 		    }
 		}
 		
@@ -606,16 +601,17 @@ package com.pomodairo.db
 		
 		public function setConfiguration(prop:ConfigProperty):void
 		{
-			var sqlMarkDone:String = "REPLACE INTO Config (name,value) VALUES ('"+prop.name+"','"+prop.value+"')";
-			dbCfgStatement.text = sqlMarkDone;
+			dbCfgStatement.text = "REPLACE INTO Config (name,value) VALUES (':name',':value')";
+			dbCfgStatement.parameters[":name"] = prop.name;
+			dbCfgStatement.parameters[":value"] = prop.value;
 			dbCfgStatement.addEventListener(SQLEvent.RESULT, onConfigInsertResult);
 			dbCfgStatement.execute();
 		}
 		
 		public function removeConfiguration(key:String):void
 		{
-			var sqlRemoveConfig:String = "DELETE FROM Config WHERE name='"+key+"';";
-			dbCfgStatement.text = sqlRemoveConfig;
+			dbCfgStatement.text = "DELETE FROM Config WHERE name=':name'";
+			dbCfgStatement.parameters[":name"] = key;
 			dbCfgStatement.execute();
 		}
 		   
@@ -631,8 +627,7 @@ package com.pomodairo.db
 			var statement:SQLStatement = new SQLStatement();
 			statement.itemClass = ConfigProperty;
 			statement.sqlConnection = sqlConnection;
-			var migrateSQL:String = "ALTER TABLE pomodoro ADD estimated INTEGER";
-			statement.text = migrateSQL;
+			statement.text = "ALTER TABLE pomodoro ADD estimated INTEGER";
 			try {
 				statement.execute();
 			} catch (err:SQLError) {

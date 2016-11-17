@@ -8,15 +8,18 @@ package com.pomodairo
 	 */
 	public class PomodoroEventDispatcher extends EventDispatcher
 	{
-		private static var instance:PomodoroEventDispatcher = new PomodoroEventDispatcher();
+		private static var _instance:PomodoroEventDispatcher;
 		
-		public function PomodoroEventDispatcher(target:IEventDispatcher=null)
+		public function PomodoroEventDispatcher()
 		{
-			super(target);
+			super(null);
 		}
 		
-		public static function getInstance():PomodoroEventDispatcher {
-			return instance;
+		public static function get instance():PomodoroEventDispatcher {
+			if (_instance == null) {
+				_instance = new PomodoroEventDispatcher();
+			}
+			return _instance;
 		}
 		
 	}
