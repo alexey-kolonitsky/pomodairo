@@ -141,10 +141,19 @@
 			}
 
 			Storage.instance.remove(pomodoro);
-
 			if (TaskManager.instance.activeTask && TaskManager.instance.activeTask.id == pomodoro.id)
 				TaskManager.instance.findNextTask();
+			exit();
 		}
+
+        private function copyToClipboard():void {
+            if (pomodoro == null) {
+                trace("WARNING: TaskListCanvas.onCopyPomodoroClicked: Pomodoro is not selected");
+                return;
+            }
+
+            System.setClipboard(pomodoro.name);
+        }
 
         ]]>
     </mx:Script>
@@ -155,6 +164,9 @@
 	<s:VGroup width="300">
 		<mx:Label id="instruction" width="100%" text="{currentText}" color="#8A8A8A" paddingLeft="8" paddingRight="8" paddingTop="8"/>
 		<s:HGroup width="100%" paddingLeft="8" paddingRight="8">
+            <mx:Button
+                click="copyToClipboard()"
+                icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-512-copy.png')"/>
 			<mx:TextInput id="input"
 				width="100%"
 				focusIn="descriptionFocus(event);"
@@ -182,7 +194,7 @@
 			<s:layout>
 				<s:HorizontalLayout verticalAlign="middle" paddingLeft="8" paddingRight="8"/>
 			</s:layout>
-			<s:Button label="Delete"/>
+			<s:Button label="Delete" click="{onRemovePomodoroClicked()}" />
 			<s:Spacer width="100%" />
 			<s:Button label="Save" click="{fireSubmit(event)}"/>
 			<s:Button label="Close" click="{exit()}"/>

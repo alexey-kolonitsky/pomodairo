@@ -41,7 +41,7 @@
 					break;
 
 				case Keyboard.C:
-					onCopyPomodoroClicked();
+//					onCopyPomodoroClicked();
 					break;
 
 				case Keyboard.INSERT:
@@ -54,19 +54,9 @@
 			}
 		}
 
-		private function onCopyPomodoroClicked():void {
-			var pom:Pomodoro = list.selectedItem as Pomodoro;
-			if (pom == null) {
-				trace("WARNING: TaskListCanvas.onCopyPomodoroClicked: Pomodoro is not selected");
-				return;
-			}
-
-			System.setClipboard(pom.name);
-		}
 
 		private function init():void {
 			db.initAndOpenDatabase();
-			populateTaskMenu();
 			list.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			db.addEventListener(Storage.DATASET_CHANGED, dataset_changedHandler);
 			list.dataProvider = new ArrayCollection(db.dataset);
@@ -74,21 +64,6 @@
 
 		private function dataset_changedHandler(event:Event):void {
 			list.dataProvider = new ArrayCollection(db.dataset);
-		}
-
-		private function populateTaskMenu():void {
-
-			// Separator by last task based menu item. Menu items below are for 'all'
-			taskMenu.addItem(new NativeMenuItem("", true));
-
-			var clean:NativeMenuItem = new NativeMenuItem("Clean all done");
-			clean.addEventListener(Event.SELECT, onClosePomodoroClicked);
-			taskMenu.addItem(clean);
-
-			var copy:NativeMenuItem = new NativeMenuItem("Copy to clipboard");
-			copy.addEventListener(Event.SELECT, copyTableToClipboard);
-			taskMenu.addItem(copy);
-
 		}
 
 		private function onUsersDataGridChanged(event:Event):void {
@@ -148,13 +123,6 @@
 			var data:Array = db.dataset;
 			var tmpString:String = new TableUtils().getPomodorosTableAsCsv(data);
 			System.setClipboard(tmpString);
-		}
-
-
-		private function displayMenu(evt:Event):void {
-			list.selectedIndex = lastRollOverIndex;
-			var loc:Point = contentToGlobal(new Point(contentMouseX, contentMouseY));
-			taskMenu.display(this.stage, loc.x, loc.y);
 		}
 
 		private function showName():void {
@@ -246,19 +214,19 @@
 			unplannedButton.enabled = true;
 			interruptionButton.enabled = true;
 		}
+
+        [Bindable]
+        public var lastRollOverIndex:int;
 		]]>
 	</mx:Script>
-	
-	<mx:Number id="lastRollOverIndex" />
 
 	<s:List id="list"
 		top="0" right="0" bottom="44" left="0"
 		contentBackgroundAlpha="0"
-		rightClick="displayMenu(event);"
 		doubleClickEnabled="true"
 		doubleClick="{showName()}"
         itemRenderer="com.pomodairo.components.PomodoroListRenderer"
-		itemRollOver="lastRollOverIndex = event.itemIndex"
+		itemRollOver="{lastRollOverIndex = event.itemIndex}"
 		click="onStartPomodoroClicked(event);"
 		dragMoveEnabled="true"
 		dragComplete="onDragComplete(event)"
