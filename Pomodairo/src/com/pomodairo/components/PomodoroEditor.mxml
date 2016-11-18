@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	creationComplete="init()"
+	borderColor="#000000"
+	borderStyle="solid"
+	backgroundColor="#181818"
+	showEffect="fadein"
+	hideEffect="fadeout">
+	
+	<mx:Script>
+        <![CDATA[
+		import com.pomodairo.TaskManager;
+
+		import mx.controls.Alert;
+
+        import com.pomodairo.db.Storage;
+        import com.pomodairo.Pomodoro;
+        import com.pomodairo.events.PomodoroEvent;
+        import com.pomodairo.PomodoroEventDispatcher;
+
+        public var type:String = Pomodoro.TYPE_POMODORO;
+        public var selectAfterCreate:Boolean = false;
+
+        public var descriptionInstructions:String = "Enter description (press escape to cancel)";
+        public var estimateInstructions:String = "Enter estimate (press escape to cancel)";
+
+		[Bindalbe]
+		public var pomodoro:Pomodoro;
+
+        [Bindable]
+        public var currentText:String = descriptionInstructions;
+
+        private function init():void {
+            if (type == Pomodoro.TYPE_INTERRUPTION) {
+                input.width = 236;
+                estimatedInput.visible = false;
+            }
+            else {
+                input.width = 192;
+                estimatedInput.visible = true;
+            }
+
+            if (type == Pomodoro.TYPE_EDIT) {
+                input.text = pomodoro.name;
+                estimatedInput.text = "" + pomodoro.estimated as String;
+            }
+
+            estimatedInput.addEventListener(KeyboardEvent.KEY_DOWN, checkSubmit);
+            input.addEventListener(KeyboardEvent.KEY_DOWN, checkSubmit);
+            input.setFocus();
+        }
+
+        function checkSubmit(event:KeyboardEvent):void {
+            if (event.charCode == 13)
+                fireSubmit(null);
+
+            if (event.charCode == 27)
+                exit();
+        }
+
+        private function exit():void {
+            this.parent.removeChild(this);
+        }
+
+        private function fireSubmit(event:Event):void {
+            if (input.text == null || input.text == "") {
+                exit();
+                return;
+            }
+
+            var item:Pomodoro = new Pomodoro();
+            item.name = input.text;
+
+            if (pomodoro != null) {
+                item.parent = pomodoro.id;
+            } else {
+                item.parent = 0;
+            }
+            item.type = type;
+            item.estimated = int(estimatedInput.text);
+
+            var eventType:String;
+            switch (type) {
+                case Pomodoro.TYPE_POMODORO:
+                    eventType = PomodoroEvent.NEW_POMODORO;
+                    break;
+
+                case Pomodoro.TYPE_UNPLANNED:
+                    eventType = PomodoroEvent.NEW_UNPLANNED;
+                    break;
+
+                case Pomodoro.TYPE_INTERRUPTION:
+                    eventType = PomodoroEvent.NEW_INTERRUPTION;
+                    break;
+
+                case Pomodoro.TYPE_EDIT:
+                    eventType = PomodoroEvent.EDITED;
+                    break;
+            }
+
+            var evt:PomodoroEvent = new PomodoroEvent(eventType);
+            evt.pomodoro = pomodoro;
+            evt.other = item;
+
+            PomodoroEventDispatcher.instance.dispatchEvent(evt);
+            exit();
+
+            if (selectAfterCreate) {
+                // Ugh.. Don't get me started. Fugly warning ahead!
+                // 1. The pomodoro.id is not set since the insert must be run
+                // and the item read from the db again.
+                // 2. The db does not have a easy synchronous get.
+                Storage.instance.getAllPomodoros();
+                var dataset:Array = Storage.instance.dataset;
+                for each (var pom:Pomodoro in dataset) {
+                    if (pom.name == item.name) {
+                        // Match (not guaranteed to be unique)
+                        var select:PomodoroEvent = new PomodoroEvent(PomodoroEvent.SELECTED);
+                        select.pomodoro = pom;
+                        PomodoroEventDispatcher.instance.dispatchEvent(select);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private function descriptionFocus(event:Event = null):void {
+            currentText = descriptionInstructions;
+        }
+
+        private function estimateFocus(event:Event = null):void {
+            currentText = estimateInstructions;
+        }
+
+		private function onRemovePomodoroClicked(event:Event = null):void {
+			if (pomodoro == null) {
+				trace("WARNING: TaskListCanvas.onEditPomodoroClicked: Pomodoro is not selected");
+				return;
+			}
+
+			Storage.instance.remove(pomodoro);
+
+			if (TaskManager.instance.activeTask && TaskManager.instance.activeTask.id == pomodoro.id)
+				TaskManager.instance.findNextTask();
+		}
+
+        ]]>
+    </mx:Script>
+    
+    <mx:Fade id="fadein" duration="1000" alphaFrom="0" alphaTo="1.0"/>
+	<mx:Fade id="fadeout" duration="1000"  alphaFrom="1.0" alphaTo="0.0"/>
+
+	<s:VGroup width="256" paddingTop="8" paddingRight="8" paddingBottom="8" paddingLeft="8">
+		<mx:Label id="instruction" width="100%" text="{currentText}" color="#8A8A8A"/>
+		<s:HGroup width="100%">
+			<mx:TextInput id="input"
+				width="100%"
+				focusIn="descriptionFocus(event);"
+				color="#FFFFFF"
+				fontSize="14"
+				height="28"
+				showEffect="fadein"
+				hideEffect="fadeout"/>
+			<mx:TextInput id="estimatedInput"
+				width="36"
+				focusIn="estimateFocus(event);"
+				color="#FFFFFF"
+				fontSize="14"
+				height="28"
+				showEffect="fadein"
+				hideEffect="fadeout"
+				maxChars="1"
+				restrict="0-7"/>
+		</s:HGroup>
+		<s:Label text="Name: {pomodoro.name}" color="#ffffff"/>
+		<s:Label text="Estimated: {pomodoro.estimated}" color="#ffffff"/>
+		<s:Label text="Worked: {pomodoro.pomodoros}" color="#ffffff"/>
+		<s:Label text="Interruptions: {pomodoro.interruptions}" color="#ffffff"/>
+		<s:Button label="Delete"/>
+	</s:VGroup>
+</mx:Canvas>

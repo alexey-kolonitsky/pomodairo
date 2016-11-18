@@ -2,12 +2,15 @@
 <s:ItemRenderer
     xmlns:fx="http://ns.adobe.com/mxml/2009"
     xmlns:s="library://ns.adobe.com/flex/spark"
-    height="30">
+    height="30" width="100%">
 
 
     <fx:Script>
         <![CDATA[
         import com.pomodairo.Pomodoro;
+        import com.pomodairo.PomodoroEventDispatcher;
+        import com.pomodairo.TaskManager;
+        import com.pomodairo.events.PomodoroEvent;
 
         private var _pomodoro:Pomodoro = null;
         private var _strikethrough:Boolean = false;
@@ -21,12 +24,15 @@
                 actualLabel.text = "";
                 unplanedLabel.text = "";
                 interaptionsLabel.text = "";
+                doneButton.enabled = false;
             } else {
                 nameLabel.text = _pomodoro.name;
                 estimationLabel.text = _pomodoro.estimated.toString();
                 actualLabel.text = _pomodoro.pomodoros.toString();
                 unplanedLabel.text = _pomodoro.unplanned.toString();
                 interaptionsLabel.text = _pomodoro.interruptions.toString();
+                doneButton.enabled = true;
+                doneButton.selected = _pomodoro.done;
             }
         }
 
@@ -59,8 +65,8 @@
             this.graphics.clear();
             if (this._strikethrough) {
                 this.graphics.lineStyle(1, this.getStyle("color"));
-                this.graphics.moveTo(0, unscaledHeight / 2);
-                this.graphics.lineTo(unscaledWidth, unscaledHeight / 2);
+                this.graphics.moveTo(28, unscaledHeight / 2);
+                this.graphics.lineTo(unscaledWidth - 28, unscaledHeight / 2);
             }
             else {
                 if (data.estimated == 0) {
@@ -77,22 +83,58 @@
                 }
             }
         }
+
+        private function onDonePomodoroClicked(event:Event = null):void {
+
+            if (_pomodoro.done) {
+                _pomodoro.closed = null;
+            }
+            else {
+                _pomodoro.closed = new Date();
+            }
+            _pomodoro.done = !_pomodoro.done;
+            // Following is done by event listener in db object.
+            // db.markDone(pom);
+            // Dispatch event.
+            var evt:PomodoroEvent = new PomodoroEvent(PomodoroEvent.DONE);
+            evt.pomodoro = _pomodoro;
+            PomodoroEventDispatcher.instance.dispatchEvent(evt);
+
+            TaskManager.instance.findNextTask();
+            invalidateDisplayList();
+        }
         ]]>
     </fx:Script>
 
     <s:states>
-        <s:State name="normal"/>
-        <s:State name="hovered"/>
+        <s:State name="normal" />
+        <s:State name="hovered" />
+        <s:State name="selected" />
     </s:states>
 
-    <s:layout>
-        <s:HorizontalLayout verticalAlign="middle" />
-    </s:layout>
+    <s:Rect left="0" top="0" right="0" bottom="0" includeInLayout="false"
+        visible.hovered="true"
+        visible="false">
+        <s:fill>
+            <s:SolidColor color="#d4d4d4" />
+        </s:fill>
+    </s:Rect>
 
-    <s:Label id="nameLabel" width="100%" />
-    <s:Label id="estimationLabel" width="28" />
-    <s:Label id="actualLabel" width="28" />
-    <s:Label id="unplanedLabel" width="28" />
-    <s:Label id="interaptionsLabel" width="28" />
+    <s:Rect left="0" top="0" right="0" bottom="0" includeInLayout="false"
+        visible.selected="true"
+        visible="false">
+        <s:fill>
+            <s:SolidColor color="0xadadad" />
+        </s:fill>
+    </s:Rect>
+
+    <s:HGroup left="4" top="0" right="4" bottom="0" verticalAlign="middle" gap="2">
+        <s:CheckBox id="doneButton" change="onDonePomodoroClicked()"/>
+        <s:Label id="nameLabel" width="100%" lineBreak="explicit"/>
+        <s:Label id="estimationLabel" width="28" />
+        <s:Label id="actualLabel" width="28" />
+        <s:Label id="unplanedLabel" width="28" />
+        <s:Label id="interaptionsLabel" width="28" />
+    </s:HGroup>
 
 </s:ItemRenderer>

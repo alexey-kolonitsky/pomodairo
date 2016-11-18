@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
-           xmlns:s="spark.components.*" width="320" height="300"
-           initialize="init()" horizontalScrollPolicy="off"
-           verticalScrollPolicy="off"
-           backgroundAlpha="0">
+<mx:Canvas
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	width="320" height="300"
+    initialize="init()" horizontalScrollPolicy="off"
+    verticalScrollPolicy="off"
+    backgroundAlpha="0">
 	
 	<mx:Script>
 		<![CDATA[
@@ -35,7 +37,7 @@
 			switch (event.keyCode) {
 				case Keyboard.F2:
 				case Keyboard.E:
-					onEditPomodoroClicked();
+					showName();
 					break;
 
 				case Keyboard.C:
@@ -47,13 +49,13 @@
 					break;
 
 				case Keyboard.DELETE:
-					onRemovePomodoroClicked();
+//					onRemovePomodoroClicked();
 					break;
 			}
 		}
 
 		private function onCopyPomodoroClicked():void {
-			var pom:Pomodoro = pomodorosDataGrid.selectedItem as Pomodoro;
+			var pom:Pomodoro = list.selectedItem as Pomodoro;
 			if (pom == null) {
 				trace("WARNING: TaskListCanvas.onCopyPomodoroClicked: Pomodoro is not selected");
 				return;
@@ -65,31 +67,16 @@
 		private function init():void {
 			db.initAndOpenDatabase();
 			populateTaskMenu();
-			pomodorosDataGrid.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
+			list.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
 			db.addEventListener(Storage.DATASET_CHANGED, dataset_changedHandler);
-			pomodorosDataGrid.dataProvider = new ArrayCollection(db.dataset);
+			list.dataProvider = new ArrayCollection(db.dataset);
 		}
 
 		private function dataset_changedHandler(event:Event):void {
-			pomodorosDataGrid.dataProvider = new ArrayCollection(db.dataset);
+			list.dataProvider = new ArrayCollection(db.dataset);
 		}
 
 		private function populateTaskMenu():void {
-			var menuitem:NativeMenuItem = new NativeMenuItem("Show...");
-			menuitem.addEventListener(Event.SELECT, showName);
-			taskMenu.addItem(menuitem);
-
-			var edit:NativeMenuItem = new NativeMenuItem("Edit...");
-			edit.addEventListener(Event.SELECT, onEditPomodoroClicked);
-			taskMenu.addItem(edit);
-
-			var done:NativeMenuItem = new NativeMenuItem("Mark/unmark done");
-			done.addEventListener(Event.SELECT, onDonePomodoroClicked);
-			taskMenu.addItem(done);
-
-			var remove:NativeMenuItem = new NativeMenuItem("Remove");
-			remove.addEventListener(Event.SELECT, onRemovePomodoroClicked);
-			taskMenu.addItem(remove);
 
 			// Separator by last task based menu item. Menu items below are for 'all'
 			taskMenu.addItem(new NativeMenuItem("", true));
@@ -112,25 +99,13 @@
 		}
 
 		private function updatePrios():void {
-			var i:int = pomodorosDataGrid.selectedIndex - 1;
-			for each (var pom:Pomodoro in pomodorosDataGrid.dataProvider) {
+			var i:int = list.selectedIndex - 1;
+			for each (var pom:Pomodoro in list.dataProvider) {
 				pom.ordinal = i--;
 				db.updateOrdinal(pom);
 			}
 		}
 
-		private function onRemovePomodoroClicked(event:Event = null):void {
-			var pom:Pomodoro = pomodorosDataGrid.selectedItem as Pomodoro;
-			if (pom == null) {
-				trace("WARNING: TaskListCanvas.onEditPomodoroClicked: Pomodoro is not selected");
-				return;
-			}
-
-			db.remove(pom);
-
-			if (taskManager.activeTask && taskManager.activeTask.id == pom.id)
-				findNextTask();
-		}
 
 		private function onAddPomodoroClicked(event:Event = null):void {
 			var input:PomoItemInput = new PomoItemInput();
@@ -140,22 +115,8 @@
 			PopUpManager.centerPopUp(input);
 		}
 
-		private function onEditPomodoroClicked(event:Event = null):void {
-			var pom:Pomodoro = pomodorosDataGrid.selectedItem as Pomodoro;
-			if (pom == null) {
-				trace("WARNING: TaskListCanvas.onEditPomodoroClicked: Pomodoro is not selected");
-				return;
-			}
-			var input:PomoItemInput = new PomoItemInput();
-			input.type = Pomodoro.TYPE_EDIT;
-			input.selectAfterCreate = true;
-			input.reference = pom;
-			PopUpManager.addPopUp(input, this, true);
-			PopUpManager.centerPopUp(input);
-		}
-
 		private function onStartPomodoroClicked(event:Event = null):void {
-			var pom:Pomodoro = pomodorosDataGrid.selectedItem as Pomodoro;
+			var pom:Pomodoro = list.selectedItem as Pomodoro;
 			if (pom) {
 				var evt:PomodoroEvent = new PomodoroEvent(PomodoroEvent.SELECTED);
 				evt.pomodoro = pom;
@@ -164,27 +125,6 @@
 			} else {
 				trace("TaskListCanvas onStartPomodoroClicked pomodoro not selected");
 			}
-		}
-
-		private function onDonePomodoroClicked(event:Event = null):void {
-			if (!pomodorosDataGrid.selectedItem) return;
-
-			var pom:Pomodoro = pomodorosDataGrid.selectedItem as Pomodoro;
-			if (pom.done) {
-				pom.closed = null;
-			}
-			else {
-				pom.closed = new Date();
-			}
-			pom.done = !pom.done;
-			// Following is done by event listener in db object.
-			// db.markDone(pom);
-			// Dispatch event.
-			var evt:PomodoroEvent = new PomodoroEvent(PomodoroEvent.DONE);
-			evt.pomodoro = pom;
-			PomodoroEventDispatcher.instance.dispatchEvent(evt);
-
-			findNextTask();
 		}
 
 		private function findNextTask():void {
@@ -212,14 +152,23 @@
 
 
 		private function displayMenu(evt:Event):void {
-			pomodorosDataGrid.selectedIndex = lastRollOverIndex;
+			list.selectedIndex = lastRollOverIndex;
 			var loc:Point = contentToGlobal(new Point(contentMouseX, contentMouseY));
 			taskMenu.display(this.stage, loc.x, loc.y);
 		}
 
-		private function showName(evt:Event):void {
-			var pom:Pomodoro = pomodorosDataGrid.selectedItem as Pomodoro;
-			Alert.show("Name: " + pom.name + "\nEstimated: " + pom.estimated + "\nWorked: " + pom.pomodoros + "\nInterruptions: " + pom.interruptions);
+		private function showName():void {
+			var pom:Pomodoro = list.selectedItem as Pomodoro;
+			if (pom == null) {
+				trace("WARNING: TaskListCanvas.onEditPomodoroClicked: Pomodoro is not selected");
+				return;
+			}
+			var input:PomodoroEditor = new PomodoroEditor();
+			input.type = Pomodoro.TYPE_EDIT;
+			input.selectAfterCreate = true;
+			input.pomodoro = pom;
+			PopUpManager.addPopUp(input, this, true);
+			PopUpManager.centerPopUp(input);
 		}
 
 		private var clickX:Number;
@@ -302,16 +251,16 @@
 	
 	<mx:Number id="lastRollOverIndex" />
 
-	<s:List id="pomodorosDataGrid"
+	<s:List id="list"
 		top="0" right="0" bottom="44" left="0"
+		contentBackgroundAlpha="0"
 		rightClick="displayMenu(event);"
+		doubleClickEnabled="true"
+		doubleClick="{showName()}"
         itemRenderer="com.pomodairo.components.PomodoroListRenderer"
 		itemRollOver="lastRollOverIndex = event.itemIndex"
 		click="onStartPomodoroClicked(event);"
-        contentBackgroundAlpha="0"
 		dragMoveEnabled="true"
-		dragEnabled="true"
-		dropEnabled="true"
 		dragComplete="onDragComplete(event)"
 		change="onUsersDataGridChanged(event)" width="100%">
 	</s:List>
@@ -323,8 +272,13 @@
 		rollOut="resizeLine_rollOutHandler(event)"/>
 
 	<s:HGroup bottom="0" left="0" right="0" height="44" verticalAlign="middle" horizontalAlign="center">
-		<mx:Button id="addPomoButton" label="Add New" click="onAddPomodoroClicked()" />
-		<mx:Button id="unplannedButton"  label="Unplanned" click="newUnplanned()" toolTip="Add unplanned" enabled="false"/>
-		<mx:Button id="interruptionButton"  label="Interruption" click="newInterruption()" toolTip="Add interruption" enabled="false"/>
+		<mx:Button id="addPomoButton" label="New" click="onAddPomodoroClicked()"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')" />
+		<mx:Button id="unplannedButton"  label="Unplanned" click="newUnplanned()" toolTip="Add unplanned" enabled="false"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')"/>
+		<mx:Button id="interruptionButton"  label="Interruption" click="newInterruption()" toolTip="Add interruption" enabled="false"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')"/>
+		<mx:Button id="clearButton" label="Clear" click="newInterruption()" toolTip="Add interruption" enabled="true"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-68-cleaning.png')"/>
 	</s:HGroup>
 </mx:Canvas>

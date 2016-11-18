@@ -28,6 +28,14 @@ import mx.collections.ArrayCollection;
 			db.initAndOpenDatabase();
 			openTasks = db.getOpenPomodoros();
 		}
+
+		public function findNextTask():void {
+			var result:Boolean = TaskManager.instance.nextTask();
+			if (result == false) {
+				var emptyListEvent:PomodoroEvent = new PomodoroEvent(PomodoroEvent.LIST_EMPTY);
+				PomodoroEventDispatcher.instance.dispatchEvent(emptyListEvent);
+			}
+		}
 		
 		public function nextTask():Boolean {
 			refresh();
