@@ -213,6 +213,7 @@
 			trace("Pomodoro selected: " + event.pomodoro.name);
 			unplannedButton.enabled = true;
 			interruptionButton.enabled = true;
+
 		}
 
         [Bindable]
@@ -241,12 +242,16 @@
 
 	<s:HGroup bottom="0" left="0" right="0" height="44" verticalAlign="middle" horizontalAlign="center">
 		<mx:Button id="addPomoButton" label="New" click="onAddPomodoroClicked()"
+				   height="32"
 				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')" />
 		<mx:Button id="unplannedButton"  label="Unplanned" click="newUnplanned()" toolTip="Add unplanned" enabled="false"
+				   height="32"
 				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')"/>
 		<mx:Button id="interruptionButton"  label="Interruption" click="newInterruption()" toolTip="Add interruption" enabled="false"
+				   height="32"
 				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')"/>
-		<mx:Button id="clearButton" label="Clear" click="newInterruption()" toolTip="Add interruption" enabled="true"
+		<mx:Button id="clearButton" label="Clear" click="onClosePomodoroClicked()" toolTip="Clear visibility" enabled="true"
+				   height="32"
 				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-68-cleaning.png')"/>
 	</s:HGroup>
 </mx:Canvas>

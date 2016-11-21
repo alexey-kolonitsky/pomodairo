@@ -60,7 +60,7 @@ import mx.collections.ArrayCollection;
 			trace("Next task is '" + activeTask.name + "'.");
 			return true;
 		}
-		
+
 		public function setActive(task:Pomodoro):void {
 			refresh();
 			

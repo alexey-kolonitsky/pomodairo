@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+<mx:Canvas
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:s="library://ns.adobe.com/flex/spark"
 	backgroundAlpha="0.0"
 	initialize="init()"
 	creationComplete="created()"
@@ -184,19 +186,19 @@
 
 			private function onConfigurationChange(e:ConfigurationUpdatedEvent):void {
 				if (e.configElement.name == ConfigItemName.POMODORO_LENGTH) {
-					pomodoroLengthInMinutes = new Number(e.configElement.value);
+					pomodoroLengthInMinutes = parseFloat(e.configElement.value);
 				}
 
 				if (e.configElement.name == ConfigItemName.SHORT_BREAK_LENGTH) {
-					shortBreakLengthInMinutes = new Number(e.configElement.value);
+					shortBreakLengthInMinutes = parseFloat(e.configElement.value);
 				}
 
 				if (e.configElement.name == ConfigItemName.LONG_BREAK_LENGTH) {
-					longBreakLengthInMinutes = new Number(e.configElement.value);
+					longBreakLengthInMinutes = parseFloat(e.configElement.value);
 				}
 
 				if (e.configElement.name == ConfigItemName.LONG_BREAK_INTERVAL) {
-					longBreakInterval = new Number(e.configElement.value);
+					longBreakInterval = parseFloat(e.configElement.value);
 				}
 
 				if (e.configElement.name == "urlToOpen") {
@@ -249,7 +251,7 @@
 				breakTimer.start();
 				setTimerStyle(BREAK);
 				showBreakButton();
-				pomodoroLabel.label = "On Break";
+				timeProgressBar.label = "On Break";
 				sendEvent(PomodoroEvent.START_BREAK, "");
 			}
 
@@ -323,53 +325,53 @@
 			}
 
 			private function showBreakButton():void {
-				startTimerButton.visible = false;
-				stopTimerButton.visible = false;
-				stopBreakButton.visible = true;
+				startTimerButton.includeInLayout = startTimerButton.visible = false;
+				stopTimerButton.includeInLayout = stopTimerButton.visible = false;
+				stopBreakButton.includeInLayout = stopBreakButton.visible = true;
 			}
 
 			private function showStartButton():void {
-				startTimerButton.visible = true;
-				stopTimerButton.visible = false;
-				stopBreakButton.visible = false;
-				newTaskButton.visible = false;
+				startTimerButton.includeInLayout = startTimerButton.visible = true;
+				stopTimerButton.includeInLayout = stopTimerButton.visible = false;
+				stopBreakButton.includeInLayout = stopBreakButton.visible = false;
+				newTaskButton.includeInLayout = newTaskButton.visible = false;
 
 				counter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
 				miniCounter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
 				var pomodoro:Pomodoro = taskManager.activeTask;
-				pomodoroLabel.label = pomodoro.shortDescription;
+				timeProgressBar.label = pomodoro.shortDescription;
 				appTitle = "pomodairo";
 				setTimerStyle(DEFAULT);
 			}
 
 			private function showStopButton():void {
-				startTimerButton.visible = false;
-				stopTimerButton.visible = true;
+				startTimerButton.includeInLayout  = startTimerButton.visible = false;
+				stopTimerButton.includeInLayout = stopTimerButton.visible = true;
 				hideCloseNextButton();
 			}
 
 			private function showNewTaskButton():void {
-				startTimerButton.visible = false;
-				stopTimerButton.visible = false;
-				stopBreakButton.visible = false;
-				newTaskButton.visible = true;
+				startTimerButton.includeInLayout = startTimerButton.visible = false;
+				stopTimerButton.includeInLayout = stopTimerButton.visible = false;
+				stopBreakButton.includeInLayout = stopBreakButton.visible = false;
+				newTaskButton.includeInLayout = newTaskButton.visible = true;
 				counter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
 				miniCounter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
 			}
 
 			private function showNextTaskButton():void {
-				closePomodoroButton.visible = false;
-				nextTaskButton.visible = true;
+				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
+				nextTaskButton.includeInLayout = nextTaskButton.visible = true;
 			}
 
 			private function showClosePomoButton():void {
-				closePomodoroButton.visible = true;
-				nextTaskButton.visible = false;
+				closePomodoroButton.includeInLayout = closePomodoroButton.visible = true;
+				nextTaskButton.includeInLayout = nextTaskButton.visible = false;
 			}
 
 			private function hideCloseNextButton():void {
-				closePomodoroButton.visible = false;
-				nextTaskButton.visible = false;
+				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
+				nextTaskButton.includeInLayout = nextTaskButton.visible = false;
 			}
 
 			/**
@@ -496,35 +498,59 @@
 	    	    <mx:State name="minimal">
 	    	    	    <mx:RemoveChild target="{counter}"/>
 	    	    	    <mx:RemoveChild target="{newTaskButton}"/>
-	    	    	    <mx:RemoveChild target="{pomodoroLabel}"/>
 						<mx:RemoveChild target="{startTimerButton}"/>
 						<mx:RemoveChild target="{stopTimerButton}"/>
 						<mx:RemoveChild target="{stopBreakButton}"/>
 						<mx:SetProperty target="{miniCounter}" name="visible" value="true"/>
-						<mx:AddChild position="lastChild">
-							<mx:ProgressBar id="timeProgressBar" x="4" y="2" width="220" height="22" label="{taskManager.activeTask.shortDescription}" 
-											labelPlacement="center" mode="manual"/>
-						</mx:AddChild>
 	    	    </mx:State>
 	    </mx:states>
-	
-	<!--
-	Glass effect wanted! =)
-	<mx:Canvas id="clockBG" backgroundColor="#000000" x="4" y="4" height="80" width="190"/>
-    -->
-	<mx:Button id="startTimerButton" 	right="8" top="8" height="50" width="90" visible="false" 	label="Start Timer" click="startTimer()" />
-	<mx:Button id="stopTimerButton" 	right="8" top="8" height="50" width="90" visible="false" 	label="Stop Timer" click="stopTimer();showNextTaskButton();" />
-	<mx:Button id="stopBreakButton" 	right="8" top="8" height="50" width="90" visible="false" 	label="Stop Break" click="stopBreakTimer();showClosePomoButton();"	/>
-	<mx:Button id="newTaskButton" 	    right="8" top="8" height="50" width="90" 					label="New Task" click="createPomodoro()" />
+
 	
 	<!-- Clock Counter(s) -->
 	<!-- Regular Counter -->
-	<mx:Label id="counter" x="6" y="-2" height="69" styleName="ClockText" text="{toTwoDigitString(pomodoroLengthInMinutes)}:00" color="#FFFF00" />
+	<mx:Label id="counter"
+			  height="64" top="-8" horizontalCenter="0"
+			  textAlign="center"
+			  styleName="ClockText"
+			  text="{toTwoDigitString(pomodoroLengthInMinutes)}:00" color="#FFFF00" />
 	<mx:GlowFilter id="glow" color="#FFFF00" alpha="1" blurX="8" blurY="8" strength="1"/>
-	<mx:LinkButton id="pomodoroLabel" y="78" label="{taskManager.activeTask.shortDescription}" width="90%" height="17" click="openBugtracker()" textAlign="left" x="10" toolTip="{taskManager.activeTask.longDescription}"/>
+
+	<s:HGroup top="64" right="0" left="0" bottom="0" gap="2">
+		<mx:ProgressBar id="timeProgressBar"
+						width="100%" height="32"
+						label="{taskManager.activeTask.shortDescription}"
+						labelPlacement="center"
+						mode="manual"/>
 	
-	<mx:Button id="closePomodoroButton" right="8" top="70" height="25" width="90" visible="false" label="Done" click="onClosePomoClicked()" />
-	<mx:Button id="nextTaskButton" 		right="8" top="70" height="25" width="90" visible="false" label="Next" click="onNextTaskClicked()" />
+		<mx:Button id="closePomodoroButton"
+				   height="25" visible="false" includeInLayout="false"
+				   label="Done"
+				   click="onClosePomoClicked()" />
+		<mx:Button id="nextTaskButton"  height="32"
+				   visible="false" includeInLayout="false"
+				   label="Next"
+				   click="onNextTaskClicked()"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-177-forward.png')"/>
+		<mx:Button id="startTimerButton" height="32"
+				   visible="false" includeInLayout="false"
+				   label="Start Timer"
+				   click="startTimer()"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-174-play.png')"/>
+		<mx:Button id="stopTimerButton" height="32"
+				   visible="false" includeInLayout="false"
+				   label="Stop Timer"
+				   click="stopTimer();showNextTaskButton();"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-176-stop.png')"/>
+		<mx:Button id="stopBreakButton" height="32"
+				   visible="false" includeInLayout="false"
+				   label="Stop Break"
+				   click="stopBreakTimer();showClosePomoButton();"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-176-stop.png')"/>
+		<mx:Button id="newTaskButton" height="32"
+				   label="New Task"
+				   click="createPomodoro()"
+				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-191-plus-sign.png')"/>
+	</s:HGroup>
 	
 	<!-- Mini View Objects (not visible by default) -->
 	<mx:Label id="miniCounter" x="240" y="-1" styleName="MiniClockText" text="{toTwoDigitString(pomodoroLengthInMinutes)}:00" color="#FFFF00" visible="false"/>

@@ -247,23 +247,34 @@
 		]]>
     </mx:Script>
 
-    <mx:Fade id="fadein" />
-    <mx:Fade id="fadeout" />
-
 	<s:VGroup left="0" top="0" height="{SHORT_HEIGHT}" right="0" mouseDown="{nativeWindow.startMove()}">
 
-		<s:HGroup width="100%" height="30">
-			<mx:Button id="statisticButton" icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-41-stats.png')" click="{showStatisticsPanel()}" />
-			<mx:Button id="settingsButton" icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-140-adjust-alt.png')" click="{showSettingsPanel()}" />
+		<!-- TopPanel -->
+		<s:HGroup width="100%" height="32" gap="2">
+			<mx:Button id="statisticButton"
+				width="32" height="32"
+		    	icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-41-stats.png')"
+				click="{showStatisticsPanel()}" />
+
+			<mx:Button id="settingsButton"
+			    width="32" height="32"
+		        icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-140-adjust-alt.png')"
+				click="{showSettingsPanel()}" />
+
 			<mx:Spacer width="100%" />
-			<mx:Button click="toggleTaskList()" icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-115-list.png')" toolTip="Open/close task list"/>
-			<mx:Spacer width="100%" />
-			<mx:Button right="56" top="0" height="22" width="54" id="toggleViewButton" label="view" click="toggleViewState()"/>
-			<mx:Button label="_" click="{minimize()}" color="#FFFFFF" />
-			<mx:Button label="x" click="{lblClose_clickHandler(event)}" color="#FFFFFF"/>
+
+			<mx:Button id="taskList"
+					   width="32" height="32"
+					   icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-115-list.png')"
+					   click="toggleTaskList()"
+					   toolTip="Open/close task list"/>
+
+			<mx:Button right="56" top="0" height="32" id="toggleViewButton" label="view" click="toggleViewState()"/>
+			<mx:Button label="_" width="32" height="32" click="{minimize()}" color="#FFFFFF" />
+			<mx:Button label="x" width="32" height="32" click="{lblClose_clickHandler(event)}" color="#FFFFFF"/>
 		</s:HGroup>
 
-		<ns1:timer id="timerCanvas" height="120" width="100%" pomodoroLengthInMinutes="25"/>
+		<ns1:timer id="timerCanvas" height="96" width="100%" pomodoroLengthInMinutes="25"/>
 
 	</s:VGroup>
 	
