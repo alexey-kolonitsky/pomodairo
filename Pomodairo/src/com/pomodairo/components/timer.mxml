@@ -10,6 +10,7 @@
 	    <mx:Script>
         <![CDATA[
 			import com.pomodairo.ConfigProperty;
+			import com.pomodairo.EmbedImages;
 			import com.pomodairo.Pomodoro;
 			import com.pomodairo.PomodoroEventDispatcher;
 			import com.pomodairo.RegexUtils;
@@ -361,17 +362,17 @@
 
 			private function showNextTaskButton():void {
 				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
-				nextTaskButton.includeInLayout = nextTaskButton.visible = true;
+				nextTaskButton.enabled = true;
 			}
 
 			private function showClosePomoButton():void {
 				closePomodoroButton.includeInLayout = closePomodoroButton.visible = true;
-				nextTaskButton.includeInLayout = nextTaskButton.visible = false;
+				nextTaskButton.enabled = false;
 			}
 
 			private function hideCloseNextButton():void {
 				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
-				nextTaskButton.includeInLayout = nextTaskButton.visible = false;
+				nextTaskButton.enabled = false;
 			}
 
 			/**
@@ -497,10 +498,6 @@
 	    <mx:states>
 	    	    <mx:State name="minimal">
 	    	    	    <mx:RemoveChild target="{counter}"/>
-	    	    	    <mx:RemoveChild target="{newTaskButton}"/>
-						<mx:RemoveChild target="{startTimerButton}"/>
-						<mx:RemoveChild target="{stopTimerButton}"/>
-						<mx:RemoveChild target="{stopBreakButton}"/>
 						<mx:SetProperty target="{miniCounter}" name="visible" value="true"/>
 	    	    </mx:State>
 	    </mx:states>
@@ -516,40 +513,36 @@
 	<mx:GlowFilter id="glow" color="#FFFF00" alpha="1" blurX="8" blurY="8" strength="1"/>
 
 	<s:HGroup top="64" right="0" left="0" bottom="0" gap="2">
+
+		<mx:CheckBox id="closePomodoroButton"
+				   visible="false" includeInLayout="false"
+				   click="onClosePomoClicked()" />
+
 		<mx:ProgressBar id="timeProgressBar"
 						width="100%" height="32"
 						label="{taskManager.activeTask.shortDescription}"
 						labelPlacement="center"
 						mode="manual"/>
-	
-		<mx:Button id="closePomodoroButton"
-				   height="25" visible="false" includeInLayout="false"
-				   label="Done"
-				   click="onClosePomoClicked()" />
+
+		<mx:Button id="startTimerButton" width="32" height="32"
+				   visible="false" includeInLayout="false"
+				   click="startTimer()"
+				   icon="{EmbedImages.ICON_PLAY_CLASS}"/>
+		<mx:Button id="stopTimerButton" width="32" height="32"
+				   visible="false" includeInLayout="false"
+				   click="stopTimer();showNextTaskButton();"
+				   icon="{EmbedImages.ICON_STOP_CLASS}"/>
+		<mx:Button id="stopBreakButton" width="32" height="32"
+				   visible="false" includeInLayout="false"
+				   click="stopBreakTimer();showClosePomoButton();"
+				   icon="{EmbedImages.ICON_STOP_CLASS}"/>
+		<mx:Button id="newTaskButton" width="32" height="32"
+				   click="createPomodoro()"
+				   icon="{EmbedImages.ICON_PLUS_CLASS}"/>
 		<mx:Button id="nextTaskButton"  height="32"
 				   visible="false" includeInLayout="false"
-				   label="Next"
 				   click="onNextTaskClicked()"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-177-forward.png')"/>
-		<mx:Button id="startTimerButton" height="32"
-				   visible="false" includeInLayout="false"
-				   label="Start Timer"
-				   click="startTimer()"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-174-play.png')"/>
-		<mx:Button id="stopTimerButton" height="32"
-				   visible="false" includeInLayout="false"
-				   label="Stop Timer"
-				   click="stopTimer();showNextTaskButton();"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-176-stop.png')"/>
-		<mx:Button id="stopBreakButton" height="32"
-				   visible="false" includeInLayout="false"
-				   label="Stop Break"
-				   click="stopBreakTimer();showClosePomoButton();"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-176-stop.png')"/>
-		<mx:Button id="newTaskButton" height="32"
-				   label="New Task"
-				   click="createPomodoro()"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-191-plus-sign.png')"/>
+				   icon="{EmbedImages.ICON_FORWARD_CLASS}"/>
 	</s:HGroup>
 	
 	<!-- Mini View Objects (not visible by default) -->

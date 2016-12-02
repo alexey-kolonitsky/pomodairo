@@ -2,12 +2,13 @@
 <config:BaseConfigPanel
 		xmlns:mx="http://www.adobe.com/2006/mxml"
 		xmlns:config="com.pomodairo.components.config.*"
-		xmlns:s="spark.components.*"
+		xmlns:s="library://ns.adobe.com/flex/spark"
 		creationComplete="init()">
 
 
 <mx:Script>
         <![CDATA[
+	import com.pomodairo.EmbedImages;
 	import com.pomodairo.PomodoroEventDispatcher;
 	import com.pomodairo.db.Storage;
 	import com.pomodairo.events.ConfigurationUpdatedEvent;
@@ -63,6 +64,9 @@
 	private function applyGuiValues():void {
 		volumeSlider.value = volume;
 		soundCheckbox.selected = soundEnabled;
+		fadeTickingCheckbox.visible = fadeTickingCheckbox.includeInLayout = soundEnabled;
+		alarmFileLocationInput.visible = alarmFileLocationInput.includeInLayout = soundEnabled;
+		clockFileLocationInput.visible = clockFileLocationInput.includeInLayout = soundEnabled;
 		fadeTickingCheckbox.selected = fadeTicking;
 		alarmFileLocationInput.text = alarmSound;
 		clockFileLocationInput.text = clockSound;
@@ -74,14 +78,12 @@
 		fadeTicking = fadeTickingCheckbox.selected;
 		alarmSound = alarmFileLocationInput.text;
 		clockSound = clockFileLocationInput.text;
-		new ArrayCollection()
 
 		Storage.instance.setConfigurationValue(ConfigItemName.SOUND_VOLUME, "" + volume);
 		Storage.instance.setConfigurationValue(ConfigItemName.SOUND_ENABLED, "" + soundEnabled);
 		Storage.instance.setConfigurationValue(ConfigItemName.FADE_TICKING_SOUND, "" + fadeTicking);
 		Storage.instance.setConfigurationValue(ConfigItemName.ALARM_SOUND_FILE, "" + alarmSound);
 		Storage.instance.setConfigurationValue(ConfigItemName.CLOCK_SOUND_FILE, "" + clockSound);
-		exit();
 
 		notifyConfiguration();
 	}
@@ -117,8 +119,12 @@
 	]]>
     </mx:Script>
 
-	<s:VGroup>
-		<mx:CheckBox id="soundCheckbox" label="Sound enabled" />
+	<s:VGroup width="100%">
+		<s:HGroup width="100%">
+			<s:Label text="SOUND" backgroundColor="#000000" color="#ffffff" height="32" width="100%" />
+			<mx:CheckBox id="soundCheckbox" />
+		</s:HGroup>
+
 		<mx:CheckBox id="fadeTickingCheckbox" label="Fade ticking"/>
 
 		<s:HGroup width="100%">
@@ -128,13 +134,10 @@
 
 		<mx:Label color="#A9A9A9" text="Alarm Sound:" width="100%"/>
 		<s:HGroup width="100%">
-			<mx:TextInput id="alarmFileLocationInput" width="100%">
+			<mx:TextInput id="alarmFileLocationInput" width="100%" height="32">
 				<mx:toolTip>Custom sound file for the alarm. Leave empty for default.</mx:toolTip>
 			</mx:TextInput>
-
-			<mx:Button
-				icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png')"
-				click="selectAlarmFile()" />
+			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_FOLDER_OPEN_CLASS}" click="selectAlarmFile()" />
 		</s:HGroup>
 
 
@@ -143,9 +146,7 @@
 			<mx:TextInput id="clockFileLocationInput" width="100%">
 				<mx:toolTip>Custom sound file for the clock sound. Leave empty for default.</mx:toolTip>
 			</mx:TextInput>
-			<mx:Button
-				icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png')"
-				click="selectClockFile()"/>
+			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_FOLDER_OPEN_CLASS}" click="selectClockFile()"/>
 		</s:HGroup>
 	</s:VGroup>
 	

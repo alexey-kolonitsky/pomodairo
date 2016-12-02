@@ -22,6 +22,8 @@
 		import air.update.ApplicationUpdaterUI;
 		import air.update.events.UpdateEvent;
 
+		import com.pomodairo.EmbedImages;
+
 		import com.pomodairo.Pomodoro;
 		import com.pomodairo.PomodoroEventDispatcher;
 		import com.pomodairo.TaskManager;
@@ -253,21 +255,21 @@
 		<s:HGroup width="100%" height="32" gap="2">
 			<mx:Button id="statisticButton"
 				width="32" height="32"
-		    	icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-41-stats.png')"
+		    	icon="{EmbedImages.ICON_STATS_CLASS}"
 				click="{showStatisticsPanel()}" />
 
 			<mx:Button id="settingsButton"
 			    width="32" height="32"
-		        icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-140-adjust-alt.png')"
+		        icon="{EmbedImages.ICON_ADJUST_CLASS}"
 				click="{showSettingsPanel()}" />
 
 			<mx:Spacer width="100%" />
 
 			<mx:Button id="taskList"
-					   width="32" height="32"
-					   icon="@Embed('../../Pomodairo/src/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-115-list.png')"
-					   click="toggleTaskList()"
-					   toolTip="Open/close task list"/>
+				width="32" height="32"
+				icon="{EmbedImages.ICON_LIST_CLASS}"
+				click="toggleTaskList()"
+				toolTip="Open/close task list"/>
 
 			<mx:Button right="56" top="0" height="32" id="toggleViewButton" label="view" click="toggleViewState()"/>
 			<mx:Button label="_" width="32" height="32" click="{minimize()}" color="#FFFFFF" />

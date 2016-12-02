@@ -9,6 +9,8 @@
 	
 	<mx:Script>
 		<![CDATA[
+		import com.pomodairo.EmbedImages;
+
 		import mx.collections.ArrayCollection;
 		import mx.core.WindowedApplication;
 		import mx.events.PropertyChangeEvent;
@@ -243,15 +245,15 @@
 	<s:HGroup bottom="0" left="0" right="0" height="44" verticalAlign="middle" horizontalAlign="center">
 		<mx:Button id="addPomoButton" label="New" click="onAddPomodoroClicked()"
 				   height="32"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')" />
+				   icon="{EmbedImages.ICON_PLUS_CLASS}" />
 		<mx:Button id="unplannedButton"  label="Unplanned" click="newUnplanned()" toolTip="Add unplanned" enabled="false"
 				   height="32"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')"/>
+				   icon="{EmbedImages.ICON_PLUS_CLASS}"/>
 		<mx:Button id="interruptionButton"  label="Interruption" click="newInterruption()" toolTip="Add interruption" enabled="false"
 				   height="32"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png')"/>
+				   icon="{EmbedImages.ICON_PLUS_CLASS}"/>
 		<mx:Button id="clearButton" label="Clear" click="onClosePomodoroClicked()" toolTip="Clear visibility" enabled="true"
 				   height="32"
-				   icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-68-cleaning.png')"/>
+				   icon="{EmbedImages.ICON_CLEANING_CLASS}"/>
 	</s:HGroup>
 </mx:Canvas>

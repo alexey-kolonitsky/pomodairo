@@ -2,7 +2,8 @@
 <config:BaseConfigPanel
 		xmlns:mx="http://www.adobe.com/2006/mxml"
 		xmlns:config="com.pomodairo.components.config.*"
-		xmlns:s="spark.components.*" xmlns:layouts="spark.layouts.*"
+
+		xmlns:s="library://ns.adobe.com/flex/spark"
 		horizontalScrollPolicy="off"
 		width="100%" >
 
@@ -28,11 +29,11 @@
 		]]></mx:Script>
 
 	<s:VGroup width="100%" >
+		<config:AboutPanel id="aboutPanel" width="100%"  />
 		<config:TimingConfigPanel id="timigConfigPanel" width="100%" />
 		<config:ConfigPanel id="configPanel" width="100%"  />
 		<config:SoundConfigPanel id="soundConfigPanel" width="100%"  />
 		<config:AdvancedConfigPanel id="advancedConfigPanel" width="100%" />
-		<config:AboutPanel id="aboutPanel" width="100%"  />
 		<s:HGroup width="100%" horizontalAlign="center">
 			<mx:Button label="Save" click="save()" width="63"/>
 			<mx:Button label="Cancel" click="exit()"/>

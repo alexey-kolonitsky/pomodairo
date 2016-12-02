@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <s:ItemRenderer
-    xmlns:fx="http://ns.adobe.com/mxml/2009"
-    xmlns:s="library://ns.adobe.com/flex/spark"
-    height="30" width="100%">
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        height="30" width="100%">
 
 
     <fx:Script>
@@ -129,7 +130,7 @@
     </s:Rect>
 
     <s:HGroup left="4" top="0" right="4" bottom="0" verticalAlign="middle" gap="2">
-        <s:CheckBox id="doneButton" change="onDonePomodoroClicked()"/>
+        <mx:CheckBox id="doneButton" change="onDonePomodoroClicked()"/>
         <s:Label id="nameLabel" width="100%" lineBreak="explicit"/>
         <s:Label id="estimationLabel" width="28" />
         <s:Label id="actualLabel" width="28" />

@@ -76,24 +76,25 @@
 	]]>
     </mx:Script>
 
-	<s:VGroup width="100%" top="0" left="0">
+	<s:VGroup width="100%" >
+		<s:Label text="TIMING" backgroundColor="#000000" color="#ffffff" height="32" width="100%" />
 		<s:HGroup width="100%">
-			<s:Label text="Pomodoro length" color="#A9A9A9"/>
-			<mx:HSlider id="pomodoroSlider" snapInterval="1" minimum="1" maximum="60"/>
+			<s:Label text="Pomodoro length" color="#A9A9A9" width="100"/>
+			<mx:HSlider id="pomodoroSlider" snapInterval="1" minimum="1" maximum="60" width="100%"/>
 		</s:HGroup>
 
 		<s:HGroup width="100%">
-			<s:Label text="Short break length" color="#A9A9A9"/>
-			<mx:HSlider id="shortBreakSlider" snapInterval="1" minimum="1" maximum="30"/>
+			<s:Label text="Short break length" color="#A9A9A9" width="100"/>
+			<mx:HSlider id="shortBreakSlider" snapInterval="1" minimum="1" maximum="30" width="100%"/>
 		</s:HGroup>
 
 		<s:HGroup width="100%">
-			<mx:Label text="Long break length" color="#A9A9A9"/>
-			<mx:HSlider id="longBreakSlider" snapInterval="1" minimum="1" maximum="60"/>
+			<mx:Label text="Long break length" color="#A9A9A9" width="100"/>
+			<mx:HSlider id="longBreakSlider" snapInterval="1" minimum="1" maximum="60" width="100%"/>
 		</s:HGroup>
 
 		<s:HGroup width="100%">
-			<mx:Label text="Long break interval"/>
+			<mx:Label text="Long break interval" width="100"/>
 			<mx:NumericStepper  value="4" minimum="1" maximum="30" enabled="true" id="longBreakSelect" toolTip="Number of pomodoros until a long break"/>
 		</s:HGroup>
 	</s:VGroup>

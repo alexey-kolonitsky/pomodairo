@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <panels:BaseConfigPanel
 		xmlns:panels="com.pomodairo.components.config.*"
-		xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:s="spark.components.*"
+		xmlns:mx="http://www.adobe.com/2006/mxml"
+		xmlns:s="library://ns.adobe.com/flex/spark"
 		creationComplete="init()">
 
 	<mx:Script>
         <![CDATA[
+		import com.pomodairo.EmbedImages;
 		import com.pomodairo.settings.ConfigItemName;
 		import com.pomodairo.settings.ConfigManager;
 
@@ -66,13 +68,13 @@
     </mx:Script>
 
 	<s:VGroup width="100%">
+		<s:Label text="ADVANCED" backgroundColor="#000000" color="#ffffff" height="32" width="100%" />
 		<s:Label color="#A9A9A9" text="Database location:"/>
 		<s:HGroup  width="100%">
 			<mx:TextInput id="dataFileLocationInput" width="100%">
 				<mx:toolTip>Folder that will hold the pomodairo database file. Leave empty for default. NOTE: If you change this you will lose your current data!</mx:toolTip>
 			</mx:TextInput>
-			<mx:Button click="selectFile()"
-				icon="@Embed('/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png')"/>
+			<mx:Button click="selectFile()" icon="{EmbedImages.ICON_FOLDER_OPEN_CLASS}"/>
 		</s:HGroup>
 	</s:VGroup>
 </panels:BaseConfigPanel>
