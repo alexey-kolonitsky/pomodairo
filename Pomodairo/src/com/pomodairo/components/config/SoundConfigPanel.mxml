@@ -9,6 +9,7 @@
 <mx:Script>
         <![CDATA[
 	import com.pomodairo.EmbedImages;
+	import com.pomodairo.EmbedStyle;
 	import com.pomodairo.PomodoroEventDispatcher;
 	import com.pomodairo.db.Storage;
 	import com.pomodairo.events.ConfigurationUpdatedEvent;
@@ -120,18 +121,23 @@
     </mx:Script>
 
 	<s:VGroup width="100%">
-		<s:HGroup width="100%">
-			<s:Label text="SOUND" backgroundColor="#000000" color="#ffffff" height="32" width="100%" />
+		<s:HGroup width="100%" verticalAlign="middle">
+			<s:Label text="SOUND"
+					 backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
+					 color="{EmbedStyle.SECTION_TEXT_COLOR}"
+					 height="32" width="100%"  verticalAlign="middle" />
 			<mx:CheckBox id="soundCheckbox" />
 		</s:HGroup>
 
 		<mx:CheckBox id="fadeTickingCheckbox" label="Fade ticking"/>
 
+		<!-- Form item  -->
 		<s:HGroup width="100%">
 			<mx:Label text="Volume" color="#A9A9A9"/>
 			<mx:HSlider id="volumeSlider" width="100%" minimum="0" maximum="100" snapInterval="5"/>
 		</s:HGroup>
 
+		<!-- Form item  -->
 		<mx:Label color="#A9A9A9" text="Alarm Sound:" width="100%"/>
 		<s:HGroup width="100%">
 			<mx:TextInput id="alarmFileLocationInput" width="100%" height="32">
@@ -140,10 +146,10 @@
 			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_FOLDER_OPEN_CLASS}" click="selectAlarmFile()" />
 		</s:HGroup>
 
-
+		<!-- Form item  -->
 		<s:Label color="#A9A9A9" text="Clock Sound:" width="100%"/>
-		<s:HGroup>
-			<mx:TextInput id="clockFileLocationInput" width="100%">
+		<s:HGroup width="100%">
+			<mx:TextInput id="clockFileLocationInput" width="100%" height="32">
 				<mx:toolTip>Custom sound file for the clock sound. Leave empty for default.</mx:toolTip>
 			</mx:TextInput>
 			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_FOLDER_OPEN_CLASS}" click="selectClockFile()"/>

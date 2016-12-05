@@ -2,7 +2,10 @@
  * Created by akalanitski on 02.12.2016.
  */
 package com.pomodairo.components {
+import com.pomodairo.EmbedStyle;
+
 import flash.display.BitmapData;
+import flash.geom.ColorTransform;
 
 import mx.core.UIComponent;
 
@@ -12,6 +15,31 @@ import mx.core.UIComponent;
  * @author Alexey Kolonitsky <alexey.s.kolonitsky@gmail.com>
  */
 public class Glyph extends UIComponent {
+
+
+	public function Glyph() {
+		super();
+		var color:uint = EmbedStyle.COMMON_TEXT_COLOR;
+		var mul:Number = 1;
+		var ctMul:Number=(1-mul);
+		var ctRedOff:Number=Math.round(mul * extractRed(color));
+		var ctGreenOff:Number=Math.round(mul * extractGreen(color));
+		var ctBlueOff:Number=Math.round(mul * extractBlue(color));
+		var ct:ColorTransform  =new ColorTransform(ctMul,ctMul,ctMul,1,ctRedOff,ctGreenOff,ctBlueOff,0);
+		this.transform.colorTransform=ct;
+	}
+
+	public function extractRed(c:uint):uint {
+		return (( c >> 16 ) & 0xFF);
+	}
+
+	public function extractGreen(c:uint):uint {
+		return ( (c >> 8) & 0xFF );
+	}
+
+	public function extractBlue(c:uint):uint {
+		return ( c & 0xFF );
+	}
 
 	public var _bitmapData:BitmapData;
 	public var _bitmapDataChanged:Boolean = false;
@@ -43,8 +71,10 @@ public class Glyph extends UIComponent {
 	override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
 		super.updateDisplayList(unscaledWidth, unscaledHeight);
 
-		var color:uint = getStyle("color");
-
+		if (_bitmapData) {
+			graphics.beginBitmapFill(_bitmapData);
+			graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+		}
 	}
 }
 }

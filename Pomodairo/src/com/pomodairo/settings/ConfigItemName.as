@@ -31,6 +31,8 @@ package com.pomodairo.settings {
 		public static var REMEMBER_POSITION:String = "window.rememberPosition";
 		public static var ALWAYS_ON_TOP:String = "window.alwaysOnTop";
 		public static var UPDATE_TASKBAR:String = "window.updateTaskbar";
+
+		/** @deprecated */
 		public static var URL_TO_OPEN:String = "urlToOpen";
 
 	}

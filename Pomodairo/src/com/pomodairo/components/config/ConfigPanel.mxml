@@ -8,6 +8,7 @@
 
 	<mx:Script>
         <![CDATA[
+		import com.pomodairo.EmbedStyle;
 		import com.pomodairo.events.ConfigurationUpdatedEvent;
 		import com.pomodairo.PomodoroEventDispatcher;
 		import com.pomodairo.db.Storage;
@@ -19,7 +20,6 @@
 		private var rememberPosition:Boolean = true;
 		private var alwaysOnTop:Boolean = false;
 		private var updateTaskbar:Boolean = true;
-		private var urlToOpen:String = "";
 
 		private function init():void {
 			populate();
@@ -40,10 +40,6 @@
 				updateTaskbar = conf.getConfig(ConfigItemName.UPDATE_TASKBAR) == "true";
 			}
 
-			if (conf.hasConfig(ConfigItemName.URL_TO_OPEN)) {
-				urlToOpen = conf.getConfig(ConfigItemName.URL_TO_OPEN);
-			}
-
 			if (conf.hasConfig(ConfigItemName.CONFIRM_APPLICATION_EXIT)) {
 				confirmApplicationExit = conf.getBoolean(ConfigItemName.CONFIRM_APPLICATION_EXIT);
 			}
@@ -53,7 +49,6 @@
 			positionCheckbox.selected = rememberPosition;
 			alwaysOnTopCheckbox.selected = alwaysOnTop;
 			updateTaskbarCheckbox.selected = updateTaskbar;
-			urlToOpenInput.text = urlToOpen;
 			confirmApplicationExitCheckbox.selected = confirmApplicationExit;
 		}
 
@@ -61,7 +56,6 @@
 			rememberPosition = positionCheckbox.selected;
 			alwaysOnTop = alwaysOnTopCheckbox.selected;
 			updateTaskbar = updateTaskbarCheckbox.selected;
-			urlToOpen = urlToOpenInput.text;
 			confirmApplicationExit = confirmApplicationExitCheckbox.selected;
 
 			ConfigManager.instance.setBoolean(ConfigItemName.REMEMBER_POSITION, rememberPosition);
@@ -69,7 +63,6 @@
 			Storage.instance.setConfigurationValue(ConfigItemName.REMEMBER_POSITION, "" + rememberPosition);
 			Storage.instance.setConfigurationValue(ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop);
 			Storage.instance.setConfigurationValue(ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar);
-			Storage.instance.setConfigurationValue(ConfigItemName.URL_TO_OPEN, urlToOpen);
 			Storage.instance.setConfigurationValue(ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit);
 
 			exit();
@@ -81,14 +74,16 @@
 			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.REMEMBER_POSITION, "" + rememberPosition));
 			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop));
 			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar));
-			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.URL_TO_OPEN, urlToOpen));
 			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit));
 		}
 		]]>
     </mx:Script>
 
 	<s:VGroup width="100%">
-		<s:Label text="GENERAL" backgroundColor="#000000" color="#ffffff" height="32" width="100%" />
+		<s:Label text="GENERAL"
+		    backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
+			color="{EmbedStyle.SECTION_TEXT_COLOR}"
+			height="32" width="100%" verticalAlign="middle" />
 		<mx:CheckBox id="alwaysOnTopCheckbox" label="Always on top"  />
 		<mx:CheckBox id="confirmApplicationExitCheckbox" label="Confirm application exit" selected="true"/>
 
@@ -97,11 +92,6 @@
 		</mx:CheckBox>
 
 		<mx:CheckBox label="Remember pos." id="positionCheckbox" selected="true"/>
-
-		<mx:Label color="#A9A9A9" text="URL to open (e.g. to Bugtracker):"/>
-		<mx:TextInput id="urlToOpenInput" width="100%">
-			<mx:toolTip>URL to open, when clicking on the active task label that contains a hash number (e.g. task name 'Write unit tests #123' could open URL 'bugtracker.mycompany.com?id=123').</mx:toolTip>
-		</mx:TextInput>
 	</s:VGroup>
 	
 </config:BaseConfigPanel>

@@ -28,7 +28,7 @@
 		}
 		]]></mx:Script>
 
-	<s:VGroup width="100%" >
+	<s:VGroup top="0" right="16" bottom="0" left="8" >
 		<config:AboutPanel id="aboutPanel" width="100%"  />
 		<config:TimingConfigPanel id="timigConfigPanel" width="100%" />
 		<config:ConfigPanel id="configPanel" width="100%"  />

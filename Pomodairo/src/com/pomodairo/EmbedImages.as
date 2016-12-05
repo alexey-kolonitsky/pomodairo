@@ -2,8 +2,13 @@
  * Created by akalanitski on 02.12.2016.
  */
 package com.pomodairo {
+import com.pomodairo.components.Glyph;
+
 import flash.display.Bitmap;
 
+import mx.core.IFlexDisplayObject;
+
+[Bindable]
 public class EmbedImages {
 
 	[Embed(source="/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-145-folder-open.png")]
@@ -54,5 +59,12 @@ public class EmbedImages {
 	[Embed(source="/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-115-list.png")]
 	public static const ICON_LIST_CLASS:Class;
 	public static const ICON_LIST:Bitmap = new ICON_LIST_CLASS() as Bitmap;
+
+	[Bindable(event="themeChanged")]
+	public static function glyph(source:Bitmap):IFlexDisplayObject {
+		var result:Glyph = new Glyph();
+		result.bitmapData = source.bitmapData;
+		return result;
+	}
 }
 }
