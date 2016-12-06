@@ -19,6 +19,14 @@ public class EmbedImages {
 	public static const ICON_COPY_CLASS:Class;
 	public static const ICON_COPY:Bitmap = new ICON_COPY_CLASS() as Bitmap;
 
+	[Embed(source="/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-82-refresh.png")]
+	public static const ICON_REFRESH_CLASS:Class;
+	public static const ICON_REFRESH:Bitmap = new ICON_REFRESH_CLASS() as Bitmap;
+
+	[Embed(source="/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-28-search.png")]
+	public static const ICON_SEARCH_CLASS:Class;
+	public static const ICON_SEARCH:Bitmap = new ICON_SEARCH_CLASS() as Bitmap;
+
 	[Embed(source="/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-433-plus.png")]
 	public static const ICON_PLUS_CLASS:Class;
 	public static const ICON_PLUS:Bitmap = new ICON_PLUS_CLASS() as Bitmap;

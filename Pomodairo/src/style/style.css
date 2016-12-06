@@ -32,11 +32,6 @@ SOFTWARE.
 //  Application
 //------------------------------
 */
-WindowedApplication
-{
-	backgroundGradientAlphas: 1.0, 1.0;
-	backgroundGradientColors: #333333, #333333;
-}
 
 
 /*

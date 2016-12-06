@@ -215,10 +215,14 @@
 		}
 
 		private function showStatisticsPanel():void {
-			var myWindow:StatisticsWindow = new StatisticsWindow();
-			myWindow.systemChrome = NativeWindowSystemChrome.STANDARD;
-			myWindow.type = NativeWindowType.NORMAL;
-			myWindow.open(true);
+            var dialog:StatisticsWindow = new StatisticsWindow();
+            dialog.x = 0;
+            dialog.y = 0;
+            dialog.width = stage.stageWidth;
+            dialog.height = stage.stageHeight;
+            PopUpManager.addPopUp(dialog, this, true);
+            PopUpManager.centerPopUp(dialog);
+            PopUpManager.bringToFront(dialog);
 		}
 
 		private function showPopup(dialog:IFlexDisplayObject):void {

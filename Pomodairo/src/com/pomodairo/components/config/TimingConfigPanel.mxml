@@ -81,6 +81,7 @@
 		<s:Label text="TIMING"
 				 backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
 				 color="{EmbedStyle.SECTION_TEXT_COLOR}"
+				 fontWeight="bold"
 				 height="32" width="100%" verticalAlign="middle" />
 		<s:HGroup width="100%">
 			<s:Label text="Pomodoro length" color="#A9A9A9" width="100"/>

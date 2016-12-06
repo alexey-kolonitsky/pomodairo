@@ -125,6 +125,7 @@
 			<s:Label text="SOUND"
 					 backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
 					 color="{EmbedStyle.SECTION_TEXT_COLOR}"
+					 fontWeight="bold"
 					 height="32" width="100%"  verticalAlign="middle" />
 			<mx:CheckBox id="soundCheckbox" />
 		</s:HGroup>

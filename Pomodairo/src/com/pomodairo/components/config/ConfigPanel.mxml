@@ -83,6 +83,7 @@
 		<s:Label text="GENERAL"
 		    backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
 			color="{EmbedStyle.SECTION_TEXT_COLOR}"
+			fontWeight="bold"
 			height="32" width="100%" verticalAlign="middle" />
 		<mx:CheckBox id="alwaysOnTopCheckbox" label="Always on top"  />
 		<mx:CheckBox id="confirmApplicationExitCheckbox" label="Confirm application exit" selected="true"/>

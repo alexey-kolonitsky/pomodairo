@@ -50,8 +50,15 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 		}
 
 		public function getConfig(key:String):String {
-			var item:ConfigItem = _settings.getItem(key);
-			return item.userValue || item.defaultValue;
+			var result:String;
+			if (key == ConfigItemName.DATABASE_LOCATION) {
+				result = _soProvider.getString(key);
+			} else {
+				var item:ConfigItem = _settings.getItem(key);
+				result = item.userValue || item.defaultValue;
+			}
+
+			return result;
 		}
 
 		public function getBoolean(name:String):Boolean {

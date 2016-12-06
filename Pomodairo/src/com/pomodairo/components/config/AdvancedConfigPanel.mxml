@@ -72,6 +72,7 @@
 		<s:Label
 				backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
 				color="{EmbedStyle.SECTION_TEXT_COLOR}"
+				fontWeight="bold"
 				height="32" width="100%" verticalAlign="middle" />
 		<s:Label color="#A9A9A9" text="Database location:"/>
 		<s:HGroup  width="100%"  height="32">
