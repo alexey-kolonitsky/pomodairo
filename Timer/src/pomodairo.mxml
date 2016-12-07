@@ -1,305 +1,305 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:WindowedApplication
-    xmlns:s="library://ns.adobe.com/flex/spark"
-    xmlns:mx="http://www.adobe.com/2006/mxml"
-    xmlns:ns1="com.pomodairo.components.*"
-	showFlexChrome="false" layout="absolute"
-	verticalScrollPolicy="off" horizontalScrollPolicy="off"
-	height="150" width="320"
-	backgroundColor="#292929"
-	showStatusBar="false"
-	title="{timerCanvas.appTitle}"
-	initialize="beforeInit()"
-	creationComplete="init()"
-	closing="beforeClose()"
-	windowResize="resizeHandler(event)"
-	close="shutdown()">
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:mx="http://www.adobe.com/2006/mxml"
+        xmlns:ns1="com.pomodairo.components.*"
+        showFlexChrome="false" layout="absolute"
+        verticalScrollPolicy="off" horizontalScrollPolicy="off"
+        height="150" width="320"
+        backgroundColor="#292929"
+        showStatusBar="false"
+        title="{timerCanvas.appTitle}"
+        initialize="beforeInit()"
+        creationComplete="init()"
+        closing="beforeClose()"
+        windowResize="resizeHandler(event)"
+        close="shutdown()">
 
-    <mx:Style source="/../../Pomodairo/src/style/style.css" />
-	
-	<mx:Script>
+    <mx:Style source="/../../Pomodairo/src/style/style.css"/>
+
+    <mx:Script>
 		<![CDATA[
-		import air.update.ApplicationUpdaterUI;
-		import air.update.events.UpdateEvent;
+        import air.update.ApplicationUpdaterUI;
+        import air.update.events.UpdateEvent;
 
-		import com.pomodairo.EmbedImages;
+        import com.pomodairo.EmbedImages;
 
-		import com.pomodairo.Pomodoro;
-		import com.pomodairo.PomodoroEventDispatcher;
-		import com.pomodairo.TaskManager;
-		import com.pomodairo.components.PomoItemInput;
-		import com.pomodairo.components.StatisticsWindow;
-		import com.pomodairo.components.config.BaseConfigPanel;
-		import com.pomodairo.components.config.ConfirmPanel;
-		import com.pomodairo.components.config.SettingsPanel;
-		import com.pomodairo.db.Storage;
-		import com.pomodairo.events.ConfigurationUpdatedEvent;
-		import com.pomodairo.events.GuiChangeEvent;
-		import com.pomodairo.events.PomodoroEvent;
-		import com.pomodairo.settings.ConfigItemName;
-		import com.pomodairo.settings.ConfigManager;
-		import com.pomodairo.twitter.TwitterManager;
+        import com.pomodairo.Pomodoro;
+        import com.pomodairo.PomodoroEventDispatcher;
+        import com.pomodairo.TaskManager;
+        import com.pomodairo.components.PomoItemInput;
+        import com.pomodairo.components.StatisticsWindow;
+        import com.pomodairo.components.config.BaseConfigPanel;
+        import com.pomodairo.components.config.ConfirmPanel;
+        import com.pomodairo.components.config.SettingsPanel;
+        import com.pomodairo.db.Storage;
+        import com.pomodairo.events.ConfigurationUpdatedEvent;
+        import com.pomodairo.events.GuiChangeEvent;
+        import com.pomodairo.events.PomodoroEvent;
+        import com.pomodairo.settings.ConfigItemName;
+        import com.pomodairo.settings.ConfigManager;
+        import com.pomodairo.twitter.TwitterManager;
 
-		import mx.core.IFlexDisplayObject;
-		import mx.events.MenuEvent;
-		import mx.managers.PopUpManager;
+        import mx.collections.ArrayCollection;
 
-		public static const MIN_WIDTH:Number = 320;
+        import mx.core.IFlexDisplayObject;
+        import mx.events.MenuEvent;
+        import mx.managers.PopUpManager;
 
-		public static const MINI_HEIGHT:Number = 52;
-		public static const SHORT_HEIGHT:Number = 150;
-		public static const FULL_HEIGHT:Number = SHORT_HEIGHT + 300;
+        public static const MIN_WIDTH:Number = 320;
 
-		private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
-
-		private var taskManager:TaskManager = TaskManager.instance;
-		private var twitterManager:TwitterManager = new TwitterManager();
-
-		private function beforeInit():void {
-
-			PomodoroEventDispatcher.instance.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
-
-			var remember:Boolean = ConfigManager.instance.getBoolean(ConfigItemName.REMEMBER_POSITION);
-			if (remember) {
-				var setX:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_X);
-				var setY:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_Y);
-				if (setX >= 0 && setX < Capabilities.screenResolutionX) {
-					this.nativeWindow.x = setX;
-				}
-				if (setY >= 0 && setY < Capabilities.screenResolutionY) {
-					this.nativeWindow.y = setY;
-				}
-			}
-
-			var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
-			if (setHeight >= MINI_HEIGHT && setHeight < Capabilities.screenResolutionY) {
-				this.height = setHeight;
-			}
-
-			var setWidth:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_WIDTH);
-			if (setWidth >= MIN_WIDTH && setHeight < Capabilities.screenResolutionX) {
-				this.width = setWidth;
-			}
-
-			dialogList[CONFIG_DIALOG_ID] = new SettingsPanel();
-			dialogList[CONFIRM_DIALOG_ID] = new ConfirmPanel();
-		}
-
-		private function init():void {
-			checkForUpdates();
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, closeTaskList);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, onPomodoroTimeout);
-			PomodoroEventDispatcher.instance.addEventListener(GuiChangeEvent.UPDATED, onGuiChange);
-
-			// Display task list on startup
-			toggleTaskList();
-		}
-
-		private function checkForUpdates():void {
-			appUpdater.configurationFile = new File("app:/updateConfig.xml");
-			appUpdater.isCheckForUpdateVisible = false;
-			appUpdater.addEventListener(UpdateEvent.INITIALIZED,
-					updaterInitialised);
-			appUpdater.initialize();
-		}
-
-		private function updaterInitialised(event:UpdateEvent):void {
-			appUpdater.checkNow();
-		}
-
-		private function onConfigurationChange(e:ConfigurationUpdatedEvent):void {
-			trace("Configuration change: " + e.configElement.name + " -> " + e.configElement.value);
-			if (e.configElement.name == ConfigItemName.ALWAYS_ON_TOP) {
-				this.alwaysInFront = e.configElement.value == "true";
-			}
-		}
-
-		private function shutdown():void {
-			twitterManager.stop();
-		}
-
-		private function onPomodoroTimeout(event:PomodoroEvent):void {
-			nativeWindow.notifyUser(NotificationType.CRITICAL);
-			nativeWindow.orderToFront();
-		}
+        public static const MINI_HEIGHT:Number = 52;
+        public static const SHORT_HEIGHT:Number = 150;
+        public static const FULL_HEIGHT:Number = SHORT_HEIGHT + 300;
 
 
-		private function toggleTaskList():void {
-			if (!taskListPanel.visible) {
-                closeStatisticList();
-				taskListPanel.visible = true;
-				var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
-				setHeight = isNaN(setHeight) ? 0 : setHeight;
+        private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
 
-				this.height = setHeight > Capabilities.screenResolutionY || setHeight < FULL_HEIGHT ? FULL_HEIGHT : setHeight;
-			} else {
-				closeTaskList();
-			}
-		}
+        private var taskManager:TaskManager = TaskManager.instance;
+        private var twitterManager:TwitterManager = new TwitterManager();
 
-		private function closeTaskList(event:PomodoroEvent = null):void {
-			this.height = SHORT_HEIGHT;
-			taskListPanel.visible = false;
-		}
+        private function beforeInit():void {
 
-		private function toggleStatisticList():void {
-			if (!statisticList.visible) {
+            PomodoroEventDispatcher.instance.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
+
+            var remember:Boolean = ConfigManager.instance.getBoolean(ConfigItemName.REMEMBER_POSITION);
+            if (remember) {
+                var setX:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_X);
+                var setY:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_Y);
+                if (setX >= 0 && setX < Capabilities.screenResolutionX) {
+                    this.nativeWindow.x = setX;
+                }
+                if (setY >= 0 && setY < Capabilities.screenResolutionY) {
+                    this.nativeWindow.y = setY;
+                }
+            }
+
+            var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
+            if (setHeight >= MINI_HEIGHT && setHeight < Capabilities.screenResolutionY) {
+                this.height = setHeight;
+            }
+
+            var setWidth:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_WIDTH);
+            if (setWidth >= MIN_WIDTH && setHeight < Capabilities.screenResolutionX) {
+                this.width = setWidth;
+            }
+
+            dialogList[CONFIG_DIALOG_ID] = new SettingsPanel();
+            dialogList[CONFIRM_DIALOG_ID] = new ConfirmPanel();
+        }
+
+        private function init():void {
+            checkForUpdates();
+            PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, closeTaskList);
+            PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, onPomodoroTimeout);
+            PomodoroEventDispatcher.instance.addEventListener(GuiChangeEvent.UPDATED, onGuiChange);
+
+            // Display task list on startup
+            toggleTaskList();
+        }
+
+        private function checkForUpdates():void {
+            appUpdater.configurationFile = new File("app:/updateConfig.xml");
+            appUpdater.isCheckForUpdateVisible = false;
+            appUpdater.addEventListener(UpdateEvent.INITIALIZED,
+                    updaterInitialised);
+            appUpdater.initialize();
+        }
+
+        private function updaterInitialised(event:UpdateEvent):void {
+            appUpdater.checkNow();
+        }
+
+        private function onConfigurationChange(e:ConfigurationUpdatedEvent):void {
+            trace("Configuration change: " + e.configElement.name + " -> " + e.configElement.value);
+            if (e.configElement.name == ConfigItemName.ALWAYS_ON_TOP) {
+                this.alwaysInFront = e.configElement.value == "true";
+            }
+        }
+
+        private function shutdown():void {
+            twitterManager.stop();
+        }
+
+        private function onPomodoroTimeout(event:PomodoroEvent):void {
+            nativeWindow.notifyUser(NotificationType.CRITICAL);
+            nativeWindow.orderToFront();
+        }
+
+
+        private function toggleTaskList():void {
+            if (!listContainer.visible) {
+                listContainer.visible = true;
+                tabsList.visible = true;
+                var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
+                setHeight = isNaN(setHeight) ? 0 : setHeight;
+
+                this.height = setHeight > Capabilities.screenResolutionY || setHeight < FULL_HEIGHT ? FULL_HEIGHT : setHeight;
+            } else {
                 closeTaskList();
-                statisticList.visible = true;
-				var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
-				setHeight = isNaN(setHeight) ? 0 : setHeight;
+            }
+        }
 
-				this.height = setHeight > Capabilities.screenResolutionY || setHeight < FULL_HEIGHT ? FULL_HEIGHT : setHeight;
-			} else {
-                closeStatisticList();
-			}
-		}
+        private function closeTaskList(event:PomodoroEvent = null):void {
+            this.height = SHORT_HEIGHT;
+            listContainer.visible = false;
+            tabsList.visible = false;
+        }
 
-		private function closeStatisticList(event:PomodoroEvent = null):void {
-			this.height = SHORT_HEIGHT;
-            statisticList.visible = false;
-		}
+        private function beforeClose():void {
+            Storage.instance.setConfigurationValue("window.x", "" + this.nativeWindow.x);
+            Storage.instance.setConfigurationValue("window.y", "" + this.nativeWindow.y);
+            Storage.instance.setConfigurationValue("window.height", "" + this.height);
+            Storage.instance.setConfigurationValue("window.width", "" + this.width);
+        }
 
-		private function beforeClose():void {
-			Storage.instance.setConfigurationValue("window.x", "" + this.nativeWindow.x);
-			Storage.instance.setConfigurationValue("window.y", "" + this.nativeWindow.y);
-			Storage.instance.setConfigurationValue("window.height", "" + this.height);
-			Storage.instance.setConfigurationValue("window.width", "" + this.width);
-		}
+        private function onGuiChange(event:GuiChangeEvent):void {
+            if (event.miniView) {
+                trace("Switch application to mini view");
+                closeTaskList();
+                this.height = MINI_HEIGHT;
+            } else {
+                trace("Switch application to regular view");
+                this.height = SHORT_HEIGHT;
+            }
+        }
 
-		private function onGuiChange(event:GuiChangeEvent):void {
-			if (event.miniView) {
-				trace("Switch application to mini view");
-				closeTaskList();
-				this.height = MINI_HEIGHT;
-			} else {
-				trace("Switch application to regular view");
-				this.height = SHORT_HEIGHT;
-			}
-		}
+        private function toggleViewState():void {
+            timerCanvas.toggleMiniView();
+        }
 
-		private function toggleViewState():void {
-			timerCanvas.toggleMiniView();
-		}
+        private function onAddPomodoroClicked(event:Event = null):void {
+            var input:PomoItemInput = new PomoItemInput();
+            input.type = Pomodoro.TYPE_POMODORO;
+            input.selectAfterCreate = true;
+            PopUpManager.addPopUp(input, this, true);
+            PopUpManager.centerPopUp(input);
+        }
 
-		private function onAddPomodoroClicked(event:Event = null):void {
-			var input:PomoItemInput = new PomoItemInput();
-			input.type = Pomodoro.TYPE_POMODORO;
-			input.selectAfterCreate = true;
-			PopUpManager.addPopUp(input, this, true);
-			PopUpManager.centerPopUp(input);
-		}
+        private function resizeHandler(event:Event):void {
+            if (this.height == MINI_HEIGHT || this.height == SHORT_HEIGHT)
+                return;
 
-		private function resizeHandler(event:Event):void {
-			if (this.height == MINI_HEIGHT || this.height == SHORT_HEIGHT)
-				return;
+            var value:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
+            if (this.height == value)
+                return;
 
-			var value:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
-			if (this.height == value)
-				return;
+            Storage.instance.setConfigurationValue('window.height', '' + this.height);
+        }
 
-			Storage.instance.setConfigurationValue('window.height', '' + this.height);
-		}
+        public static const STATISTIC_DIALOG_ID:String = "statistic";
+        public static const CONFIG_DIALOG_ID:String = "config";
+        public static const CONFIRM_DIALOG_ID:String = "confirm";
 
-		public static const STATISTIC_DIALOG_ID:String = "statistic";
-		public static const CONFIG_DIALOG_ID:String = "config";
-		public static const CONFIRM_DIALOG_ID:String = "confirm";
+        private var dialogList:Object = {};
 
-		private var dialogList:Object = {};
+        private function menuClick(event:MenuEvent):void {
+            var action:String = event.item.@action;
+            switch (action) {
+                case STATISTIC_DIALOG_ID:
+//                    toggleStatisticList();
+                    break;
 
-		private function menuClick(event:MenuEvent):void {
-			var action:String = event.item.@action;
-			switch (action) {
-				case STATISTIC_DIALOG_ID:
-                    toggleStatisticList();
-					break;
+                case CONFIG_DIALOG_ID:
+                case CONFIRM_DIALOG_ID:
+                    var dialog:IFlexDisplayObject = dialogList[action];
+                    showPopup(dialog);
+                    break;
 
-				case CONFIG_DIALOG_ID:
-				case CONFIRM_DIALOG_ID:
-					var dialog:IFlexDisplayObject = dialogList[action];
-					showPopup(dialog);
-					break;
+                default:
+                    trace("WARNING: Dialog with unhandled menu action \"" + action + "\"");
+                    break;
+            }
+        }
 
-				default:
-					trace("WARNING: Dialog with unhandled menu action \"" + action + "\"");
-					break;
-			}
-		}
+        private function showSettingsPanel():void {
+            var dialog:IFlexDisplayObject = dialogList[CONFIG_DIALOG_ID];
+            dialog.width = stage.stageWidth;
+            dialog.height = stage.stageHeight;
+            showPopup(dialog);
+        }
 
-		private function showSettingsPanel():void {
-			var dialog:IFlexDisplayObject = dialogList[CONFIG_DIALOG_ID];
-			dialog.width = stage.stageWidth;
-			dialog.height = stage.stageHeight;
-			showPopup(dialog);
-		}
+        private function showPopup(dialog:IFlexDisplayObject):void {
+            if (dialog) {
 
-		private function showPopup(dialog:IFlexDisplayObject):void {
-			if (dialog) {
+                if (dialog is BaseConfigPanel) {
+                    var panel:BaseConfigPanel = dialog as BaseConfigPanel;
+                    panel.populate();
+                    panel.notifyConfiguration();
+                }
+                PopUpManager.addPopUp(dialog, this, true);
+                PopUpManager.centerPopUp(dialog);
+                PopUpManager.bringToFront(dialog);
+            }
+        }
 
-				if (dialog is BaseConfigPanel) {
-					var panel:BaseConfigPanel = dialog as BaseConfigPanel;
-					panel.populate();
-					panel.notifyConfiguration();
-				}
-				PopUpManager.addPopUp(dialog, this, true);
-				PopUpManager.centerPopUp(dialog);
-				PopUpManager.bringToFront(dialog);
-			}
-		}
+        private function lblClose_clickHandler(event:MouseEvent):void {
+            if (ConfigManager.instance.getBoolean(ConfigItemName.REMEMBER_POSITION) == false) {
+                close();
+                return;
+            }
 
-		private function lblClose_clickHandler(event:MouseEvent):void {
-			if (ConfigManager.instance.getBoolean(ConfigItemName.REMEMBER_POSITION) == false) {
-				close();
-				return;
-			}
+            if (timerCanvas.currentState == "minimal")
+                timerCanvas.toggleMiniView();
 
-			if (timerCanvas.currentState == "minimal")
-				timerCanvas.toggleMiniView();
-
-			showPopup(dialogList[CONFIRM_DIALOG_ID]);
-		}
-		]]>
+            showPopup(dialogList[CONFIRM_DIALOG_ID]);
+        }
+        ]]>
     </mx:Script>
 
-	<s:VGroup left="0" top="0" height="{SHORT_HEIGHT}" right="0" mouseDown="{nativeWindow.startMove()}">
+    <s:VGroup left="0" top="0" height="{SHORT_HEIGHT}" right="0"
+            mouseDown="{nativeWindow.startMove()}">
 
-		<!-- TopPanel -->
-		<s:HGroup width="100%" height="32" gap="2">
-			<mx:Button id="statisticButton"
-				width="32" height="32"
-		    	icon="{EmbedImages.ICON_STATS_CLASS}"
-				click="{toggleStatisticList()}" />
+        <!-- TopPanel -->
+        <s:HGroup width="100%" height="32" gap="2">
+            <mx:Button id="settingsButton"
+                    width="32" height="32"
+                    icon="{EmbedImages.ICON_ADJUST_CLASS}"
+                    click="{showSettingsPanel()}"/>
 
-			<mx:Button id="settingsButton"
-			    width="32" height="32"
-		        icon="{EmbedImages.ICON_ADJUST_CLASS}"
-				click="{showSettingsPanel()}" />
+            <mx:Button id="taskList"
+                    width="32" height="32"
+                    icon="{EmbedImages.ICON_LIST_CLASS}"
+                    click="toggleTaskList()"
+                    toolTip="Open/close task list"/>
 
-			<mx:Spacer width="100%" />
+            <s:List id="tabsList"
+                    left="0" top="0" height="32" right="0"
+                    itemRenderer="com.pomodairo.components.ListMenuItemRenderer"
+                    dataProvider="{pomodoroListContainer.tabs}" selectedIndex="0"
+                    click="{pomodoroListContainer.tabsList_clickHandler(event)}"
+                    contentBackgroundAlpha="0" borderVisible="false"
+                    color="#adadad">
+                <s:layout>
+                    <s:HorizontalLayout />
+                </s:layout>
+            </s:List>
 
-			<mx:Button id="taskList"
-				width="32" height="32"
-				icon="{EmbedImages.ICON_LIST_CLASS}"
-				click="toggleTaskList()"
-				toolTip="Open/close task list"/>
 
-			<mx:Button right="56" top="0" height="32" id="toggleViewButton" label="view" click="toggleViewState()"/>
-			<mx:Button label="_" width="32" height="32" click="{minimize()}" color="#FFFFFF" />
-			<mx:Button label="x" width="32" height="32" click="{lblClose_clickHandler(event)}" color="#FFFFFF"/>
-		</s:HGroup>
+            <mx:Spacer width="100%"/>
 
-		<ns1:timer id="timerCanvas" height="96" width="100%" pomodoroLengthInMinutes="25"/>
+            <mx:Button right="56" top="0" height="32" id="toggleViewButton"
+                    label="view" click="toggleViewState()"/>
+            <mx:Button label="_" width="32" height="32" click="{minimize()}"
+                    color="#FFFFFF"/>
+            <mx:Button label="x" width="32" height="32"
+                    click="{lblClose_clickHandler(event)}" color="#FFFFFF"/>
+        </s:HGroup>
 
-	</s:VGroup>
-	
-	<mx:Canvas id="taskListPanel"
-        x="0" y="{SHORT_HEIGHT}" height="100%" width="100%"
-        visible="false" showEffect="fadein" hideEffect="fadeout"
-		backgroundAlpha="0">
-		<ns1:TaskListCanvas x="0" y="0" height="100%" width="100%" app="{this}" />
-	</mx:Canvas>
+        <ns1:timer id="timerCanvas" height="96" width="100%"
+                pomodoroLengthInMinutes="25"/>
 
-    <ns1:StatisticsWindow id="statisticList"  x="0" y="{SHORT_HEIGHT}" height="100%" width="100%" visible="false" showEffect="fadein" hideEffect="fadeout"
-                          backgroundAlpha="0" />
-	
+    </s:VGroup>
+
+    <mx:Canvas id="listContainer"
+            x="0" y="{SHORT_HEIGHT}" height="100%" width="100%"
+            visible="false" showEffect="fadein" hideEffect="fadeout"
+            backgroundAlpha="0">
+
+        <ns1:PomodoroListContainer id="pomodoroListContainer" height="100%" width="100%"
+        tabsList="{tabsList}"/>
+
+    </mx:Canvas>
+
+
 </mx:WindowedApplication>

@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<!--
+  Created by akalanitski on 07.12.2016.
+-->
+<s:Group
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx">
+
+    <fx:Script><![CDATA[
+        import com.pomodairo.EmbedImages;
+        import com.pomodairo.TableUtils;
+        import com.pomodairo.db.Storage;
+        import com.pomodairo.settings.ConfigManager;
+
+        import mx.controls.DateField;
+
+        private var configManager:ConfigManager;
+        private var db:Storage = Storage.instance;
+
+
+        private function onPomsPerDayClicked(event:Event):void {
+            db.getPomodorosPerDay();
+        }
+
+        public function copyTableToClipboard(title:String, data:Array):void {
+            var tmpString:String = new TableUtils().getTableAsCsv(data);
+            System.setClipboard(tmpString);
+        }
+        ]]></fx:Script>
+
+
+    <!-- day list -->
+    <s:List id="pomodorosPerDayList"
+        dataProvider="{db.pomodorosPerDayDataset}"
+        top="0" right="0" bottom="32" left="0"
+        contentBackgroundAlpha="0"
+        borderVisible="false"
+        doubleClickEnabled="true"
+        itemRenderer="com.pomodairo.components.PomodoroPerDayRenderer"
+        dragMoveEnabled="true" width="100%">
+    </s:List>
+    <s:HGroup height="32" right="0" bottom="0" left="0">
+        <mx:Button id="pomsPerDay"  width="32" height="32" icon="{EmbedImages.ICON_REFRESH_CLASS}"
+            click="onPomsPerDayClicked(null)"/>
+        <mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
+            click="copyTableToClipboard('Count', db.pomodorosPerDayDataset.source)"/>
+    </s:HGroup>
+</s:Group>

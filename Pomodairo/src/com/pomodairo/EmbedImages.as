@@ -35,6 +35,10 @@ public class EmbedImages {
 	public static const ICON_CLEANING_CLASS:Class;
 	public static const ICON_CLEANING:Bitmap = new ICON_CLEANING_CLASS() as Bitmap;
 
+	[Embed(source="/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-58-history.png")]
+	public static const ICON_HISTORY_CLASS:Class;
+	public static const ICON_HISTORY:Bitmap = new ICON_HISTORY_CLASS() as Bitmap;
+
 	[Embed(source="/assets/glyphicons/glyphicons_free/glyphicons/png/glyphicons-174-play.png")]
 	public static const ICON_PLAY_CLASS:Class;
 	public static const ICON_PLAY:Bitmap = new ICON_PLAY_CLASS() as Bitmap;
