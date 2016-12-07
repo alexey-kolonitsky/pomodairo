@@ -21,15 +21,17 @@
             _pomodoro = data as Pomodoro;
             if (_pomodoro == null) {
                 nameLabel.text = "";
-                doneButton.enabled = false;
+                dateLabel.text = "";
                 _strikethrough = false;
                 _estimated = _pomodoro.estimated;
                 _actual = _pomodoro.pomodoros;
                 _unplanned = _pomodoro.interruptions + _pomodoro.unplanned;
             } else {
+                if (_pomodoro.name == "") {
+                    trace("!!!");
+                }
                 nameLabel.text = _pomodoro.name;
-                doneButton.enabled = true;
-                doneButton.selected = _pomodoro.done;
+                dateLabel.text = dateFormatter.format(_pomodoro.closed);
                 _strikethrough = _pomodoro.done;
                 _estimated = _pomodoro.estimated;
                 _actual = _pomodoro.pomodoros;
@@ -60,8 +62,12 @@
         ]]>
     </fx:Script>
 
+    <fx:Declarations>
+        <s:DateTimeFormatter id="dateFormatter" dateTimePattern="MMM, d" />
+    </fx:Declarations>
+
     <s:HGroup left="4" top="0" right="4" bottom="0" verticalAlign="middle" gap="2">
-        <mx:CheckBox id="doneButton" change="onDonePomodoroClicked()"/>
+        <s:Label id="dateLabel" />
         <s:Label id="nameLabel" width="100%" lineBreak="explicit" paddingTop="2" paddingLeft="5"/>
     </s:HGroup>
 

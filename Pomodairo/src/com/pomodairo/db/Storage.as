@@ -37,7 +37,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		public var dataset:Array;
 		
 		[Bindable]
-		public var pomodorosOfDayDataset:Array;
+		public var pomodorosOfDayDataset:ArrayCollection;
 
 		[Bindable]
 		public var pomodorosPerDayDataset:Array;
@@ -233,9 +233,9 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 				filterSql = " and name like '%"+filter+"%'";
 			}
 			var dbStatement:SQLStatement = new SQLStatement();
-			//dbStatement.itemClass = Pomodoro;
+			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "select name, substr(type,0,1) AS type,strftime('%Y/%m/%d %H:%S',closed) AS closed, estimated, pomodoros, (pomodoros - estimated) AS delta, (unplanned + interruptions) AS interruptions from Pomodoro where closed > strftime( '%J', :startDate ) and closed <= strftime( '%J', :endDate ) and (type='"+Pomodoro.TYPE_POMODORO+"' or type='"+Pomodoro.TYPE_UNPLANNED+"') and done=1"+filterSql;
+			var sqlQuery:String = "select name, substr(type,0,1) AS type, closed, estimated, pomodoros, unplanned, interruptions from Pomodoro where closed > strftime( '%J', :startDate ) and closed <= strftime( '%J', :endDate ) and (type='"+Pomodoro.TYPE_POMODORO+"' or type='"+Pomodoro.TYPE_UNPLANNED+"') and done=1"+filterSql;
 			dbStatement.text = sqlQuery;
 			dbStatement.parameters[":startDate"]= getStartDate(day, range);
 			dbStatement.parameters[":endDate"]= getEndDate(day, range);
@@ -337,7 +337,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			var result:SQLResult = statement.getResult();
 		    if (result != null)
 		    {
-		    	pomodorosOfDayDataset = result.data;
+		    	pomodorosOfDayDataset = new ArrayCollection(result.data);
 		    }
 		}
 		private function pomodorosPerDayResult(event:SQLEvent):void

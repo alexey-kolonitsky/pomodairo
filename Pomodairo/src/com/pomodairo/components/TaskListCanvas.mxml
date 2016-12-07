@@ -227,6 +227,7 @@
 		top="0" right="0" bottom="44" left="0"
 		contentBackgroundAlpha="0"
 		doubleClickEnabled="true"
+		borderVisible="false"
 		doubleClick="{showName()}"
         itemRenderer="com.pomodairo.components.PomodoroListRenderer"
 		itemRollOver="{lastRollOverIndex = event.itemIndex}"

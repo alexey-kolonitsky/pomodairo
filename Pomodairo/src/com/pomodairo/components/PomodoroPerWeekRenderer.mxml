@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<s:ItemRenderer
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        height="30" width="100%"
+    >
+
+
+    <fx:Script>
+        <![CDATA[
+        import com.pomodairo.EmbedStyle;
+        import com.pomodairo.Pomodoro;
+        import com.pomodairo.PomodoroEventDispatcher;
+        import com.pomodairo.TaskManager;
+        import com.pomodairo.events.PomodoroEvent;
+
+        public static const POMODORO_WIDTH:int = 2;
+        public static const POMODORO_GAP:int = 2;
+        public static const POMODORO_HEIGHT:int = 24;
+
+        private var _pomodoro:Pomodoro = null;
+
+        private var _strikethrough:Boolean = false;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            _pomodoro = data as Pomodoro;
+            if (_pomodoro == null) {
+                nameLabel.text = "";
+                doneButton.enabled = false;
+            } else {
+                nameLabel.text = _pomodoro.name;
+                doneButton.enabled = true;
+                doneButton.selected = _pomodoro.done;
+            }
+            invalidateDisplayList();
+        }
+
+        public function set strikethrough(bool:Boolean):void {
+            this._strikethrough = bool;
+            this.invalidateDisplayList();
+        }
+
+        public function get strikethrough():Boolean {
+            return this._strikethrough;
+        }
+
+        override protected function updateDisplayList(unscaledWidth:Number,
+                                                      unscaledHeight:Number):void {
+            if (data.done) {
+                //This row is selected update stuff
+                strikethrough = true;
+            }
+            else {
+                //This row is not selected reset stuff
+                strikethrough = false;
+            }
+
+            this.setStyle('color', EmbedStyle.COMMON_TEXT_COLOR);
+            this.setStyle('fontStyle', 'normal');
+            this.setStyle('fontWeight', 'normal');
+
+            super.updateDisplayList(unscaledWidth, unscaledHeight);
+
+            this.graphics.clear();
+            if (this._strikethrough) {
+                this.graphics.lineStyle(1, this.getStyle("color"));
+                this.graphics.moveTo(28, unscaledHeight / 2);
+                this.graphics.lineTo(unscaledWidth - 28, unscaledHeight / 2);
+
+                // draw planed pomodoros
+                this.graphics.lineStyle();
+                this.graphics.beginFill(EmbedStyle.POMODORO_ESTIMATED_COLOR);
+                for (var i:int = 0; i < _pomodoro.estimated; i++) {
+                    this.graphics.drawRect(unscaledWidth - (POMODORO_WIDTH + POMODORO_HEIGHT) * i, 0, POMODORO_WIDTH, POMODORO_HEIGHT);
+                }
+
+                // draw done pomodoros
+                this.graphics.lineStyle();
+                var n:int = _pomodoro.pomodoros + _pomodoro.interruptions + _pomodoro.unplanned;
+                for (var i:int = 0; i < n; i++) {
+                    var doneColor:uint = i < _pomodoro.estimated && i < _pomodoro.pomodoros ? EmbedStyle.POMODORO_DONE_COLOR : EmbedStyle.POMODORO_OVERFLOW_COLOR;
+                    var color:uint = i < _pomodoro.pomodoros ? doneColor : EmbedStyle.POMODORO_UNPLANED_COLOR;
+                    this.graphics.beginFill(color);
+                    this.graphics.drawRect(unscaledWidth - (POMODORO_WIDTH + POMODORO_HEIGHT) * i, 0, POMODORO_WIDTH, POMODORO_HEIGHT);
+                }
+            }
+            else {
+                if (_pomodoro.estimated == 0) {
+                    this.setStyle('color', 0x777777);
+                }
+                if (_pomodoro.estimated < data.pomodoros) {
+                    this.setStyle('color', 0xCC0000);
+                }
+                if (_pomodoro.pomodoros > 0) {
+                    this.setStyle('fontWeight', 'bold');
+                }
+            }
+        }
+
+        private function onDonePomodoroClicked(event:Event = null):void {
+
+            if (_pomodoro.done) {
+                _pomodoro.closed = null;
+            }
+            else {
+                _pomodoro.closed = new Date();
+            }
+            _pomodoro.done = !_pomodoro.done;
+            // Following is done by event listener in db object.
+            // db.markDone(pom);
+            // Dispatch event.
+            var evt:PomodoroEvent = new PomodoroEvent(PomodoroEvent.DONE);
+            evt.pomodoro = _pomodoro;
+            PomodoroEventDispatcher.instance.dispatchEvent(evt);
+
+            TaskManager.instance.findNextTask();
+            invalidateDisplayList();
+        }
+        ]]>
+    </fx:Script>
+
+    <s:HGroup left="4" top="0" right="4" bottom="0" verticalAlign="middle" gap="2">
+        <mx:CheckBox id="doneButton" change="onDonePomodoroClicked()"/>
+        <s:Label id="nameLabel" width="100%" lineBreak="explicit"/>
+    </s:HGroup>
+
+</s:ItemRenderer>
