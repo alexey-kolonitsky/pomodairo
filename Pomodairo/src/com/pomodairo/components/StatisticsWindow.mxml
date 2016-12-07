@@ -9,119 +9,112 @@
 		<![CDATA[
 		import com.pomodairo.EmbedImages;
 		import com.pomodairo.Pomodoro;
-			import com.pomodairo.TableUtils;
-			import com.pomodairo.db.Storage;
-			import com.pomodairo.settings.ConfigManager;
+		import com.pomodairo.TableUtils;
+		import com.pomodairo.db.Storage;
+		import com.pomodairo.settings.ConfigManager;
 
-			import flash.system.System;
+		import flash.system.System;
 
-			import mx.collections.ArrayCollection;
+		import mx.collections.ArrayCollection;
 
-			private var tabs:ArrayCollection = new ArrayCollection(["Pomodoros", "Interruptions", "Count", "Reality Factors"]);
-			private var configManager:ConfigManager;
-			private var db:Storage = Storage.instance;
-			
-			private function init():void {
-				configManager = ConfigManager.instance;
-				configManager.initialize();
-				db.initAndOpenDatabase();
-				db.initViews();
+		private var tabs:ArrayCollection = new ArrayCollection(["Pomodoros", "Count", "Interruptions", "Reality Factors"]);
+		private var configManager:ConfigManager;
+		private var db:Storage = Storage.instance;
+
+		private function init():void {
+			configManager = ConfigManager.instance;
+			configManager.initialize();
+			db.initAndOpenDatabase();
+			db.initViews();
+			showSelectedPanel();
+			//db.getAllItems();
+		}
+
+		private function initDateField(df:DateField):void {
+			df.selectedDate = new Date();
+		}
+
+		private function onUsersDataGridChanged(event:Event):void {
+		}
+
+		private function remove(pom:Pomodoro):void {
+			db.remove(pom);
+		}
+
+		private function cleanup(event:MouseEvent):void {
+			for each (var pom:Pomodoro in db.dataset) {
+				if (pom.type == Pomodoro.TYPE_INTERRUPTION) {
+					remove(pom);
+				} else if (pom.done) {
+					remove(pom);
+				}
+			}
+			db.getAllItems();
+		}
+
+		private function onPomsPerDayClicked(event:Event):void {
+			db.getPomodorosPerDay();
+		}
+
+		private function onPomsOfDayClicked(event:Event):void {
+			db.getPomodorosOfDay(dateFieldPomsOfDay.selectedDate, pomodoroRangeStepper.value, String(pomodoroFilter.value));
+		}
+
+		private function onRealityFactorsClicked(event:Event):void {
+			db.getRealityFactors();
+		}
+
+		public function copyTableToClipboard(title:String,
+											 data:Array):void {
+			var tmpString:String = new TableUtils().getTableAsCsv(data);
+			System.setClipboard(tmpString);
+		}
+
+		private function tabsList_clickHandler(event:MouseEvent):void {
+			trace("Selected Item: " + tabsList.selectedIndex);
+			if (selectedTab != tabsList.selectedIndex) {
 				showSelectedPanel();
-				//db.getAllItems();
 			}
-			private function initDateField(df:DateField):void {
-				df.selectedDate = new Date();
+		}
+
+		private var selectedTab:int = 0;
+
+		private function showSelectedPanel():void {
+			pomodorosOfDayPanel.includeInLayout = pomodorosOfDayPanel.visible = false;
+			pomodorosPerDayPanel.includeInLayout = pomodorosPerDayPanel.visible = false;
+			realityFactorPanel.includeInLayout = realityFactorPanel.visible = false;
+			switch (tabsList.selectedIndex) {
+				case 0:
+					pomodorosOfDayPanel.includeInLayout = pomodorosOfDayPanel.visible = true;
+					break;
+				case 1:
+					pomodorosPerDayPanel.includeInLayout = pomodorosPerDayPanel.visible = true;
+					break;
+				case 2:
+					realityFactorPanel.includeInLayout = realityFactorPanel.visible = true;
+					break;
 			}
-			
-			private function onUsersDataGridChanged(event:Event):void{}
-	        
-	        private function remove(pom:Pomodoro):void
-	        {
-	        	db.remove(pom);
-	        }
-	        
-	        private function cleanup(event:MouseEvent):void
-	        {
-	        	for each (var pom:Pomodoro in db.dataset)
-	        	{
-	        		if (pom.type == Pomodoro.TYPE_INTERRUPTION) {
-	        			remove(pom);
-	        		} else if (pom.done) {
-	        			remove(pom);
-	        		}
-	        	}
-	        	db.getAllItems();
-	        }
-	        
-	        private function onPomsPerDayClicked(event:Event):void {
-	        	db.getPomodorosPerDay();
-	        }
-	        
-	        private function onPomsOfDayClicked(event:Event):void {
-	        	db.getPomodorosOfDay(dateFieldPomsOfDay.selectedDate, pomodoroRangeStepper.value, String(pomodoroFilter.value));
-	        }
-	        
-	        private function onInterruptionsClicked(event:Event):void {
-	        	db.getInterruptionsOfDay(dateFieldInterruptionsOfDay.selectedDate, interruptionsRangeStepper.value, String(interruptionFilter.value));
-	        }
-	        
-	        private function onRealityFactorsClicked(event:Event):void {
-	        	db.getRealityFactors();
-	        }
-	        
-	        public function copyTableToClipboard(title:String, data:Array):void
-            {
-			  var tmpString:String = new TableUtils().getTableAsCsv(data);
-              System.setClipboard(tmpString);
-            }
-
-			private function tabsList_clickHandler(event:MouseEvent):void {
-				trace("Selected Item: " + tabsList.selectedIndex);
-				if (selectedTab != tabsList.selectedIndex) {
-					showSelectedPanel();
-				}
-			}
-
-			private var selectedTab:int = 0;
-
-			private function showSelectedPanel():void {
-				dataGridPanel1.includeInLayout = dataGridPanel1.visible = false;
-				dataGridPanel2.includeInLayout = dataGridPanel2.visible = false;
-				dataGridPanel3.includeInLayout = dataGridPanel3.visible = false;
-				dataGridPanel4.includeInLayout = dataGridPanel4.visible = false;
-				switch (tabsList.selectedIndex){
-					case 0:
-						dataGridPanel1.includeInLayout = dataGridPanel1.visible = true;
-						break;
-					case 1:
-						dataGridPanel2.includeInLayout = dataGridPanel2.visible = true;
-						break;
-					case 2:
-						dataGridPanel3.includeInLayout = dataGridPanel3.visible = true;
-						break;
-					case 3:
-						dataGridPanel4.includeInLayout = dataGridPanel4.visible = true;
-						break;
-				}
-				selectedTab = tabsList.selectedIndex;
-			}
-
-
-
+			selectedTab = tabsList.selectedIndex;
+		}
 		]]>
 	</mx:Script>
 
-	<s:List id="tabsList"
-		left="0" top="0" height="32" right="0"
-		dataProvider="{tabs}" selectedIndex="0" click="{tabsList_clickHandler(event)}">
-		<s:layout>
-			<s:HorizontalLayout />
-		</s:layout>
-	</s:List>
+	<s:HGroup left="0" top="0" height="32" right="0">
+		<s:List id="tabsList"
+				height="32"
+				dataProvider="{tabs}" selectedIndex="0" click="{tabsList_clickHandler(event)}"
+			contentBackgroundAlpha="0" borderVisible="false" color="#adadad"
+		lineHeight="32">
+			<s:layout >
+				<s:HorizontalLayout />
+			</s:layout>
+		</s:List>
+	</s:HGroup>
 
-	<s:Group id="dataGridPanel1" left="0" top="32" right="0" bottom="0">
-		<mx:DataGrid id="pomodorosDataGrid1"
-			dataProvider="{db.datasetStatistics1}"
+	<!-- task list -->
+	<s:Group id="pomodorosOfDayPanel" left="0" top="32" right="0" bottom="0">
+		<mx:DataGrid id="pomodorosOfDayGrid"
+			dataProvider="{db.pomodorosOfDayDataset}"
 			top="0" right="0" bottom="32" left="0"
 			editable="false"
 			change="onUsersDataGridChanged(event)" >
@@ -148,43 +141,17 @@
 			<mx:Button id="pomsOfDay" width="32" height="32" icon="{EmbedImages.ICON_REFRESH_CLASS}"
 			   click="onPomsOfDayClicked(null)"/>
 			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-					   click="copyTableToClipboard('Pomodoros', db.datasetStatistics1)"/>
+					   click="copyTableToClipboard('Pomodoros', db.pomodorosOfDayDataset)"/>
 		</s:HGroup>
 	</s:Group>
-	<s:Group id="dataGridPanel3" left="0" top="32" right="0" bottom="0">
-		<mx:DataGrid id="pomodorosDataGrid3"
-			dataProvider="{db.datasetStatistics3}"
-			top="0" right="0" bottom="32" left="0"
-			editable="false"
-			change="onUsersDataGridChanged(event)">
-			<mx:columns>
-				<mx:DataGridColumn width="140" headerText="Name" dataField="name"/>
-				<mx:DataGridColumn width="100" headerText="Created" dataField="created"/>
-				<mx:DataGridColumn width="100" headerText="Type" dataField="type"/>
-				<mx:DataGridColumn width="40" headerText="Task" dataField="parent"/>
-			</mx:columns>
-		</mx:DataGrid>
-		<s:HGroup height="32" right="0" bottom="0" left="0">
-			<mx:DateField id="dateFieldInterruptionsOfDay" initialize="initDateField(this.dateFieldInterruptionsOfDay)"/>
-			<mx:Label text="Days"/>
-			<mx:NumericStepper minimum="-365" maximum="365" stepSize="1" id="interruptionsRangeStepper" value="0" width="50" maxChars="4" />
-			<s:BitmapImage source="{EmbedImages.ICON_SEARCH}" width="24" height="24"/>
-			<fc:AutoComplete
-				id="interruptionFilter"
-				dataProvider="{db.datasetStatistics6}"
-			   width="132"/>
-			<mx:Button id="longestTasks" width="32" height="32" icon="{EmbedImages.ICON_REFRESH_CLASS}"
-			    click="onInterruptionsClicked(null)"/>
-			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-					   click="copyTableToClipboard('Interruptions', db.datasetStatistics3)"/>
-		</s:HGroup>
-	</s:Group>
-	<s:Group id="dataGridPanel2" left="0" top="32" right="0" bottom="0" >
-		<mx:DataGrid id="pomodorosDataGrid2"
-			dataProvider="{db.datasetStatistics2}"
-			top="0" right="0" bottom="32" left="0"
-			editable="false"
-			change="onUsersDataGridChanged(event)" >
+
+	<!-- day list -->
+	<s:Group id="pomodorosPerDayPanel" left="0" top="32" right="0" bottom="0" >
+		<mx:DataGrid id="pomodorosPerDayGrid"
+					 dataProvider="{db.pomodorosPerDayDataset}"
+					 top="0" right="0" bottom="32" left="0"
+					 editable="false"
+					 change="onUsersDataGridChanged(event)" >
 			<mx:columns>
 				<mx:DataGridColumn width="100" headerText="Created" dataField="created"/>
 				<mx:DataGridColumn width="40" headerText="Estimated" dataField="estimated"/>
@@ -195,14 +162,16 @@
 		</mx:DataGrid>
 		<s:HGroup height="32" right="0" bottom="0" left="0">
 			<mx:Button id="pomsPerDay"  width="32" height="32" icon="{EmbedImages.ICON_REFRESH_CLASS}"
-				click="onPomsPerDayClicked(null)"/>
+					   click="onPomsPerDayClicked(null)"/>
 			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-					   click="copyTableToClipboard('Count', db.datasetStatistics2)"/>
+					   click="copyTableToClipboard('Count', db.pomodorosPerDayDataset)"/>
 		</s:HGroup>
 	</s:Group>
-	<s:Group id="dataGridPanel4" left="0" top="32" right="0" bottom="0">
-		<mx:DataGrid id="pomodorosDataGrid4"
-			dataProvider="{db.datasetStatistics4}"
+
+	<!-- week list -->
+	<s:Group id="realityFactorPanel" left="0" top="32" right="0" bottom="0">
+		<mx:DataGrid id="realityFactorGrid"
+			dataProvider="{db.realityFactorDataset}"
 			top="0" right="0" bottom="32" left="0"
 			editable="false"
 			change="onUsersDataGridChanged(event)">
@@ -219,7 +188,7 @@
 			<mx:Button id="realityFactor" width="32" height="32" icon="{EmbedImages.ICON_REFRESH_CLASS}"
 				click="onRealityFactorsClicked(null)" />
 			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-				click="copyTableToClipboard('Reality Factors', db.datasetStatistics4)" />
+				click="copyTableToClipboard('Reality Factors', db.realityFactorDataset)" />
 		</s:HGroup>
 	</s:Group>
 </mx:Canvas>

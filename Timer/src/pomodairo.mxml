@@ -126,6 +126,7 @@
 
 		private function toggleTaskList():void {
 			if (!taskListPanel.visible) {
+                closeStatisticList();
 				taskListPanel.visible = true;
 				var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
 				setHeight = isNaN(setHeight) ? 0 : setHeight;
@@ -139,6 +140,24 @@
 		private function closeTaskList(event:PomodoroEvent = null):void {
 			this.height = SHORT_HEIGHT;
 			taskListPanel.visible = false;
+		}
+
+		private function toggleStatisticList():void {
+			if (!statisticList.visible) {
+                closeTaskList();
+                statisticList.visible = true;
+				var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
+				setHeight = isNaN(setHeight) ? 0 : setHeight;
+
+				this.height = setHeight > Capabilities.screenResolutionY || setHeight < FULL_HEIGHT ? FULL_HEIGHT : setHeight;
+			} else {
+                closeStatisticList();
+			}
+		}
+
+		private function closeStatisticList(event:PomodoroEvent = null):void {
+			this.height = SHORT_HEIGHT;
+            statisticList.visible = false;
 		}
 
 		private function beforeClose():void {
@@ -192,7 +211,7 @@
 			var action:String = event.item.@action;
 			switch (action) {
 				case STATISTIC_DIALOG_ID:
-					showStatisticsPanel();
+                    toggleStatisticList();
 					break;
 
 				case CONFIG_DIALOG_ID:
@@ -212,17 +231,6 @@
 			dialog.width = stage.stageWidth;
 			dialog.height = stage.stageHeight;
 			showPopup(dialog);
-		}
-
-		private function showStatisticsPanel():void {
-            var dialog:StatisticsWindow = new StatisticsWindow();
-            dialog.x = 0;
-            dialog.y = 0;
-            dialog.width = stage.stageWidth;
-            dialog.height = stage.stageHeight;
-            PopUpManager.addPopUp(dialog, this, true);
-            PopUpManager.centerPopUp(dialog);
-            PopUpManager.bringToFront(dialog);
 		}
 
 		private function showPopup(dialog:IFlexDisplayObject):void {
@@ -260,7 +268,7 @@
 			<mx:Button id="statisticButton"
 				width="32" height="32"
 		    	icon="{EmbedImages.ICON_STATS_CLASS}"
-				click="{showStatisticsPanel()}" />
+				click="{toggleStatisticList()}" />
 
 			<mx:Button id="settingsButton"
 			    width="32" height="32"
@@ -284,9 +292,14 @@
 
 	</s:VGroup>
 	
-	<mx:Canvas id="taskListPanel" x="0" y="{SHORT_HEIGHT}" height="100%" width="100%" visible="false" showEffect="fadein" hideEffect="fadeout"
+	<mx:Canvas id="taskListPanel"
+        x="0" y="{SHORT_HEIGHT}" height="100%" width="100%"
+        visible="false" showEffect="fadein" hideEffect="fadeout"
 		backgroundAlpha="0">
 		<ns1:TaskListCanvas x="0" y="0" height="100%" width="100%" app="{this}" />
 	</mx:Canvas>
+
+    <ns1:StatisticsWindow id="statisticList"  x="0" y="{SHORT_HEIGHT}" height="100%" width="100%" visible="false" showEffect="fadein" hideEffect="fadeout"
+                          backgroundAlpha="0" />
 	
 </mx:WindowedApplication>

@@ -3,17 +3,28 @@
         xmlns:fx="http://ns.adobe.com/mxml/2009"
         xmlns:s="library://ns.adobe.com/flex/spark"
         xmlns:mx="library://ns.adobe.com/flex/mx"
-        height="30" width="100%">
+        height="30" width="100%"
+    mouseOver="mouseOverHandler()"
+    mouseOut="mouseOutHandler()"
+    mouseDown="mouseDownHandler()">
 
 
     <fx:Script>
         <![CDATA[
+        import com.pomodairo.EmbedStyle;
         import com.pomodairo.Pomodoro;
         import com.pomodairo.PomodoroEventDispatcher;
         import com.pomodairo.TaskManager;
         import com.pomodairo.events.PomodoroEvent;
 
+        public static const POMODORO_WIDTH:int = 2;
+        public static const POMODORO_GAP:int = 2;
+        public static const POMODORO_HEIGHT:int = 20;
+
         private var _pomodoro:Pomodoro = null;
+        private var _drawBackground:Boolean = false;
+        private var _backgroundColor:uint;
+
         private var _strikethrough:Boolean = false;
 
         override public function set data(value:Object):void {
@@ -21,20 +32,13 @@
             _pomodoro = data as Pomodoro;
             if (_pomodoro == null) {
                 nameLabel.text = "";
-                estimationLabel.text = "";
-                actualLabel.text = "";
-                unplanedLabel.text = "";
-                interaptionsLabel.text = "";
                 doneButton.enabled = false;
             } else {
                 nameLabel.text = _pomodoro.name;
-                estimationLabel.text = _pomodoro.estimated.toString();
-                actualLabel.text = _pomodoro.pomodoros.toString();
-                unplanedLabel.text = _pomodoro.unplanned.toString();
-                interaptionsLabel.text = _pomodoro.interruptions.toString();
                 doneButton.enabled = true;
                 doneButton.selected = _pomodoro.done;
             }
+            invalidateDisplayList();
         }
 
         public function set strikethrough(bool:Boolean):void {
@@ -44,6 +48,17 @@
 
         public function get strikethrough():Boolean {
             return this._strikethrough;
+        }
+
+        override public function set selected(value:Boolean):void {
+            super.selected = value;
+            if (selected) {
+                _drawBackground = true;
+                _backgroundColor = EmbedStyle.LIST_SELECT_BACKGROUND;
+            } else {
+                _drawBackground = false;
+            }
+            invalidateDisplayList();
         }
 
         override protected function updateDisplayList(unscaledWidth:Number,
@@ -57,29 +72,55 @@
                 strikethrough = false;
             }
 
-            this.setStyle('color', 0xCCCCCC);
+            this.setStyle('color', EmbedStyle.COMMON_TEXT_COLOR);
             this.setStyle('fontStyle', 'normal');
             this.setStyle('fontWeight', 'normal');
 
             super.updateDisplayList(unscaledWidth, unscaledHeight);
 
             this.graphics.clear();
+
+            // draw planed pomodoros
+            var i:int;
+            var xPosition:int;
+            var yPosition:int = 4;
+
+            this.graphics.lineStyle();
+            if (_drawBackground) {
+                this.graphics.beginFill(_backgroundColor);
+                this.graphics.drawRect(0, 0, unscaledWidth, unscaledHeight);
+            }
+
+            this.graphics.beginFill(EmbedStyle.POMODORO_ESTIMATED_COLOR);
+            for (i = 0; i < _pomodoro.estimated; i++) {
+                xPosition = unscaledWidth - (POMODORO_WIDTH + POMODORO_GAP) * (i + 1);
+                this.graphics.drawRect(xPosition, yPosition, POMODORO_WIDTH, POMODORO_HEIGHT);
+            }
+
+            // draw done pomodoros
+            this.graphics.lineStyle();
+            var n:int = _pomodoro.pomodoros + _pomodoro.interruptions + _pomodoro.unplanned;
+            for (i = 0; i < n; i++) {
+                xPosition = unscaledWidth - (POMODORO_WIDTH + POMODORO_GAP) * (i + 1);
+                var doneColor:uint = i < _pomodoro.estimated && i < _pomodoro.pomodoros ? EmbedStyle.POMODORO_DONE_COLOR : EmbedStyle.POMODORO_OVERFLOW_COLOR;
+                var color:uint = i < _pomodoro.pomodoros ? doneColor : EmbedStyle.POMODORO_UNPLANED_COLOR;
+                this.graphics.beginFill(color);
+                this.graphics.drawRect(xPosition, yPosition, POMODORO_WIDTH, POMODORO_HEIGHT);
+            }
+
             if (this._strikethrough) {
                 this.graphics.lineStyle(1, this.getStyle("color"));
                 this.graphics.moveTo(28, unscaledHeight / 2);
                 this.graphics.lineTo(unscaledWidth - 28, unscaledHeight / 2);
             }
             else {
-                if (data.estimated == 0) {
+                if (_pomodoro.estimated == 0) {
                     this.setStyle('color', 0x777777);
                 }
-                if (data.estimated < data.pomodoros) {
+                if (_pomodoro.estimated < data.pomodoros) {
                     this.setStyle('color', 0xCC0000);
                 }
-                if (data.created.day != new Date().day) {
-                    this.setStyle('fontStyle', 'italic');
-                }
-                if (data.pomodoros > 0) {
+                if (_pomodoro.pomodoros > 0) {
                     this.setStyle('fontWeight', 'bold');
                 }
             }
@@ -104,38 +145,34 @@
             TaskManager.instance.findNextTask();
             invalidateDisplayList();
         }
+
+        private function mouseOverHandler():void {
+            _drawBackground = true;
+            _backgroundColor = EmbedStyle.LIST_OVER_BACKGROUND;
+            invalidateDisplayList();
+        }
+
+        private function mouseOutHandler():void {
+            if (selected) {
+                _drawBackground = true;
+                _backgroundColor = EmbedStyle.LIST_SELECT_BACKGROUND;
+            } else {
+                _drawBackground = false;
+            }
+            invalidateDisplayList();
+        }
+
+        private function mouseDownHandler():void {
+            _drawBackground = true;
+            _backgroundColor = EmbedStyle.LIST_SELECT_BACKGROUND;
+            invalidateDisplayList();
+        }
         ]]>
     </fx:Script>
 
-    <s:states>
-        <s:State name="normal" />
-        <s:State name="hovered" />
-        <s:State name="selected" />
-    </s:states>
-
-    <s:Rect left="0" top="0" right="0" bottom="0" includeInLayout="false"
-        visible.hovered="true"
-        visible="false">
-        <s:fill>
-            <s:SolidColor color="#d4d4d4" />
-        </s:fill>
-    </s:Rect>
-
-    <s:Rect left="0" top="0" right="0" bottom="0" includeInLayout="false"
-        visible.selected="true"
-        visible="false">
-        <s:fill>
-            <s:SolidColor color="0xadadad" />
-        </s:fill>
-    </s:Rect>
-
     <s:HGroup left="4" top="0" right="4" bottom="0" verticalAlign="middle" gap="2">
         <mx:CheckBox id="doneButton" change="onDonePomodoroClicked()"/>
-        <s:Label id="nameLabel" width="100%" lineBreak="explicit"/>
-        <s:Label id="estimationLabel" width="28" />
-        <s:Label id="actualLabel" width="28" />
-        <s:Label id="unplanedLabel" width="28" />
-        <s:Label id="interaptionsLabel" width="28" />
+        <s:Label id="nameLabel" width="100%" lineBreak="explicit" paddingTop="2" paddingLeft="5"/>
     </s:HGroup>
 
 </s:ItemRenderer>

@@ -4,7 +4,8 @@ package com.pomodairo.db
 	import com.pomodairo.Pomodoro;
 	import com.pomodairo.PomodoroEventDispatcher;
 	import com.pomodairo.RegexUtils;
-	import com.pomodairo.components.config.AdvancedConfigPanel;
+import com.pomodairo.components.PomodoroEditor;
+import com.pomodairo.components.config.AdvancedConfigPanel;
 	import com.pomodairo.events.PomodoroEvent;
 	import com.pomodairo.settings.ConfigItemName;
 	import com.pomodairo.settings.ConfigManager;
@@ -36,15 +37,17 @@ package com.pomodairo.db
 		public var dataset:Array;
 		
 		[Bindable]
-		public var datasetStatistics1:Array;
+		public var pomodorosOfDayDataset:Array;
+
 		[Bindable]
-		public var datasetStatistics2:Array;
+		public var pomodorosPerDayDataset:Array;
+
 		[Bindable]
-		public var datasetStatistics3:Array;
-		[Bindable]
-		public var datasetStatistics4:Array;
+		public var realityFactorDataset:Array;
+
 		[Bindable]
 		public var datasetStatistics5:Array;
+
 		[Bindable]
 		public var datasetStatistics6:Array;
 
@@ -132,7 +135,6 @@ package com.pomodairo.db
 		
 		public function initViews():void {
 			getPomodorosOfDay(new Date());
-			getInterruptionsOfDay(new Date());
 			getPomodorosPerDay();
 			getRealityFactors();
 			getPomodoroHashTags();
@@ -237,36 +239,17 @@ package com.pomodairo.db
 			dbStatement.text = sqlQuery;
 			dbStatement.parameters[":startDate"]= getStartDate(day, range);
 			dbStatement.parameters[":endDate"]= getEndDate(day, range);
-			dbStatement.addEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult1);
+			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
 			dbStatement.execute();
 		}
-		
-		public function getInterruptionsOfDay(day:Date, range:Number = -1, filter:String = ""):void
-		{
-			var filterSql:String = "";
-			if(filter != "") {
-				filterSql = " and name like '%"+filter+"%'";
-			}
-			var dbStatement:SQLStatement = new SQLStatement();
-			//dbStatement.itemClass = Pomodoro;
-			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "select name, strftime('%Y/%m/%d %H:%S',created) AS created, type, parent from Pomodoro where created > strftime( '%J', :startDate ) and created <= strftime( '%J', :endDate ) and (type='"+Pomodoro.TYPE_INTERRUPTION+"' or type='"+Pomodoro.TYPE_UNPLANNED+"')"+filterSql;
-			dbStatement.text = sqlQuery;
-			dbStatement.parameters[":startDate"]= getStartDate(day, range);
-			dbStatement.parameters[":endDate"]= getEndDate(day, range);
-			dbStatement.addEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult3);
-			dbStatement.execute();
-		}
-		
+
 		public function getPomodorosPerDay():void
 		{
 			// Created pomodoros per day, not the pomodoros done!
 			var dbStatement:SQLStatement = new SQLStatement();
-			//dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "SELECT strftime('%Y/%m/%d',created) AS created, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY created";
-			dbStatement.text = sqlQuery;
-			dbStatement.addEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult2);
+			dbStatement.text = "SELECT strftime('%Y/%m/%d',created) AS created, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY created";
+			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosPerDayResult);
 			dbStatement.execute();
 		}
 		
@@ -276,9 +259,8 @@ package com.pomodairo.db
 			var dbStatement:SQLStatement = new SQLStatement();
 			//dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "SELECT strftime('%W',created)+1 AS week, round(cast(sum(pomodoros) as real)/sum(estimated),2) AS factor, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY week";
-			dbStatement.text = sqlQuery;
-			dbStatement.addEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult4);
+			dbStatement.text = "SELECT strftime('%W',created)+1 AS week, round(cast(sum(pomodoros) as real)/sum(estimated),2) AS factor, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY week";
+			dbStatement.addEventListener(SQLEvent.RESULT, realityFactorResult);
 			dbStatement.execute();
 		}
 		
@@ -347,47 +329,37 @@ package com.pomodairo.db
 			return tempArray.sort(Array.CASEINSENSITIVE);
 		}
 		
-		private function onDBStatementStatisticsResult1(event:SQLEvent):void
+		private function pomodorosOfDayResult1(event:SQLEvent):void
 		{
 			var statement:SQLStatement = event.currentTarget as SQLStatement;
-			statement.removeEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult1);
+			statement.removeEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
 
 			var result:SQLResult = statement.getResult();
 		    if (result != null)
 		    {
-		    	datasetStatistics1 = result.data;
+		    	pomodorosOfDayDataset = result.data;
 		    }
 		}
-		private function onDBStatementStatisticsResult2(event:SQLEvent):void
+		private function pomodorosPerDayResult(event:SQLEvent):void
 		{
 			var statement:SQLStatement = event.currentTarget as SQLStatement;
-			statement.removeEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult2);
+			statement.removeEventListener(SQLEvent.RESULT, pomodorosPerDayResult);
 
 			var result:SQLResult = statement.getResult();
 		    if (result != null)
 		    {
-		    	datasetStatistics2 = result.data;
+		    	pomodorosPerDayDataset = result.data;
 		    }
 		}
-		private function onDBStatementStatisticsResult3(event:SQLEvent):void
+		private function realityFactorResult(event:SQLEvent):void
 		{
 			var statement:SQLStatement = event.currentTarget as SQLStatement;
-			statement.removeEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult3);
-			var result:SQLResult = statement.getResult();
-		    if (result != null)
-		    {
-		    	datasetStatistics3 = result.data;
-		    }
-		}
-		private function onDBStatementStatisticsResult4(event:SQLEvent):void
-		{
-			var statement:SQLStatement = event.currentTarget as SQLStatement;
-			statement.removeEventListener(SQLEvent.RESULT, onDBStatementStatisticsResult4);
+			statement.removeEventListener(SQLEvent.RESULT, realityFactorResult);
 
 			var result:SQLResult = statement.getResult();
 		    if (result != null)
 		    {
-		    	datasetStatistics4 = result.data;
+		    	realityFactorDataset = result.data;
 		    }
 		}
 		
