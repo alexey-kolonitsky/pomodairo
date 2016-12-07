@@ -10,9 +10,9 @@ public class PomodairoBaseRenderer extends ItemRenderer {
 	import com.pomodairo.EmbedStyle;
 	import com.pomodairo.Pomodoro;
 
-	public static const POMODORO_WIDTH:int = 2;
-	public static const POMODORO_GAP:int = 2;
-	public static const POMODORO_HEIGHT:int = 20;
+	protected var pomodoroWidth:int = 2;
+	protected var pomodoroGap:int = 2;
+	protected var pomodoroHeight:int = 20;
 
 	private var _drawBackground:Boolean = false;
 	private var _backgroundColor:uint;
@@ -101,19 +101,19 @@ public class PomodairoBaseRenderer extends ItemRenderer {
 		this.graphics.lineStyle();
 		this.graphics.beginFill(EmbedStyle.POMODORO_ESTIMATED_COLOR);
 		for (i = 0; i < _estimated; i++) {
-			xPosition = unscaledWidth - (POMODORO_WIDTH + POMODORO_GAP) * (i + 1);
-			this.graphics.drawRect(xPosition, yPosition, POMODORO_WIDTH, POMODORO_HEIGHT);
+			xPosition = unscaledWidth - (pomodoroWidth + pomodoroGap) * (i + 1);
+			this.graphics.drawRect(xPosition, yPosition, pomodoroWidth, pomodoroHeight);
 		}
 
 		// draw done pomodoros
 		this.graphics.lineStyle();
 		var n:int = _actual + _unplanned;
 		for (i = 0; i < n; i++) {
-			xPosition = unscaledWidth - (POMODORO_WIDTH + POMODORO_GAP) * (i + 1);
+			xPosition = unscaledWidth - (pomodoroWidth + pomodoroGap) * (i + 1);
 			var doneColor:uint = i < _estimated && i < _actual ? EmbedStyle.POMODORO_DONE_COLOR : EmbedStyle.POMODORO_OVERFLOW_COLOR;
 			var color:uint = i < _actual ? doneColor : EmbedStyle.POMODORO_UNPLANED_COLOR;
 			this.graphics.beginFill(color);
-			this.graphics.drawRect(xPosition, yPosition, POMODORO_WIDTH, POMODORO_HEIGHT);
+			this.graphics.drawRect(xPosition, yPosition, pomodoroWidth, pomodoroHeight);
 		}
 	}
 

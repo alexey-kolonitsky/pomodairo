@@ -17,7 +17,7 @@
 
 		import mx.collections.ArrayCollection;
 
-		private var tabs:ArrayCollection = new ArrayCollection(["Pomodoros", "Count", "Interruptions", "Reality Factors"]);
+		private var tabs:ArrayCollection = new ArrayCollection(["History", "Day", "Week"]);
 		private var configManager:ConfigManager;
 		private var db:Storage = Storage.instance;
 
@@ -137,47 +137,39 @@
 
 	<!-- day list -->
 	<s:Group id="pomodorosPerDayPanel" left="0" top="32" right="0" bottom="0" >
-
-		<mx:DataGrid id="pomodorosPerDayGrid"
-					 dataProvider="{db.pomodorosPerDayDataset}"
-					 top="0" right="0" bottom="32" left="0"
-					 editable="false" >
-			<mx:columns>
-				<mx:DataGridColumn width="100" headerText="Created" dataField="created"/>
-				<mx:DataGridColumn width="40" headerText="Estimated" dataField="estimated"/>
-				<mx:DataGridColumn width="40" headerText="Pomodoros" dataField="pomodoros"/>
-				<mx:DataGridColumn width="40" headerText="Delta" dataField="delta"/>
-				<mx:DataGridColumn width="40" headerText="Interruptions" dataField="interruptions"/>
-			</mx:columns>
-		</mx:DataGrid>
+		<s:List id="pomodorosPerDayList"
+			dataProvider="{db.pomodorosPerDayDataset}"
+			top="0" right="0" bottom="32" left="0"
+			contentBackgroundAlpha="0"
+			borderVisible="false"
+			doubleClickEnabled="true"
+			itemRenderer="com.pomodairo.components.PomodoroPerDayRenderer"
+			dragMoveEnabled="true" width="100%">
+		</s:List>
 		<s:HGroup height="32" right="0" bottom="0" left="0">
 			<mx:Button id="pomsPerDay"  width="32" height="32" icon="{EmbedImages.ICON_REFRESH_CLASS}"
 					   click="onPomsPerDayClicked(null)"/>
 			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-					   click="copyTableToClipboard('Count', db.pomodorosPerDayDataset)"/>
+					   click="copyTableToClipboard('Count', db.pomodorosPerDayDataset.source)"/>
 		</s:HGroup>
 	</s:Group>
 
 	<!-- week list -->
 	<s:Group id="realityFactorPanel" left="0" top="32" right="0" bottom="0">
-		<mx:DataGrid id="realityFactorGrid"
+		<s:List id="realityFactorList"
 			dataProvider="{db.realityFactorDataset}"
 			top="0" right="0" bottom="32" left="0"
-			editable="false">
-			<mx:columns>
-				<mx:DataGridColumn width="40" headerText="Week" dataField="week"/>
-				<mx:DataGridColumn width="50" headerText="Reality Factor" dataField="factor"/>
-				<mx:DataGridColumn width="40" headerText="Estimated" dataField="estimated"/>
-				<mx:DataGridColumn width="40" headerText="Pomodoros" dataField="pomodoros"/>
-				<mx:DataGridColumn width="40" headerText="Delta" dataField="delta"/>
-				<mx:DataGridColumn width="40" headerText="Interruptions" dataField="interruptions"/>
-			</mx:columns>
-		</mx:DataGrid>
+			contentBackgroundAlpha="0"
+			borderVisible="false"
+			doubleClickEnabled="true"
+			itemRenderer="com.pomodairo.components.PomodoroPerWeekRenderer"
+			dragMoveEnabled="true" width="100%">
+		</s:List>
 		<s:HGroup height="32" right="0" bottom="0" left="0">
 			<mx:Button id="realityFactor" width="32" height="32" icon="{EmbedImages.ICON_REFRESH_CLASS}"
 				click="onRealityFactorsClicked(null)" />
 			<mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-				click="copyTableToClipboard('Reality Factors', db.realityFactorDataset)" />
+				click="copyTableToClipboard('Reality Factors', db.realityFactorDataset.source)" />
 		</s:HGroup>
 	</s:Group>
 </mx:Canvas>

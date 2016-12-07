@@ -40,10 +40,10 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		public var pomodorosOfDayDataset:ArrayCollection;
 
 		[Bindable]
-		public var pomodorosPerDayDataset:Array;
+		public var pomodorosPerDayDataset:ArrayCollection;
 
 		[Bindable]
-		public var realityFactorDataset:Array;
+		public var realityFactorDataset:ArrayCollection;
 
 		[Bindable]
 		public var datasetStatistics5:Array;
@@ -247,8 +247,9 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		{
 			// Created pomodoros per day, not the pomodoros done!
 			var dbStatement:SQLStatement = new SQLStatement();
+			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			dbStatement.text = "SELECT strftime('%Y/%m/%d',created) AS created, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY created";
+			dbStatement.text = "SELECT created, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions FROM pomodoro GROUP BY created";
 			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosPerDayResult);
 			dbStatement.execute();
 		}
@@ -348,7 +349,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			var result:SQLResult = statement.getResult();
 		    if (result != null)
 		    {
-		    	pomodorosPerDayDataset = result.data;
+		    	pomodorosPerDayDataset = new ArrayCollection(result.data);
 		    }
 		}
 		private function realityFactorResult(event:SQLEvent):void
@@ -359,7 +360,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			var result:SQLResult = statement.getResult();
 		    if (result != null)
 		    {
-		    	realityFactorDataset = result.data;
+		    	realityFactorDataset = new ArrayCollection(result.data);
 		    }
 		}
 		

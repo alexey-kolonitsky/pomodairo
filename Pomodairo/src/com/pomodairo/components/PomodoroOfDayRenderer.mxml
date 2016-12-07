@@ -27,9 +27,6 @@
                 _actual = _pomodoro.pomodoros;
                 _unplanned = _pomodoro.interruptions + _pomodoro.unplanned;
             } else {
-                if (_pomodoro.name == "") {
-                    trace("!!!");
-                }
                 nameLabel.text = _pomodoro.name;
                 dateLabel.text = dateFormatter.format(_pomodoro.closed);
                 _strikethrough = _pomodoro.done;
