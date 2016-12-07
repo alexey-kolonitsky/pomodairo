@@ -6,6 +6,7 @@
     xmlns:fx="http://ns.adobe.com/mxml/2009"
     xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:components="com.pomodairo.components.*"
     creationComplete="init()">
 
     <fx:Script><![CDATA[
@@ -17,10 +18,6 @@
 
         private var configManager:ConfigManager;
         private var db:Storage = Storage.instance;
-
-        private function initDateField(df:DateField):void {
-            df.selectedDate = new Date();
-        }
 
         public function copyTableToClipboard(title:String, data:Array):void {
             var tmpString:String = new TableUtils().getTableAsCsv(data);
@@ -52,9 +49,13 @@
         private function update():void {
             var timePassed:Boolean = getTimer() - _lastUpdate > UPDATE_DELAY;
             if (_needUpdate && timePassed) {
-                db.getPomodorosOfDay(dateFieldPomsOfDay.selectedDate, pomodoroRangeStepper.value, pomodoroFilter.text);
+                db.getPomodorosOfDay(timeline.startDate, timeline.dateCount, pomodoroFilter.text);
                 _needUpdate = false;
             }
+        }
+
+        private function updateLabel():void {
+            labelDates.text = timeline.dateCount + " days, from " + timeline.startDate.fullYear + "-" + timeline.startDate.month + "-" + timeline.startDate.date;
         }
 
         ]]>
@@ -69,8 +70,8 @@
         <s:Label text="HISTORY"
             color="{EmbedStyle.SECTION_TEXT_COLOR}"
             fontWeight="bold"
-            verticalAlign="middle"
             paddingLeft="4"/>
+        <mx:Label id="labelDates" />
         <s:Spacer width="100%" />
         <s:BitmapImage source="{EmbedImages.ICON_SEARCH}" width="24" height="24"/>
         <s:TextInput id="pomodoroFilter" width="132" height="32" change="{needUpdate()}"
@@ -80,28 +81,19 @@
             click="copyTableToClipboard('Pomodoros', db.pomodorosOfDayDataset.source)"/>
     </s:BorderContainer>
 
+    <components:TimeLine id="timeline" top="32" right="0" height="32" left="0"
+        timelineValueChanged="{updateLabel()}"
+        timelineValueCommited="{needUpdate()}"
+    />
+
     <!-- task list -->
     <s:List id="list"
         dataProvider="{db.pomodorosOfDayDataset}"
-        top="32" right="0" bottom="32" left="0"
+        top="64" right="0" bottom="0" left="0"
         contentBackgroundAlpha="0"
         borderVisible="false"
         doubleClickEnabled="true"
         itemRenderer="com.pomodairo.components.PomodoroOfDayRenderer"
         dragMoveEnabled="true" width="100%">
     </s:List>
-    <s:HGroup height="32" right="0" bottom="0" left="0">
-        <mx:DateField id="dateFieldPomsOfDay" initialize="initDateField(this.dateFieldPomsOfDay)"
-            change="{needUpdate()}"/>
-        <mx:Label text="Days"/>
-        <mx:NumericStepper
-            minimum="-365"
-            maximum="365"
-            stepSize="1"
-            id="pomodoroRangeStepper"
-            value="0"
-            width="50"
-            maxChars="4"
-            change="{needUpdate()}"/>
-    </s:HGroup>
 </s:Group>
