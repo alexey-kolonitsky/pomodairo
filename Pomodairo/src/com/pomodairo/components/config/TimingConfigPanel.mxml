@@ -78,11 +78,13 @@
     </mx:Script>
 
 	<s:VGroup width="100%" >
-		<s:Label text="TIMING"
-				 backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
-				 color="{EmbedStyle.SECTION_TEXT_COLOR}"
-				 fontWeight="bold"
-				 height="32" width="100%" verticalAlign="middle" />
+		<s:Label
+			text="TIMING"
+			backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
+			color="{EmbedStyle.SECTION_TEXT_COLOR}"
+			fontWeight="bold"
+			height="32" width="100%" verticalAlign="middle" paddingLeft="4"/>
+
 		<s:HGroup width="100%">
 			<s:Label text="Pomodoro length" color="#A9A9A9" width="100"/>
 			<mx:HSlider id="pomodoroSlider" snapInterval="1" minimum="1" maximum="60" width="100%"/>

@@ -82,12 +82,12 @@
         ]]>
 	</mx:Script>
 
-    <lists:TaskList id="taskList" left="0" top="32" right="0" bottom="0"/>
+    <lists:TaskList id="taskList" left="0" top="0" right="0" bottom="0"/>
 
-    <lists:HistoryList id="pomodorosOfDayPanel" left="0" top="32" right="0" bottom="0"/>
+    <lists:HistoryList id="pomodorosOfDayPanel" left="0" top="0" right="0" bottom="0"/>
 
-    <lists:StatisticPerDayList id="pomodorosPerDayPanel" left="0" top="32" right="0" bottom="0"/>
+    <lists:StatisticPerDayList id="pomodorosPerDayPanel" left="0" top="0" right="0" bottom="0"/>
 
-    <lists:StatisticPerWeekList id="realityFactorPanel" left="0" top="32" right="0" bottom="0"/>
+    <lists:StatisticPerWeekList id="realityFactorPanel" left="0" top="0" right="0" bottom="0"/>
 
 </mx:Canvas>

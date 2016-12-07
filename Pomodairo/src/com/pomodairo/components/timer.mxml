@@ -361,17 +361,17 @@
 			}
 
 			private function showNextTaskButton():void {
-				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
+//				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
 				nextTaskButton.enabled = true;
 			}
 
 			private function showClosePomoButton():void {
-				closePomodoroButton.includeInLayout = closePomodoroButton.visible = true;
+//				closePomodoroButton.includeInLayout = closePomodoroButton.visible = true;
 				nextTaskButton.enabled = false;
 			}
 
 			private function hideCloseNextButton():void {
-				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
+//				closePomodoroButton.includeInLayout = closePomodoroButton.visible = false;
 				nextTaskButton.enabled = false;
 			}
 
@@ -418,25 +418,6 @@
 
 			public function toggleText(event:TimerEvent):void {
 				counter.visible = !counter.visible;
-			}
-
-			public function onClosePomoClicked(event:Event = null):void {
-				// Mark done.
-				var pomodoro:Pomodoro = taskManager.activeTask;
-				pomodoro.done = true;
-				pomodoro.closed = new Date();
-
-				// Dispatch event.
-				var doneEvent:PomodoroEvent = new PomodoroEvent(PomodoroEvent.DONE);
-				doneEvent.pomodoro = pomodoro;
-				PomodoroEventDispatcher.instance.dispatchEvent(doneEvent);
-
-				if (taskManager.hasMoreTasks()) {
-					taskManager.nextTask();
-					showNextTaskButton();
-				} else {
-					showNewTaskButton();
-				}
 			}
 
 			public function onNextTaskClicked(event:Event = null):void {
@@ -513,10 +494,6 @@
 	<mx:GlowFilter id="glow" color="#FFFF00" alpha="1" blurX="8" blurY="8" strength="1"/>
 
 	<s:HGroup top="64" right="0" left="0" bottom="0" gap="2">
-
-		<mx:CheckBox id="closePomodoroButton"
-				   visible="false" includeInLayout="false"
-				   click="onClosePomoClicked()" />
 
 		<mx:ProgressBar id="timeProgressBar"
 						width="100%" height="32"

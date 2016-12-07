@@ -36,26 +36,6 @@
             }
             invalidateDisplayList();
         }
-
-        private function onDonePomodoroClicked(event:Event = null):void {
-
-            if (_pomodoro.done) {
-                _pomodoro.closed = null;
-            }
-            else {
-                _pomodoro.closed = new Date();
-            }
-            _pomodoro.done = !_pomodoro.done;
-            // Following is done by event listener in db object.
-            // db.markDone(pom);
-            // Dispatch event.
-            var evt:PomodoroEvent = new PomodoroEvent(PomodoroEvent.DONE);
-            evt.pomodoro = _pomodoro;
-            PomodoroEventDispatcher.instance.dispatchEvent(evt);
-
-            TaskManager.instance.findNextTask();
-            invalidateDisplayList();
-        }
         ]]>
     </fx:Script>
 

@@ -45,11 +45,11 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		[Bindable]
 		public var realityFactorDataset:ArrayCollection;
 
-		[Bindable]
-		public var datasetStatistics5:Array;
+//		[Bindable]
+//		public var datasetStatistics5:Array;
 
-		[Bindable]
-		public var datasetStatistics6:Array;
+//		[Bindable]
+//		public var datasetStatistics6:Array;
 
 			
 		private var sqlConnectionFile:File;
@@ -137,8 +137,8 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			getPomodorosOfDay(new Date());
 			getPomodorosPerDay();
 			getRealityFactors();
-			getPomodoroHashTags();
-			getInterruptionHashTags();
+//			getPomodoroHashTags();
+//			getInterruptionHashTags();
 		}
 		
 		private function onSQLConnectionOpened(event:SQLEvent):void {
@@ -265,54 +265,54 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}
 		
-		public function getPomodoroHashTags():void
-		{
-			var regexUtils:RegexUtils = new RegexUtils();
-			var dbStatement:SQLStatement = new SQLStatement();
-			dbStatement.itemClass = Pomodoro;
-			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "SELECT * FROM pomodoro WHERE name like '%#%' and (type='"+Pomodoro.TYPE_POMODORO+"' or type='"+Pomodoro.TYPE_UNPLANNED+"')";
-			dbStatement.text = sqlQuery;
-			dbStatement.execute();
-			var tempResult:SQLResult = dbStatement.getResult();
-			var result:Array = [];
-			if(tempResult.data != null) {
-				for(var i:int = 0; i<tempResult.data.length; i++) {
-					var tags:Array = regexUtils.extractHashTags(tempResult.data[i].name);
-					for(var j:int=0; j < tags.length; j++) {					
-						result.push(tags[j]);
-					}
-				}
-				this.datasetStatistics5 = removeDuplicates(result);
-			}
-			else {
-				this.datasetStatistics6 = result;
-			}
-		}
-		public function getInterruptionHashTags():void
-		{
-			var regexUtils:RegexUtils = new RegexUtils();
-			var dbStatement:SQLStatement = new SQLStatement();
-			dbStatement.itemClass = Pomodoro;
-			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "SELECT * FROM pomodoro WHERE name like '%#%' and (type='"+Pomodoro.TYPE_INTERRUPTION+"' or type='"+Pomodoro.TYPE_UNPLANNED+"')";
-			dbStatement.text = sqlQuery;
-			dbStatement.execute();
-			var tempResult:SQLResult = dbStatement.getResult();
-			var result:Array = [];
-			if(tempResult.data != null) {
-				for(var i:int = 0; i<tempResult.data.length; i++) {
-					var tags:Array = regexUtils.extractHashTags(tempResult.data[i].name);
-					for(var j:int=0; j < tags.length; j++) {					
-						result.push(tags[j]);
-					}
-				}
-				this.datasetStatistics6 = removeDuplicates(result);
-			}
-			else {
-				this.datasetStatistics6 = result;
-			}
-		}
+//		public function getPomodoroHashTags():void
+//		{
+//			var regexUtils:RegexUtils = new RegexUtils();
+//			var dbStatement:SQLStatement = new SQLStatement();
+//			dbStatement.itemClass = Pomodoro;
+//			dbStatement.sqlConnection = sqlConnection;
+//			var sqlQuery:String = "SELECT * FROM pomodoro WHERE name like '%#%' and (type='"+Pomodoro.TYPE_POMODORO+"' or type='"+Pomodoro.TYPE_UNPLANNED+"')";
+//			dbStatement.text = sqlQuery;
+//			dbStatement.execute();
+//			var tempResult:SQLResult = dbStatement.getResult();
+//			var result:Array = [];
+//			if(tempResult.data != null) {
+//				for(var i:int = 0; i<tempResult.data.length; i++) {
+//					var tags:Array = regexUtils.extractHashTags(tempResult.data[i].name);
+//					for(var j:int=0; j < tags.length; j++) {
+//						result.push(tags[j]);
+//					}
+//				}
+//				this.datasetStatistics5 = removeDuplicates(result);
+//			}
+//			else {
+//				this.datasetStatistics6 = result;
+//			}
+//		}
+//		public function getInterruptionHashTags():void
+//		{
+//			var regexUtils:RegexUtils = new RegexUtils();
+//			var dbStatement:SQLStatement = new SQLStatement();
+//			dbStatement.itemClass = Pomodoro;
+//			dbStatement.sqlConnection = sqlConnection;
+//			var sqlQuery:String = "SELECT * FROM pomodoro WHERE name like '%#%' and (type='"+Pomodoro.TYPE_INTERRUPTION+"' or type='"+Pomodoro.TYPE_UNPLANNED+"')";
+//			dbStatement.text = sqlQuery;
+//			dbStatement.execute();
+//			var tempResult:SQLResult = dbStatement.getResult();
+//			var result:Array = [];
+//			if(tempResult.data != null) {
+//				for(var i:int = 0; i<tempResult.data.length; i++) {
+//					var tags:Array = regexUtils.extractHashTags(tempResult.data[i].name);
+//					for(var j:int=0; j < tags.length; j++) {
+//						result.push(tags[j]);
+//					}
+//				}
+//				this.datasetStatistics6 = removeDuplicates(result);
+//			}
+//			else {
+//				this.datasetStatistics6 = result;
+//			}
+//		}
 		
 		private function removeDuplicates(arr:Array):Array
 		{
