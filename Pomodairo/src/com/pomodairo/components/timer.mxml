@@ -335,7 +335,7 @@
 				startTimerButton.includeInLayout = startTimerButton.visible = true;
 				stopTimerButton.includeInLayout = stopTimerButton.visible = false;
 				stopBreakButton.includeInLayout = stopBreakButton.visible = false;
-				newTaskButton.includeInLayout = newTaskButton.visible = false;
+//				newTaskButton.includeInLayout = newTaskButton.visible = false;
 
 				counter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
 				miniCounter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
@@ -355,7 +355,7 @@
 				startTimerButton.includeInLayout = startTimerButton.visible = false;
 				stopTimerButton.includeInLayout = stopTimerButton.visible = false;
 				stopBreakButton.includeInLayout = stopBreakButton.visible = false;
-				newTaskButton.includeInLayout = newTaskButton.visible = true;
+//				newTaskButton.includeInLayout = newTaskButton.visible = true;
 				counter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
 				miniCounter.text = toTwoDigitString(pomodoroLengthInMinutes) + ":00";
 			}
@@ -513,11 +513,7 @@
 				   visible="false" includeInLayout="false"
 				   click="stopBreakTimer();showClosePomoButton();"
 				   icon="{EmbedImages.ICON_STOP_CLASS}"/>
-		<mx:Button id="newTaskButton" width="32" height="32"
-				   click="createPomodoro()"
-				   icon="{EmbedImages.ICON_PLUS_CLASS}"/>
 		<mx:Button id="nextTaskButton"  height="32"
-				   visible="false" includeInLayout="false"
 				   click="onNextTaskClicked()"
 				   icon="{EmbedImages.ICON_FORWARD_CLASS}"/>
 	</s:HGroup>

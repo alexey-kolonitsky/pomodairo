@@ -23,6 +23,7 @@
         import air.update.events.UpdateEvent;
 
         import com.pomodairo.EmbedImages;
+        import com.pomodairo.EmbedStyle;
 
         import com.pomodairo.Pomodoro;
         import com.pomodairo.PomodoroEventDispatcher;

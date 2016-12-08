@@ -3,10 +3,20 @@
  */
 package com.pomodairo.components {
 import com.pomodairo.EmbedStyle;
+import com.pomodairo.utils.DateUtil;
+
+import flash.display.Bitmap;
+
+import flash.display.BitmapData;
 
 import flash.events.Event;
 
 import flash.events.MouseEvent;
+import flash.geom.Matrix;
+import flash.text.AntiAliasType;
+import flash.text.TextField;
+import flash.text.TextFieldAutoSize;
+import flash.text.TextFormat;
 
 import mx.controls.DateChooser;
 
@@ -24,8 +34,14 @@ public class TimeLine extends UIComponent {
     public static const SCALE_TASK:String = "task";
     public static const SCALE_DAY:String = "day";
     public static const SCALE_WEEK:String = "week";
+
     private var cursorPoint:Number = NaN;
     private var mouseDownPoint:Number = NaN;
+
+    private var monthNameBitmap:Vector.<BitmapData>;
+    private var yearBitmap:BitmapData;
+    private var tf:TextField = new TextField();
+
 
     public function TimeLine() {
         var today:Date = new Date();
@@ -38,6 +54,18 @@ public class TimeLine extends UIComponent {
         addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
         addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
 
+        tf.defaultTextFormat = new TextFormat("_sans", 8, EmbedStyle.BACKGROUND_COLOR, true);
+        tf.autoSize = TextFieldAutoSize.LEFT;
+
+        var names:Vector.<String> = DateUtil.getMontNames();
+        var sizes:Vector.<uint> = DateUtil.getMonthSizeByDate(today);
+
+        monthNameBitmap = new Vector.<BitmapData>(12);
+        for (var i:int = 0; i < sizes.length; i++) {
+            tf.text = names[i];
+            monthNameBitmap[i] = new BitmapData(sizes[i] - 2, 12, false, EmbedStyle.COMMON_TEXT_COLOR);
+            monthNameBitmap[i].draw(tf, new Matrix(1, 0, 0, 1, 0, 0));
+        }
     }
 
     private function mouseUpHandler(event:MouseEvent):void {
@@ -107,13 +135,33 @@ public class TimeLine extends UIComponent {
                 color = EmbedStyle.LIST_OVER_BACKGROUND;
             }
             if (today.date == 1) {
-                color = EmbedStyle.LIST_SELECT_BACKGROUND;
+                color = EmbedStyle.COMMON_TEXT_COLOR;
+                if (today.month == 0) {
+                    color = EmbedStyle.BACKGROUND_COLOR;
+                }
             }
+
             today.date--;
             trace(today.fullYear + "-" + today.month + "-" + today.date + " ");
             graphics.beginFill(color);
             graphics.drawRect(xPosition, yPosition, 1, stickHeight);
+            if (today.date == 1) {
+                var bmd:BitmapData = monthNameBitmap[today.month];
+                graphics.beginBitmapFill(bmd, new Matrix(1, 0, 0, 1, xPosition, 0), false);
+                graphics.drawRect(xPosition, 0, bmd.width, bmd.height);
+                if (today.month == 0) {
+                    tf.text = today.fullYear.toString();
+                    yearBitmap = new BitmapData(29, 12, false, EmbedStyle.COMMON_TEXT_COLOR);
+                    yearBitmap.draw(tf, new Matrix(1, 0, 0, 1, 0, 0));
+
+                    graphics.beginBitmapFill(yearBitmap, new Matrix(1, 0, 0, 1, xPosition, 12), false);
+                    graphics.drawRect(xPosition, 12, yearBitmap.width, yearBitmap.height);
+                }
+            }
+
         }
+
+        //Draw selected range
         if (!isNaN(mouseDownPoint) && !isNaN(cursorPoint)) {
             var x:Number  = Math.min(cursorPoint, mouseDownPoint);
             var w:Number = Math.abs(cursorPoint - mouseDownPoint);
@@ -127,26 +175,18 @@ public class TimeLine extends UIComponent {
             dispatchEvent(new Event(CHANGD));
         } else {
             today = new Date();
-            var delta:int = getDaysBetweenDates(today, startDate);
+            var delta:int = DateUtil.getDaysBetweenDates(today, startDate);
             var x:Number = unscaledWidth - delta;
             var w:Number = _dateCount;
             graphics.beginFill(0xFFFF00, 0.5);
             graphics.drawRect(x, 0, w, unscaledHeight);
         }
 
+        //Draw cursor
         if (!isNaN(cursorPoint)) {
             graphics.beginFill(0xFFFF00);
             graphics.drawRect(cursorPoint, 0, 1, unscaledHeight);
         }
-    }
-
-    public static function getDaysBetweenDates(date1:Date,date2:Date):int
-    {
-        var one_day:Number = 1000 * 60 * 60 * 24;
-        var date1_ms:Number = date1.getTime();
-        var date2_ms:Number = date2.getTime();
-        var difference_ms:Number = Math.abs(date1_ms - date2_ms);
-        return Math.round(difference_ms/one_day);
     }
 }
 }

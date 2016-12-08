@@ -3,6 +3,7 @@
  */
 package com.pomodairo {
 public class EmbedStyle {
+	public static const BACKGROUND_COLOR:uint = 0x292929;
 
 	public static const LIST_OVER_BACKGROUND:uint = 0x555555;
 	public static const LIST_SELECT_BACKGROUND:uint = 0x444444;
