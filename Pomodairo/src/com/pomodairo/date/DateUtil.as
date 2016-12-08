@@ -1,7 +1,7 @@
 /**
  * Created by akalanitski on 08.12.2016.
  */
-package com.pomodairo.utils {
+package com.pomodairo.date {
 public class DateUtil {
 
     public static const MONTH_NAME:Vector.<String> = new <String>["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
@@ -24,14 +24,19 @@ public class DateUtil {
         return result;
     }
 
+    public static function substract(date1:Date,  date2:Date):TimeSpan {
+        return new TimeSpan(date1.time - date2.time);
+    }
 
-    public static function getDaysBetweenDates(date1:Date,  date2:Date):int
-    {
-        var one_day:Number = 1000 * 60 * 60 * 24;
-        var date1_ms:Number = date1.getTime();
-        var date2_ms:Number = date2.getTime();
-        var difference_ms:Number = Math.abs(date1_ms - date2_ms);
-        return Math.round(difference_ms/one_day);
+    public static function clone(source:Date):Date {
+        var result:Date = new Date();
+        result.time = source.time;
+        return result;
+    }
+
+    public static function add(date:Date, timeSpan:TimeSpan):Date {
+        var result:Date = new Date(date.time + timeSpan.time);
+        return result;
     }
 }
 }
