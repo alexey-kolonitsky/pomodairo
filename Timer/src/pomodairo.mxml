@@ -298,9 +298,12 @@
             backgroundAlpha="0">
 
         <ns1:PomodoroListContainer id="pomodoroListContainer" height="100%" width="100%"
-        tabsList="{tabsList}"/>
+            tabsList="{tabsList}"/>
 
     </mx:Canvas>
 
+    <ns1:ResizeLine bottom="0" left="0" right="0" height="4"
+        backgroundColor="0xFFFFFF" backgroundAlpha="0.2"
+        app="{this}"/>
 
 </mx:WindowedApplication>
