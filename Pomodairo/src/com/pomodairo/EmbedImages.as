@@ -2,7 +2,7 @@
  * Created by akalanitski on 02.12.2016.
  */
 package com.pomodairo {
-import com.pomodairo.components.Glyph;
+import com.pomodairo.ui.Glyph;
 
 import flash.display.Bitmap;
 

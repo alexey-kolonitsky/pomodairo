@@ -2,9 +2,9 @@
  * Created by akalanitski on 10.12.2016.
  */
 package com.pomodairo.core {
-import com.pomodairo.Pomodoro;
-import com.pomodairo.PomodoroEventDispatcher;
-import com.pomodairo.components.config.DefaultConfig;
+import com.pomodairo.data.Pomodoro;
+import com.pomodairo.core.PomodoroEventDispatcher;
+import com.pomodairo.settings.DefaultConfig;
 import com.pomodairo.date.TimeSpan;
 import com.pomodairo.date.TimeSpan;
 import com.pomodairo.date.TimeSpan;

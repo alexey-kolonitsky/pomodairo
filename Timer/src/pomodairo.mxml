@@ -25,17 +25,18 @@
         import com.pomodairo.EmbedImages;
         import com.pomodairo.EmbedStyle;
 
-        import com.pomodairo.Pomodoro;
-        import com.pomodairo.PomodoroEventDispatcher;
+        import com.pomodairo.data.Pomodoro;
+        import com.pomodairo.core.PomodoroEventDispatcher;
+        import com.pomodairo.settings.DefaultConfig;
         import com.pomodairo.core.TaskManager;
         import com.pomodairo.components.Display;
-        import com.pomodairo.components.PomoItemInput;
+        import com.pomodairo.components.popup.PomoItemInput;
         import com.pomodairo.components.StatisticsWindow;
         import com.pomodairo.components.config.BaseConfigPanel;
-        import com.pomodairo.components.config.ConfirmPanel;
+        import com.pomodairo.components.popup.ConfirmPanel;
         import com.pomodairo.components.config.SettingsPanel;
         import com.pomodairo.core.TimeManager;
-        import com.pomodairo.db.Storage;
+        import com.pomodairo.core.Storage;
         import com.pomodairo.events.ConfigurationUpdatedEvent;
         import com.pomodairo.events.GuiChangeEvent;
         import com.pomodairo.events.PomodoroEvent;
@@ -43,17 +44,9 @@
         import com.pomodairo.settings.ConfigManager;
         import com.pomodairo.twitter.TwitterManager;
 
-        import mx.collections.ArrayCollection;
-
         import mx.core.IFlexDisplayObject;
         import mx.events.MenuEvent;
         import mx.managers.PopUpManager;
-
-        public static const MIN_WIDTH:Number = 320;
-
-        public static const MINI_HEIGHT:Number = 52;
-        public static const SHORT_HEIGHT:Number = 150;
-        public static const FULL_HEIGHT:Number = SHORT_HEIGHT + 300;
 
 
         private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
@@ -80,12 +73,12 @@
             }
 
             var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
-            if (setHeight >= MINI_HEIGHT && setHeight < Capabilities.screenResolutionY) {
+            if (setHeight >= DefaultConfig.MINI_HEIGHT && setHeight < Capabilities.screenResolutionY) {
                 this.height = setHeight;
             }
 
             var setWidth:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_WIDTH);
-            if (setWidth >= MIN_WIDTH && setHeight < Capabilities.screenResolutionX) {
+            if (setWidth >= DefaultConfig.MIN_WIDTH && setHeight < Capabilities.screenResolutionX) {
                 this.width = setWidth;
             }
 
@@ -170,14 +163,14 @@
                 var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
                 setHeight = isNaN(setHeight) ? 0 : setHeight;
 
-                this.height = setHeight > Capabilities.screenResolutionY || setHeight < FULL_HEIGHT ? FULL_HEIGHT : setHeight;
+                this.height = setHeight > Capabilities.screenResolutionY || setHeight < DefaultConfig.FULL_HEIGHT ? DefaultConfig.FULL_HEIGHT : setHeight;
             } else {
                 closeTaskList();
             }
         }
 
         private function closeTaskList(event:PomodoroEvent = null):void {
-            this.height = SHORT_HEIGHT;
+            this.height = DefaultConfig.SHORT_HEIGHT;
             listContainer.visible = false;
             tabsList.visible = false;
         }
@@ -193,10 +186,10 @@
             if (event.miniView) {
                 trace("Switch application to mini view");
                 closeTaskList();
-                this.height = MINI_HEIGHT;
+                this.height = DefaultConfig.MINI_HEIGHT;
             } else {
                 trace("Switch application to regular view");
-                this.height = SHORT_HEIGHT;
+                this.height = DefaultConfig.SHORT_HEIGHT;
             }
         }
 
@@ -213,7 +206,7 @@
         }
 
         private function resizeHandler(event:Event):void {
-            if (this.height == MINI_HEIGHT || this.height == SHORT_HEIGHT)
+            if (this.height == DefaultConfig.MINI_HEIGHT || this.height == DefaultConfig.SHORT_HEIGHT)
                 return;
 
             var value:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
@@ -283,7 +276,7 @@
         ]]>
     </mx:Script>
 
-    <s:VGroup left="0" top="0" height="{SHORT_HEIGHT}" right="0"
+    <s:VGroup left="0" top="0" height="{DefaultConfig.SHORT_HEIGHT}" right="0"
             mouseDown="{nativeWindow.startMove()}">
 
         <!-- TopPanel -->
@@ -337,9 +330,9 @@
     </s:VGroup>
 
     <mx:Canvas id="listContainer"
-            x="0" y="{SHORT_HEIGHT}" height="100%" width="100%"
-            visible="false" showEffect="fadein" hideEffect="fadeout"
-            backgroundAlpha="0">
+        x="0" y="{DefaultConfig.SHORT_HEIGHT}" height="100%" width="100%"
+        visible="false" showEffect="fadein" hideEffect="fadeout"
+        backgroundAlpha="0">
 
         <ns1:PomodoroListContainer id="pomodoroListContainer" height="100%" width="100%"
             tabsList="{tabsList}"/>

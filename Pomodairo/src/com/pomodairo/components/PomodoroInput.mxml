@@ -1,22 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="256" height="52" 
-	creationComplete="init()" borderColor="#000000" borderStyle="solid" backgroundColor="#181818" showEffect="fadein" hideEffect="fadeout">
-	
-	<mx:Script>
-        <![CDATA[
-        import mx.controls.Alert;
+<?xml version="1.0"?>
+<!--
+  Created by akalanitski on 11.12.2016.
+-->
+<s:Group
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    creationComplete="init()">
 
-        import com.pomodairo.db.Storage;
-        import com.pomodairo.Pomodoro;
+    <fx:Script><![CDATA[
+        import com.pomodairo.EmbedStyle;
+        import com.pomodairo.core.PomodoroEventDispatcher;
+        import com.pomodairo.core.Storage;
+        import com.pomodairo.data.Pomodoro;
         import com.pomodairo.events.PomodoroEvent;
-        import com.pomodairo.PomodoroEventDispatcher;
-
-        public var type:String = Pomodoro.TYPE_POMODORO;
-        public var reference:Pomodoro;
-        public var selectAfterCreate:Boolean = false;
 
         public var descriptionInstructions:String = "Enter description (press escape to cancel)";
         public var estimateInstructions:String = "Enter estimate (press escape to cancel)";
+
+
+        public var selectAfterCreate:Boolean = false;
+
+        public var type:String = Pomodoro.TYPE_POMODORO;
+        public var reference:Pomodoro;
 
         [Bindable]
         public var currentText:String = descriptionInstructions;
@@ -41,17 +47,15 @@
             input.setFocus();
         }
 
-        function checkSubmit(event:KeyboardEvent):void {
-            if (event.charCode == 13)
-                fireSubmit(null);
 
-            if (event.charCode == 27)
-                exit();
+        private function descriptionFocus(event:Event = null):void {
+            currentText = descriptionInstructions;
         }
 
-        private function exit():void {
-            this.parent.removeChild(this);
+        private function estimateFocus(event:Event = null):void {
+            currentText = estimateInstructions;
         }
+
 
         private function fireSubmit(event:Event):void {
             if (input.text == null || input.text == "") {
@@ -115,21 +119,37 @@
             }
         }
 
-        private function descriptionFocus(event:Event = null):void {
-            currentText = descriptionInstructions;
+        function checkSubmit(event:KeyboardEvent):void {
+            switch (event.charCode) {
+                case Keyboard.ENTER:
+                    fireSubmit(null);
+                    break;
+                case Keyboard.ESCAPE:
+                    exit();
+                    break;
+            }
         }
 
-        private function estimateFocus(event:Event = null):void {
-            currentText = estimateInstructions;
+        private function exit():void {
+            dispatchEvent(new Event("exit"));
+            input.text = "";
+            estimatedInput.text = "";
         }
+
         ]]>
-    </mx:Script>
-    
-    <mx:Fade id="fadein" duration="1000" alphaFrom="0" alphaTo="1.0"/>
-	<mx:Fade id="fadeout" duration="1000"  alphaFrom="1.0" alphaTo="0.0"/>
-	
-	<mx:TextInput id="input" width="236" x="10" y="16" focusIn="descriptionFocus(event);" color="#FFFFFF" fontSize="14" height="28" showEffect="fadein" hideEffect="fadeout"/>
-	<mx:TextInput id="estimatedInput" width="36" x="208" y="16" focusIn="estimateFocus(event);" color="#FFFFFF" fontSize="14" height="28" showEffect="fadein" hideEffect="fadeout" maxChars="1" restrict="0-7"/>
-	<mx:Label id="instruction" x="10" y="0" text="{currentText}" color="#8A8A8A"/>
-	
-</mx:Canvas>
+    </fx:Script>
+
+    <fx:Metadata>
+        [Event(name = "exit", type="flash.events.Event")]
+    </fx:Metadata>
+
+    <s:TextInput id="input" left="24" right="40" y="4"
+        focusIn="descriptionFocus(event);"
+        color="#FFFFFF" fontSize="14" height="24"
+        contentBackgroundAlpha="0"/>
+    <s:TextInput id="estimatedInput" width="32" right="4" y="4"
+        focusIn="estimateFocus(event);"
+        color="#FFFFFF" fontSize="14" height="24" maxChars="1" restrict="0-7"
+         contentBackgroundAlpha="0"/>
+
+</s:Group>

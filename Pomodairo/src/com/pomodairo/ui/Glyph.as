@@ -1,7 +1,7 @@
 /**
  * Created by akalanitski on 02.12.2016.
  */
-package com.pomodairo.components {
+package com.pomodairo.ui {
 import com.pomodairo.EmbedStyle;
 
 import flash.display.BitmapData;

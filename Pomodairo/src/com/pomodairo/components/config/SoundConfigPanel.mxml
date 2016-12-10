@@ -8,116 +8,116 @@
 
 <mx:Script>
         <![CDATA[
-	import com.pomodairo.EmbedImages;
-	import com.pomodairo.EmbedStyle;
-	import com.pomodairo.PomodoroEventDispatcher;
-	import com.pomodairo.db.Storage;
-	import com.pomodairo.events.ConfigurationUpdatedEvent;
-	import com.pomodairo.settings.ConfigItemName;
-	import com.pomodairo.settings.ConfigItemName;
-	import com.pomodairo.settings.ConfigManager;
+    import com.pomodairo.EmbedImages;
+    import com.pomodairo.EmbedStyle;
+    import com.pomodairo.core.PomodoroEventDispatcher;
+    import com.pomodairo.core.Storage;
+    import com.pomodairo.events.ConfigurationUpdatedEvent;
+    import com.pomodairo.settings.ConfigItemName;
+    import com.pomodairo.settings.ConfigItemName;
+    import com.pomodairo.settings.ConfigManager;
 
-	import mx.collections.ArrayCollection;
+    import mx.collections.ArrayCollection;
 
 
-	private var soundEnabled:Boolean = true;
-	private var volume:Number = 100;
+    private var soundEnabled:Boolean = true;
+    private var volume:Number = 100;
 
-	private var fadeTicking:Boolean = true;
+    private var fadeTicking:Boolean = true;
 
-	private var alarmSound:String = "";
-	private var clockSound:String = "";
+    private var alarmSound:String = "";
+    private var clockSound:String = "";
 
-	var soundTypes:FileFilter = new FileFilter("Audio Files (*.mp3)", "*.mp3");
-	var fileTypes:Array = new Array(soundTypes);
-	private var alarmSoundFile:File = new File();
-	private var clockSoundFile:File = new File();
+    var soundTypes:FileFilter = new FileFilter("Audio Files (*.mp3)", "*.mp3");
+    var fileTypes:Array = new Array(soundTypes);
+    private var alarmSoundFile:File = new File();
+    private var clockSoundFile:File = new File();
 
-	private function init():void {
-		populate();
-		applyGuiValues();
-	}
+    private function init():void {
+        populate();
+        applyGuiValues();
+    }
 
-	override public function populate():void {
-		var conf:ConfigManager = ConfigManager.instance;
-		if (conf.hasConfig("volume")) {
-			volume = parseInt(conf.getConfig("volume"));
-		}
+    override public function populate():void {
+        var conf:ConfigManager = ConfigManager.instance;
+        if (conf.hasConfig("volume")) {
+            volume = parseInt(conf.getConfig("volume"));
+        }
 
-		if (conf.hasConfig("sound")) {
-			soundEnabled = conf.getBoolean("sound");
-		}
+        if (conf.hasConfig("sound")) {
+            soundEnabled = conf.getBoolean("sound");
+        }
 
-		if (conf.hasConfig(ConfigItemName.FADE_TICKING_SOUND)) {
-			fadeTicking = conf.getBoolean(ConfigItemName.FADE_TICKING_SOUND);
-		}
+        if (conf.hasConfig(ConfigItemName.FADE_TICKING_SOUND)) {
+            fadeTicking = conf.getBoolean(ConfigItemName.FADE_TICKING_SOUND);
+        }
 
-		if (conf.hasConfig(ConfigItemName.ALARM_SOUND_FILE)) {
-			alarmSound = conf.getConfig(ConfigItemName.ALARM_SOUND_FILE);
-		}
+        if (conf.hasConfig(ConfigItemName.ALARM_SOUND_FILE)) {
+            alarmSound = conf.getConfig(ConfigItemName.ALARM_SOUND_FILE);
+        }
 
-		if (conf.hasConfig(ConfigItemName.CLOCK_SOUND_FILE)) {
-			clockSound = conf.getConfig(ConfigItemName.CLOCK_SOUND_FILE);
-		}
+        if (conf.hasConfig(ConfigItemName.CLOCK_SOUND_FILE)) {
+            clockSound = conf.getConfig(ConfigItemName.CLOCK_SOUND_FILE);
+        }
 
-	}
+    }
 
-	private function applyGuiValues():void {
-		volumeSlider.value = volume;
-		soundCheckbox.selected = soundEnabled;
-		fadeTickingCheckbox.visible = fadeTickingCheckbox.includeInLayout = soundEnabled;
-		alarmFileLocationInput.visible = alarmFileLocationInput.includeInLayout = soundEnabled;
-		clockFileLocationInput.visible = clockFileLocationInput.includeInLayout = soundEnabled;
-		fadeTickingCheckbox.selected = fadeTicking;
-		alarmFileLocationInput.text = alarmSound;
-		clockFileLocationInput.text = clockSound;
-	}
+    private function applyGuiValues():void {
+        volumeSlider.value = volume;
+        soundCheckbox.selected = soundEnabled;
+        fadeTickingCheckbox.visible = fadeTickingCheckbox.includeInLayout = soundEnabled;
+        alarmFileLocationInput.visible = alarmFileLocationInput.includeInLayout = soundEnabled;
+        clockFileLocationInput.visible = clockFileLocationInput.includeInLayout = soundEnabled;
+        fadeTickingCheckbox.selected = fadeTicking;
+        alarmFileLocationInput.text = alarmSound;
+        clockFileLocationInput.text = clockSound;
+    }
 
-	override public function save():void {
-		volume = volumeSlider.value;
-		soundEnabled = soundCheckbox.selected;
-		fadeTicking = fadeTickingCheckbox.selected;
-		alarmSound = alarmFileLocationInput.text;
-		clockSound = clockFileLocationInput.text;
+    override public function save():void {
+        volume = volumeSlider.value;
+        soundEnabled = soundCheckbox.selected;
+        fadeTicking = fadeTickingCheckbox.selected;
+        alarmSound = alarmFileLocationInput.text;
+        clockSound = clockFileLocationInput.text;
 
-		Storage.instance.setConfigurationValue(ConfigItemName.SOUND_VOLUME, "" + volume);
-		Storage.instance.setConfigurationValue(ConfigItemName.SOUND_ENABLED, "" + soundEnabled);
-		Storage.instance.setConfigurationValue(ConfigItemName.FADE_TICKING_SOUND, "" + fadeTicking);
-		Storage.instance.setConfigurationValue(ConfigItemName.ALARM_SOUND_FILE, "" + alarmSound);
-		Storage.instance.setConfigurationValue(ConfigItemName.CLOCK_SOUND_FILE, "" + clockSound);
+        Storage.instance.setConfigurationValue(ConfigItemName.SOUND_VOLUME, "" + volume);
+        Storage.instance.setConfigurationValue(ConfigItemName.SOUND_ENABLED, "" + soundEnabled);
+        Storage.instance.setConfigurationValue(ConfigItemName.FADE_TICKING_SOUND, "" + fadeTicking);
+        Storage.instance.setConfigurationValue(ConfigItemName.ALARM_SOUND_FILE, "" + alarmSound);
+        Storage.instance.setConfigurationValue(ConfigItemName.CLOCK_SOUND_FILE, "" + clockSound);
 
-		notifyConfiguration();
-	}
+        notifyConfiguration();
+    }
 
-	override public function notifyConfiguration():void {
-		// Notify the world
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.SOUND_VOLUME, "" + volume));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.SOUND_ENABLED, "" + soundEnabled));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.FADE_TICKING_SOUND, "" + fadeTicking));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.ALARM_SOUND_FILE, "" + alarmSound));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.CLOCK_SOUND_FILE, "" + clockSound));
-	}
+    override public function notifyConfiguration():void {
+        // Notify the world
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.SOUND_VOLUME, "" + volume));
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.SOUND_ENABLED, "" + soundEnabled));
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.FADE_TICKING_SOUND, "" + fadeTicking));
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.ALARM_SOUND_FILE, "" + alarmSound));
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.CLOCK_SOUND_FILE, "" + clockSound));
+    }
 
-	private function selectAlarmFile():void {
-		alarmSoundFile.addEventListener(Event.SELECT, setAlarmFilePath);
-		alarmSoundFile.browse(fileTypes);
-	}
+    private function selectAlarmFile():void {
+        alarmSoundFile.addEventListener(Event.SELECT, setAlarmFilePath);
+        alarmSoundFile.browse(fileTypes);
+    }
 
-	private function setAlarmFilePath(event:Event):void {
-		alarmFileLocationInput.text = alarmSoundFile.nativePath;
-		alarmSound = alarmSoundFile.nativePath;
-	}
+    private function setAlarmFilePath(event:Event):void {
+        alarmFileLocationInput.text = alarmSoundFile.nativePath;
+        alarmSound = alarmSoundFile.nativePath;
+    }
 
-	private function selectClockFile():void {
-		clockSoundFile.addEventListener(Event.SELECT, setClockFilePath);
-		clockSoundFile.browse(fileTypes);
-	}
+    private function selectClockFile():void {
+        clockSoundFile.addEventListener(Event.SELECT, setClockFilePath);
+        clockSoundFile.browse(fileTypes);
+    }
 
-	private function setClockFilePath(event:Event):void {
-		clockFileLocationInput.text = clockSoundFile.nativePath;
-		clockSound = clockSoundFile.nativePath;
-	}
-	]]>
+    private function setClockFilePath(event:Event):void {
+        clockFileLocationInput.text = clockSoundFile.nativePath;
+        clockSound = clockSoundFile.nativePath;
+    }
+    ]]>
     </mx:Script>
 
 	<s:VGroup width="100%">

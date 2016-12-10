@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas
+	xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:components="com.pomodairo.components.*"
+	width="300" height="64"
+	borderColor="#000000"
+	borderStyle="solid"
+	backgroundColor="#181818"
+	showEffect="fadein"
+	hideEffect="fadeout">
+	
+	<fx:Script>
+        <![CDATA[
+		import com.pomodairo.EmbedStyle;
+		import com.pomodairo.data.Pomodoro;
+
+		[Bindable]
+		public var selectAfterCreate:Boolean = false;
+
+		[Bindable]
+		public var type:String = Pomodoro.TYPE_POMODORO;
+		]]>
+    </fx:Script>
+
+	<fx:Declarations>
+		<s:Fade id="fadein" duration="1000" alphaFrom="0" alphaTo="1.0"/>
+		<s:Fade id="fadeout" duration="1000"  alphaFrom="1.0" alphaTo="0.0"/>
+	</fx:Declarations>
+
+	<components:PomodoroInput id="input" top="20" showEffect="fadein" hideEffect="fadeout" left="0" right="24"
+		type="{type}" selectAfterCreate="{selectAfterCreate}"
+		exit="{this.parent.removeChild(this)}"/>
+
+	<s:Label id="instruction"
+			 x="24" y="8" height="10"
+			 text="{input.currentText}"
+			 color="{EmbedStyle.COMMON_TEXT_COLOR}"
+			 fontSize="10"/>
+
+</mx:Canvas>

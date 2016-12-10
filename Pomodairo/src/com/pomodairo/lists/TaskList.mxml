@@ -2,16 +2,19 @@
 <mx:Canvas
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:popup="com.pomodairo.components.popup.*"
+	xmlns:components="com.pomodairo.components.*"
 	width="320" height="300"
-    initialize="init()" horizontalScrollPolicy="off"
-    verticalScrollPolicy="off"
-    backgroundAlpha="0">
+	initialize="init()" horizontalScrollPolicy="off"
+	verticalScrollPolicy="off"
+	backgroundAlpha="0">
 	
 	<mx:Script>
 		<![CDATA[
 		import com.pomodairo.EmbedImages;
 		import com.pomodairo.EmbedStyle;
 		import com.pomodairo.components.*;
+		import com.pomodairo.components.popup.PomoItemInput;
 
 		import mx.collections.ArrayCollection;
 		import mx.core.WindowedApplication;
@@ -20,11 +23,11 @@
 		import mx.controls.Alert;
 
 		import com.pomodairo.events.PomodoroEvent;
-		import com.pomodairo.PomodoroEventDispatcher;
-		import com.pomodairo.Pomodoro;
+		import com.pomodairo.core.PomodoroEventDispatcher;
+		import com.pomodairo.data.Pomodoro;
 		import com.pomodairo.core.TaskManager;
 		import com.pomodairo.TableUtils;
-		import com.pomodairo.db.Storage;
+		import com.pomodairo.core.Storage;
 
 		[Bindable]
 		private var db:Storage = Storage.instance;
@@ -94,7 +97,7 @@
 			if (pom) {
 				PomodoroEventDispatcher.instance.pomodoroSelected(pom);
 				trace("Pomodoro selected: " + pom.name);
-				interruptionButton.enabled = true;
+//				interruptionButton.enabled = true;
 			} else {
 				trace("TaskListCanvas onStartPomodoroClicked pomodoro not selected");
 			}
@@ -136,29 +139,31 @@
 			PopUpManager.addPopUp(input, this, true);
 			PopUpManager.centerPopUp(input);
 		}
-
-		private function newInterruption():void {
-			var input:PomoItemInput = new PomoItemInput();
-			input.type = Pomodoro.TYPE_INTERRUPTION;
-			input.reference = taskManager.activeTask;
-			PopUpManager.addPopUp(input, this, true);
-			PopUpManager.centerPopUp(input);
-		}
-
-		private function newUnplanned():void {
-			var input:PomoItemInput = new PomoItemInput();
-			input.type = Pomodoro.TYPE_UNPLANNED;
-			input.reference = taskManager.activeTask;
-			PopUpManager.addPopUp(input, this, true);
-			PopUpManager.centerPopUp(input);
-		}
-
+//
+//		private function newInterruption():void {
+//			var input:PomoItemInput = new PomoItemInput();
+//			input.type = Pomodoro.TYPE_INTERRUPTION;
+//			input.reference = taskManager.activeTask;
+//			PopUpManager.addPopUp(input, this, true);
+//			PopUpManager.centerPopUp(input);
+//		}
+//
+//		private function newUnplanned():void {
+//			var input:PomoItemInput = new PomoItemInput();
+//			input.type = Pomodoro.TYPE_UNPLANNED;
+//			input.reference = taskManager.activeTask;
+//			PopUpManager.addPopUp(input, this, true);
+//			PopUpManager.centerPopUp(input);
+//		}
 		]]>
 	</mx:Script>
 
 	<s:BorderContainer height="32" width="100%"
 		backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
 		borderVisible="false">
+		<s:filters>
+			<s:DropShadowFilter distance="3" angle="90" color="0x000000" />
+		</s:filters>
 		<s:layout>
 			<s:HorizontalLayout verticalAlign="middle"/>
 		</s:layout>
@@ -167,6 +172,8 @@
 			fontWeight="bold"
 			verticalAlign="middle"
 			paddingLeft="4" />
+
+		<mx:Label id="labelDates" text="{pomodoroInput.currentText}" />
 		<s:Spacer width="100%" />
 		<mx:Button id="addPomoButton"
 			click="onAddPomodoroClicked()"
@@ -178,21 +185,31 @@
 			toolTip="Clear visibility" enabled="true"
 			height="32" width="32"
 			icon="{EmbedImages.ICON_CLEANING_CLASS}"/>
-		<mx:Button id="interruptionButton"
-			label="Interruption"
-			click="newInterruption()"
-			toolTip="Add interruption"
-			enabled="false"
-			height="32"/>
+		<!--<mx:Button id="interruptionButton"-->
+			<!--label="Interruption"-->
+			<!--click="newInterruption()"-->
+			<!--toolTip="Add interruption"-->
+			<!--enabled="false"-->
+			<!--height="32"/>-->
 	</s:BorderContainer>
 
+	<s:BorderContainer top="32" right="0" left="0" height="32"
+					   backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
+					   borderVisible="false">
+
+		<components:PomodoroInput id="pomodoroInput" width="100%" />
+
+	</s:BorderContainer>
+
+
+
 	<s:List id="list"
-		top="32" right="0" bottom="0" left="0"
+		top="64" right="0" bottom="0" left="0"
 		contentBackgroundAlpha="0"
 		doubleClickEnabled="true"
 		borderVisible="false"
 		doubleClick="{showName()}"
-        itemRenderer="com.pomodairo.components.PomodoroListRenderer"
+        itemRenderer="com.pomodairo.lists.renderers.PomodoroListRenderer"
 		click="onStartPomodoroClicked(event);"
 		dragMoveEnabled="true"
 		dragComplete="onDragComplete(event)">

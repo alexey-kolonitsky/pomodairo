@@ -15,8 +15,8 @@
 		import mx.controls.Alert;
 
 		import com.pomodairo.events.ConfigurationUpdatedEvent;
-		import com.pomodairo.PomodoroEventDispatcher;
-		import com.pomodairo.db.Storage;
+		import com.pomodairo.core.PomodoroEventDispatcher;
+		import com.pomodairo.core.Storage;
 
 		import mx.managers.PopUpManager;
 

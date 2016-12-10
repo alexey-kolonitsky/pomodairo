@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config:BaseConfigPanel
-	xmlns:mx="http://www.adobe.com/2006/mxml"
-	xmlns:config="com.pomodairo.components.config.*"
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
     xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:config="com.pomodairo.components.config.*"
 	creationComplete="init()" >
 
 
-	<mx:Script>
+	<fx:Script>
         <![CDATA[
 
 			private const DONATE_URL:String = "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=TK4ED2PWBY2NW&lc=SE&item_name=Pomodairo&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted";
@@ -37,7 +38,7 @@
 
 
         ]]>
-    </mx:Script>
+    </fx:Script>
 
     <s:VGroup width="100%">
         <s:HGroup width="100%">

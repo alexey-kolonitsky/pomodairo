@@ -11,7 +11,7 @@
     <fx:Script><![CDATA[
         import com.pomodairo.EmbedImages;
         import com.pomodairo.TableUtils;
-        import com.pomodairo.db.Storage;
+        import com.pomodairo.core.Storage;
         import com.pomodairo.settings.ConfigManager;
 
         private var configManager:ConfigManager;
@@ -21,7 +21,8 @@
             db.getRealityFactors();
         }
 
-        public function copyTableToClipboard(title:String, data:Array):void {
+        public function copyTableToClipboard(title:String,
+                                             data:Array):void {
             var tmpString:String = new TableUtils().getTableAsCsv(data);
             System.setClipboard(tmpString);
         }
@@ -35,7 +36,7 @@
         contentBackgroundAlpha="0"
         borderVisible="false"
         doubleClickEnabled="true"
-        itemRenderer="com.pomodairo.components.PomodoroPerWeekRenderer"
+        itemRenderer="com.pomodairo.lists.renderers.PomodoroPerWeekRenderer"
         dragMoveEnabled="true" width="100%">
     </s:List>
     <s:HGroup height="32" right="0" bottom="0" left="0">

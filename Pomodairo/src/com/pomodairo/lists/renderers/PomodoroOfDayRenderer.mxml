@@ -9,7 +9,11 @@
 
     <fx:Script>
         <![CDATA[
-        import com.pomodairo.Pomodoro;
+        import com.pomodairo.components.*;
+        import com.pomodairo.data.Pomodoro;
+        import com.pomodairo.core.PomodoroEventDispatcher;
+        import com.pomodairo.core.TaskManager;
+        import com.pomodairo.events.PomodoroEvent;
 
         private var _pomodoro:Pomodoro = null;
 
@@ -17,13 +21,15 @@
             super.data = value;
             _pomodoro = data as Pomodoro;
             if (_pomodoro == null) {
+                nameLabel.text = "";
                 dateLabel.text = "";
                 _strikethrough = false;
                 _estimated = _pomodoro.estimated;
                 _actual = _pomodoro.pomodoros;
                 _unplanned = _pomodoro.interruptions + _pomodoro.unplanned;
             } else {
-                dateLabel.text = dateFormatter.format(_pomodoro.created);
+                nameLabel.text = _pomodoro.name;
+                dateLabel.text = dateFormatter.format(_pomodoro.closed);
                 _strikethrough = _pomodoro.done;
                 _estimated = _pomodoro.estimated;
                 _actual = _pomodoro.pomodoros;
@@ -35,11 +41,12 @@
     </fx:Script>
 
     <fx:Declarations>
-        <s:DateTimeFormatter id="dateFormatter" dateTimePattern="yyyy-MMM-dd, EEE" />
+        <s:DateTimeFormatter id="dateFormatter" dateTimePattern="MMM, d" />
     </fx:Declarations>
 
     <s:HGroup left="4" top="0" right="4" bottom="0" verticalAlign="middle" gap="2">
-        <s:Label id="dateLabel" width="100%" />
+        <s:Label id="dateLabel" />
+        <s:Label id="nameLabel" width="100%" lineBreak="explicit" paddingTop="2" paddingLeft="5"/>
     </s:HGroup>
 
 </components:PomodairoBaseRenderer>

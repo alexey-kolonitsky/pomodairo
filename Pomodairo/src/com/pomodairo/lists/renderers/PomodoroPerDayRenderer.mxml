@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<components:PomodairoBaseRenderer
+        xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:mx="library://ns.adobe.com/flex/mx"
+        xmlns:components="com.pomodairo.components.*"
+        height="32" width="100%">
+
+
+    <fx:Script>
+        <![CDATA[
+        import com.pomodairo.components.*;
+        import com.pomodairo.data.Pomodoro;
+
+        private var _pomodoro:Pomodoro = null;
+
+        override public function set data(value:Object):void {
+            super.data = value;
+            _pomodoro = data as Pomodoro;
+            if (_pomodoro == null) {
+                dateLabel.text = "";
+                _strikethrough = false;
+                _estimated = _pomodoro.estimated;
+                _actual = _pomodoro.pomodoros;
+                _unplanned = _pomodoro.interruptions + _pomodoro.unplanned;
+            } else {
+                dateLabel.text = dateFormatter.format(_pomodoro.created);
+                _strikethrough = _pomodoro.done;
+                _estimated = _pomodoro.estimated;
+                _actual = _pomodoro.pomodoros;
+                _unplanned = _pomodoro.interruptions + _pomodoro.unplanned;
+            }
+            invalidateDisplayList();
+        }
+        ]]>
+    </fx:Script>
+
+    <fx:Declarations>
+        <s:DateTimeFormatter id="dateFormatter" dateTimePattern="yyyy-MMM-dd, EEE" />
+    </fx:Declarations>
+
+    <s:HGroup left="4" top="0" right="4" bottom="0" verticalAlign="middle" gap="2">
+        <s:Label id="dateLabel" width="100%" />
+    </s:HGroup>
+
+</components:PomodairoBaseRenderer>

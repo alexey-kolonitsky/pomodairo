@@ -1,4 +1,4 @@
-package com.pomodairo
+package com.pomodairo.data
 {
 	[Bindable]
 	public class ConfigProperty

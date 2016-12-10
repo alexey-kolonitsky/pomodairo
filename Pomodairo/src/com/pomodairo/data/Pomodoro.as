@@ -1,5 +1,6 @@
-package com.pomodairo
+package com.pomodairo.data
 {
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mx.formatters.DateFormatter;

@@ -1,7 +1,8 @@
 package com.pomodairo
 {
 	import com.pomodairo.components.config.SoundConfigPanel;
-	import com.pomodairo.events.ConfigurationUpdatedEvent;
+import com.pomodairo.core.PomodoroEventDispatcher;
+import com.pomodairo.events.ConfigurationUpdatedEvent;
 	import com.pomodairo.settings.ConfigItemName;
 
 	import flash.media.Sound;

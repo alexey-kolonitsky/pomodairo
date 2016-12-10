@@ -2,7 +2,7 @@
  * Created by akalanitski on 16.11.2016.
  */
 package com.pomodairo.settings.providers {
-import com.pomodairo.ConfigProperty;
+import com.pomodairo.data.ConfigProperty;
 
 import flash.data.EncryptedLocalStore;
 import flash.utils.ByteArray;

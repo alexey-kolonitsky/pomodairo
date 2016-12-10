@@ -7,8 +7,8 @@
     <mx:Script>
 		<![CDATA[
         import com.pomodairo.EmbedImages;
-        import com.pomodairo.Pomodoro;
-        import com.pomodairo.db.Storage;
+        import com.pomodairo.data.Pomodoro;
+        import com.pomodairo.core.Storage;
         import com.pomodairo.settings.ConfigManager;
 
         import mx.collections.ArrayCollection;

@@ -1,5 +1,7 @@
-package com.pomodairo
+package com.pomodairo.core
 {
+import com.pomodairo.*;
+import com.pomodairo.data.Pomodoro;
 import com.pomodairo.date.TimeSpan;
 import com.pomodairo.events.PomodoroEvent;
 

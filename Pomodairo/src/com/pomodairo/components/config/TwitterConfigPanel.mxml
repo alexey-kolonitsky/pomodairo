@@ -7,75 +7,75 @@
 
 <mx:Script>
         <![CDATA[
-	import com.pomodairo.PomodoroEventDispatcher;
-	import com.pomodairo.db.Storage;
-	import com.pomodairo.events.ConfigurationUpdatedEvent;
-	import com.pomodairo.settings.ConfigItemName;
-	import com.pomodairo.settings.ConfigManager;
+    import com.pomodairo.core.PomodoroEventDispatcher;
+    import com.pomodairo.core.Storage;
+    import com.pomodairo.events.ConfigurationUpdatedEvent;
+    import com.pomodairo.settings.ConfigItemName;
+    import com.pomodairo.settings.ConfigManager;
 
-	import mx.controls.Alert;
+    import mx.controls.Alert;
 
 
-	private var twitterEnabled:Boolean = new Boolean(false);
-	private var doPost:Boolean = new Boolean(false);
-	private var username:String = new String();
-	private var password:String = new String();
-	private var groupUsername:String = new String();
+    private var twitterEnabled:Boolean = new Boolean(false);
+    private var doPost:Boolean = new Boolean(false);
+    private var username:String = new String();
+    private var password:String = new String();
+    private var groupUsername:String = new String();
 
-	private function init():void {
-		populate();
-		applyGuiValues();
-	}
+    private function init():void {
+        populate();
+        applyGuiValues();
+    }
 
-	override public function populate():void {
+    override public function populate():void {
 
-		var conf:ConfigManager = ConfigManager.instance;
-		if (conf.hasConfig(ConfigItemName.ENABLED)) {
-			twitterEnabled = conf.getBoolean(ConfigItemName.ENABLED);
-		}
+        var conf:ConfigManager = ConfigManager.instance;
+        if (conf.hasConfig(ConfigItemName.ENABLED)) {
+            twitterEnabled = conf.getBoolean(ConfigItemName.ENABLED);
+        }
 
-		if (conf.hasConfig(ConfigItemName.POST_POMODOROS)) {
-			doPost = conf.getBoolean(ConfigItemName.POST_POMODOROS) == "true";
-		}
+        if (conf.hasConfig(ConfigItemName.POST_POMODOROS)) {
+            doPost = conf.getBoolean(ConfigItemName.POST_POMODOROS) == "true";
+        }
 
-		if (conf.hasConfig(ConfigItemName.GROUP_USERNAME)) {
-			groupUsername = conf.getConfig(ConfigItemName.GROUP_USERNAME);
-		}
+        if (conf.hasConfig(ConfigItemName.GROUP_USERNAME)) {
+            groupUsername = conf.getConfig(ConfigItemName.GROUP_USERNAME);
+        }
 
-	}
+    }
 
-	private function applyGuiValues():void {
-		enabledCheckbox.selected = twitterEnabled;
-		postCheckbox.selected = doPost;
-		groupUsernameField.text = groupUsername;
-	}
+    private function applyGuiValues():void {
+        enabledCheckbox.selected = twitterEnabled;
+        postCheckbox.selected = doPost;
+        groupUsernameField.text = groupUsername;
+    }
 
-	override public function save():void {
-		twitterEnabled = enabledCheckbox.selected;
-		doPost = postCheckbox.selected;
-		groupUsername = groupUsernameField.text;
+    override public function save():void {
+        twitterEnabled = enabledCheckbox.selected;
+        doPost = postCheckbox.selected;
+        groupUsername = groupUsernameField.text;
 
-		Storage.instance.setConfigurationValue(ConfigItemName.ENABLED, "" + twitterEnabled);
-		Storage.instance.setConfigurationValue(ConfigItemName.POST_POMODOROS, "" + doPost);
-		Storage.instance.setConfigurationValue(ConfigItemName.GROUP_USERNAME, "" + groupUsername);
-		exit();
+        Storage.instance.setConfigurationValue(ConfigItemName.ENABLED, "" + twitterEnabled);
+        Storage.instance.setConfigurationValue(ConfigItemName.POST_POMODOROS, "" + doPost);
+        Storage.instance.setConfigurationValue(ConfigItemName.GROUP_USERNAME, "" + groupUsername);
+        exit();
 
-		notifyConfiguration();
-	}
+        notifyConfiguration();
+    }
 
-	override public function notifyConfiguration():void {
-		// Notify the world
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.ENABLED, "" + twitterEnabled));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.POST_POMODOROS, "" + doPost));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.GROUP_USERNAME, "" + groupUsername));
-	}
+    override public function notifyConfiguration():void {
+        // Notify the world
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.ENABLED, "" + twitterEnabled));
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.POST_POMODOROS, "" + doPost));
+        PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.GROUP_USERNAME, "" + groupUsername));
+    }
 
-	private function onEnableTwitterChanged(e:Event = null):void {
-		if (e.target.selected) {
-			Alert.show("NOTE: If you use twitter all your work will be publically posted on Twitter for everyone to read.");
-		}
-	}
-	]]>
+    private function onEnableTwitterChanged(e:Event = null):void {
+        if (e.target.selected) {
+            Alert.show("NOTE: If you use twitter all your work will be publically posted on Twitter for everyone to read.");
+        }
+    }
+    ]]>
     </mx:Script>
 
 	<mx:CheckBox id="enabledCheckbox" x="10" y="10" label="Use Twitter (still experimental)" change="onEnableTwitterChanged(event)"/>

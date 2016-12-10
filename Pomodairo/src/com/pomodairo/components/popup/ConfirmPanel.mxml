@@ -7,21 +7,20 @@
 
 	<mx:Script>
         <![CDATA[
-		import com.pomodairo.db.Storage;
+		import com.pomodairo.components.config.*;
+		import com.pomodairo.core.Storage;
 		import com.pomodairo.settings.ConfigItemName;
 
 		import mx.core.Application;
 		import mx.core.WindowedApplication;
 
-		private function btnExit_clickHandler(event:MouseEvent):void
-		{
+		private function btnExit_clickHandler(event:MouseEvent):void {
 			if (confirmApplicationExitCheckbox.selected);
-				Storage.instance.setConfigurationValue(ConfigItemName.CONFIRM_APPLICATION_EXIT, "false");
+			Storage.instance.setConfigurationValue(ConfigItemName.CONFIRM_APPLICATION_EXIT, "false");
 
 			var app:WindowedApplication = Application.application as WindowedApplication;
 			app.close();
 		}
-
 		]]>
     </mx:Script>
 

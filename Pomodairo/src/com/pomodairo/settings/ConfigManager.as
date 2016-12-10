@@ -3,8 +3,8 @@
  */
 package com.pomodairo.settings {
 
-import com.pomodairo.ConfigProperty;
-import com.pomodairo.db.Storage;
+import com.pomodairo.data.ConfigProperty;
+import com.pomodairo.core.Storage;
 import com.pomodairo.settings.providers.LocalDBStorageProvider;
 	import com.pomodairo.settings.providers.LocalFSStorageProvider;
 	import com.pomodairo.settings.providers.LocalSOStorageProvider;

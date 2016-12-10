@@ -1,6 +1,8 @@
 package com.pomodairo
 {
-	import mx.formatters.DateFormatter;
+import com.pomodairo.data.Pomodoro;
+
+import mx.formatters.DateFormatter;
 	
 	public class TableUtils
 	{

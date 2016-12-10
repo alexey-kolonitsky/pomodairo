@@ -13,20 +13,23 @@
         import com.pomodairo.EmbedImages;
         import com.pomodairo.EmbedStyle;
         import com.pomodairo.TableUtils;
-        import com.pomodairo.db.Storage;
+        import com.pomodairo.core.Storage;
         import com.pomodairo.settings.ConfigManager;
 
         private var configManager:ConfigManager;
         private var db:Storage = Storage.instance;
 
-        public function copyTableToClipboard(title:String, data:Array):void {
+        public function copyTableToClipboard(title:String,
+                                             data:Array):void {
             var tmpString:String = new TableUtils().getTableAsCsv(data);
             System.setClipboard(tmpString);
         }
 
         private var _timer:Timer;
-        private var _lastUpdate:uint; /* ms */
-        private var UPDATE_DELAY:Number = 1000; /* ms */
+        private var _lastUpdate:uint;
+        /* ms */
+        private var UPDATE_DELAY:Number = 1000;
+        /* ms */
 
         private function init():void {
             _timer = new Timer(UPDATE_DELAY);
@@ -40,8 +43,7 @@
 
         private var _needUpdate:Boolean = false;
 
-        private function needUpdate():void
-        {
+        private function needUpdate():void {
             _needUpdate = true;
             update();
         }
@@ -57,7 +59,6 @@
         private function updateLabel():void {
             labelDates.text = timeline.dateCount + " days, from " + timeline.startDate.fullYear + "-" + timeline.startDate.month + "-" + timeline.startDate.date;
         }
-
         ]]>
     </fx:Script>
 
@@ -93,7 +94,7 @@
         contentBackgroundAlpha="0"
         borderVisible="false"
         doubleClickEnabled="true"
-        itemRenderer="com.pomodairo.components.PomodoroOfDayRenderer"
+        itemRenderer="com.pomodairo.lists.renderers.PomodoroOfDayRenderer"
         dragMoveEnabled="true" width="100%">
     </s:List>
 </s:Group>

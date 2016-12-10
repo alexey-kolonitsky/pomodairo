@@ -1,7 +1,7 @@
 package com.pomodairo.twitter
 { 
         import com.pomodairo.components.config.TwitterConfigPanel;
-        import com.pomodairo.db.Storage;
+        import com.pomodairo.core.Storage;
 import com.pomodairo.settings.ConfigItemName;
 import com.pomodairo.settings.ConfigItemName;
 import com.pomodairo.settings.ConfigManager;

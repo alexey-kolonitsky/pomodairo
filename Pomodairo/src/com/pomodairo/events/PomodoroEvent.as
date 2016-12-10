@@ -1,6 +1,6 @@
 package com.pomodairo.events
 {
-	import com.pomodairo.Pomodoro;
+	import com.pomodairo.data.Pomodoro;
 	
 	import flash.events.Event;
 

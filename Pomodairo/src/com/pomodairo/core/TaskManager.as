@@ -1,7 +1,8 @@
 package com.pomodairo.core
 {
 import com.pomodairo.*;
-	import com.pomodairo.db.Storage;
+	import com.pomodairo.core.Storage;
+import com.pomodairo.data.Pomodoro;
 import com.pomodairo.events.PomodoroEvent;
 import com.pomodairo.settings.ConfigManager;
 

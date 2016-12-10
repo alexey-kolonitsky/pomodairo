@@ -1,6 +1,6 @@
 package com.pomodairo.events
 {
-	import com.pomodairo.ConfigProperty;
+	import com.pomodairo.data.ConfigProperty;
 	
 	import flash.events.Event;
 

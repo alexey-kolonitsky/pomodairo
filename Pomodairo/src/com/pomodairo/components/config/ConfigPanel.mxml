@@ -8,75 +8,75 @@
 
 	<mx:Script>
         <![CDATA[
-		import com.pomodairo.EmbedStyle;
-		import com.pomodairo.events.ConfigurationUpdatedEvent;
-		import com.pomodairo.PomodoroEventDispatcher;
-		import com.pomodairo.db.Storage;
-		import com.pomodairo.settings.ConfigItemName;
-		import com.pomodairo.settings.ConfigManager;
+        import com.pomodairo.EmbedStyle;
+        import com.pomodairo.events.ConfigurationUpdatedEvent;
+        import com.pomodairo.core.PomodoroEventDispatcher;
+        import com.pomodairo.core.Storage;
+        import com.pomodairo.settings.ConfigItemName;
+        import com.pomodairo.settings.ConfigManager;
 
 
-		private var confirmApplicationExit:Boolean = true;
-		private var rememberPosition:Boolean = true;
-		private var alwaysOnTop:Boolean = false;
-		private var updateTaskbar:Boolean = true;
+        private var confirmApplicationExit:Boolean = true;
+        private var rememberPosition:Boolean = true;
+        private var alwaysOnTop:Boolean = false;
+        private var updateTaskbar:Boolean = true;
 
-		private function init():void {
-			populate();
-			applyGuiValues();
-		}
+        private function init():void {
+            populate();
+            applyGuiValues();
+        }
 
-		public override function populate():void {
-			var conf:ConfigManager = ConfigManager.instance;
-			if (conf.hasConfig(ConfigItemName.REMEMBER_POSITION)) {
-				rememberPosition = conf.getConfig(ConfigItemName.REMEMBER_POSITION) == "true";
-			}
+        public override function populate():void {
+            var conf:ConfigManager = ConfigManager.instance;
+            if (conf.hasConfig(ConfigItemName.REMEMBER_POSITION)) {
+                rememberPosition = conf.getConfig(ConfigItemName.REMEMBER_POSITION) == "true";
+            }
 
-			if (conf.hasConfig(ConfigItemName.ALWAYS_ON_TOP)) {
-				alwaysOnTop = conf.getConfig(ConfigItemName.ALWAYS_ON_TOP) == "true";
-			}
+            if (conf.hasConfig(ConfigItemName.ALWAYS_ON_TOP)) {
+                alwaysOnTop = conf.getConfig(ConfigItemName.ALWAYS_ON_TOP) == "true";
+            }
 
-			if (conf.hasConfig(ConfigItemName.UPDATE_TASKBAR)) {
-				updateTaskbar = conf.getConfig(ConfigItemName.UPDATE_TASKBAR) == "true";
-			}
+            if (conf.hasConfig(ConfigItemName.UPDATE_TASKBAR)) {
+                updateTaskbar = conf.getConfig(ConfigItemName.UPDATE_TASKBAR) == "true";
+            }
 
-			if (conf.hasConfig(ConfigItemName.CONFIRM_APPLICATION_EXIT)) {
-				confirmApplicationExit = conf.getBoolean(ConfigItemName.CONFIRM_APPLICATION_EXIT);
-			}
-		}
+            if (conf.hasConfig(ConfigItemName.CONFIRM_APPLICATION_EXIT)) {
+                confirmApplicationExit = conf.getBoolean(ConfigItemName.CONFIRM_APPLICATION_EXIT);
+            }
+        }
 
-		private function applyGuiValues():void {
-			positionCheckbox.selected = rememberPosition;
-			alwaysOnTopCheckbox.selected = alwaysOnTop;
-			updateTaskbarCheckbox.selected = updateTaskbar;
-			confirmApplicationExitCheckbox.selected = confirmApplicationExit;
-		}
+        private function applyGuiValues():void {
+            positionCheckbox.selected = rememberPosition;
+            alwaysOnTopCheckbox.selected = alwaysOnTop;
+            updateTaskbarCheckbox.selected = updateTaskbar;
+            confirmApplicationExitCheckbox.selected = confirmApplicationExit;
+        }
 
-		override public function save():void {
-			rememberPosition = positionCheckbox.selected;
-			alwaysOnTop = alwaysOnTopCheckbox.selected;
-			updateTaskbar = updateTaskbarCheckbox.selected;
-			confirmApplicationExit = confirmApplicationExitCheckbox.selected;
+        override public function save():void {
+            rememberPosition = positionCheckbox.selected;
+            alwaysOnTop = alwaysOnTopCheckbox.selected;
+            updateTaskbar = updateTaskbarCheckbox.selected;
+            confirmApplicationExit = confirmApplicationExitCheckbox.selected;
 
-			ConfigManager.instance.setBoolean(ConfigItemName.REMEMBER_POSITION, rememberPosition);
+            ConfigManager.instance.setBoolean(ConfigItemName.REMEMBER_POSITION, rememberPosition);
 
-			Storage.instance.setConfigurationValue(ConfigItemName.REMEMBER_POSITION, "" + rememberPosition);
-			Storage.instance.setConfigurationValue(ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop);
-			Storage.instance.setConfigurationValue(ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar);
-			Storage.instance.setConfigurationValue(ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit);
+            Storage.instance.setConfigurationValue(ConfigItemName.REMEMBER_POSITION, "" + rememberPosition);
+            Storage.instance.setConfigurationValue(ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop);
+            Storage.instance.setConfigurationValue(ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar);
+            Storage.instance.setConfigurationValue(ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit);
 
-			exit();
-			notifyConfiguration();
-		}
+            exit();
+            notifyConfiguration();
+        }
 
-		override public function notifyConfiguration():void {
-			// Notify the world
-			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.REMEMBER_POSITION, "" + rememberPosition));
-			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop));
-			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar));
-			PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit));
-		}
-		]]>
+        override public function notifyConfiguration():void {
+            // Notify the world
+            PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.REMEMBER_POSITION, "" + rememberPosition));
+            PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop));
+            PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar));
+            PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit));
+        }
+        ]]>
     </mx:Script>
 
 	<s:VGroup width="100%">

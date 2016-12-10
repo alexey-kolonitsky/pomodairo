@@ -1,8 +1,8 @@
-package com.pomodairo.db
+package com.pomodairo.core
 {
-	import com.pomodairo.ConfigProperty;
-	import com.pomodairo.Pomodoro;
-	import com.pomodairo.PomodoroEventDispatcher;
+	import com.pomodairo.data.ConfigProperty;
+	import com.pomodairo.data.Pomodoro;
+	import com.pomodairo.core.PomodoroEventDispatcher;
 	import com.pomodairo.RegexUtils;
 import com.pomodairo.components.PomodoroEditor;
 import com.pomodairo.components.config.AdvancedConfigPanel;

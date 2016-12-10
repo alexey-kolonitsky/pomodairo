@@ -8,7 +8,7 @@ import spark.components.supportClasses.ItemRenderer;
 
 public class PomodairoBaseRenderer extends ItemRenderer {
 	import com.pomodairo.EmbedStyle;
-	import com.pomodairo.Pomodoro;
+	import com.pomodairo.data.Pomodoro;
 
 	protected var pomodoroWidth:int = 2;
 	protected var pomodoroGap:int = 2;
