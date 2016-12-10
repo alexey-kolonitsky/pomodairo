@@ -40,5 +40,9 @@ public class TimeSpan {
     public static function fromDays(days:int):TimeSpan {
         return new TimeSpan(days * DAY);
     }
+
+    public static function fromMinutes(minutes:int):TimeSpan {
+        return new TimeSpan(minutes * MINUTE);
+    }
 }
 }

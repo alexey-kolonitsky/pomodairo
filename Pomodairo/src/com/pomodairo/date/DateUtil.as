@@ -24,6 +24,19 @@ public class DateUtil {
         return result;
     }
 
+    public static function w3cTime(min:int = 0, sec:int = 0):String {
+        var strMin:String = String(min < 10 ? "0" + min : min);
+        var strSec:String = String(sec < 10 ? "0" + sec : sec);
+        return strMin + ":" + strSec;
+    }
+
+
+    public static function w3cFullTime(min:int, sec:int, ms:int):String {
+        var strMin:String = String(min < 10 ? "0" + min : min);
+        var strSec:String = String(sec < 10 ? "0" + sec : sec);
+        return strMin + ":" + strSec;
+    }
+
     public static function substract(date1:Date,  date2:Date):TimeSpan {
         return new TimeSpan(date1.time - date2.time);
     }

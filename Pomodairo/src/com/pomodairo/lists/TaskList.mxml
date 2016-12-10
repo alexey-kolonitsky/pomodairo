@@ -22,7 +22,7 @@
 		import com.pomodairo.events.PomodoroEvent;
 		import com.pomodairo.PomodoroEventDispatcher;
 		import com.pomodairo.Pomodoro;
-		import com.pomodairo.TaskManager;
+		import com.pomodairo.core.TaskManager;
 		import com.pomodairo.TableUtils;
 		import com.pomodairo.db.Storage;
 
@@ -164,8 +164,8 @@
 
 		}
 
-        [Bindable]
-        public var lastRollOverIndex:int;
+		[Bindable]
+		public var lastRollOverIndex:int;
 		]]>
 	</mx:Script>
 

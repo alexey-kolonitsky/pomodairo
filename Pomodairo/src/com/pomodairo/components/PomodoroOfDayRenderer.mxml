@@ -11,7 +11,7 @@
         <![CDATA[
         import com.pomodairo.Pomodoro;
         import com.pomodairo.PomodoroEventDispatcher;
-        import com.pomodairo.TaskManager;
+        import com.pomodairo.core.TaskManager;
         import com.pomodairo.events.PomodoroEvent;
 
         private var _pomodoro:Pomodoro = null;

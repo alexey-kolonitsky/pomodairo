@@ -3,6 +3,11 @@
  */
 package com.pomodairo {
 public class EmbedStyle {
+	public static const POMODORO_TIMER_COLOR:uint = 0xFFFF00;
+	public static const POMODORO_BREACK_COLOR:uint = 0x00FF00;
+	public static const POMODORO_TIMEOUT_COLOR:uint = 0xFF0000;
+
+
 	public static const BACKGROUND_COLOR:uint = 0x292929;
 
 	public static const LIST_OVER_BACKGROUND:uint = 0x555555;

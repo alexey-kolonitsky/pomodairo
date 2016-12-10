@@ -4,6 +4,7 @@
 package com.pomodairo.settings {
 
 import com.pomodairo.ConfigProperty;
+import com.pomodairo.db.Storage;
 import com.pomodairo.settings.providers.LocalDBStorageProvider;
 	import com.pomodairo.settings.providers.LocalFSStorageProvider;
 	import com.pomodairo.settings.providers.LocalSOStorageProvider;
@@ -25,6 +26,7 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 		private var _settings:ConfigCollection;
 		private var _fsProvider:LocalFSStorageProvider;
 		private var _soProvider:LocalSOStorageProvider;
+		private var _dbProvider:Storage;
 
 		public var defaultSettingsFilePath:String;
 
@@ -45,7 +47,7 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 			if (key == ConfigItemName.DATABASE_LOCATION) {
 				_soProvider.setString(key, value);
 			} else {
-				throw "Not implemented yet!";
+				_dbProvider.setConfigurationValue(key, value);
 			}
 		}
 

@@ -8,9 +8,9 @@
         height="150" width="320"
         backgroundColor="#292929"
         showStatusBar="false"
-        title="{timerCanvas.appTitle}"
-        initialize="beforeInit()"
-        creationComplete="init()"
+        title="{display.appTitle}"
+        initialize="initilizeHandler()"
+        creationComplete="creationComplete()"
         closing="beforeClose()"
         windowResize="resizeHandler(event)"
         close="shutdown()">
@@ -27,12 +27,14 @@
 
         import com.pomodairo.Pomodoro;
         import com.pomodairo.PomodoroEventDispatcher;
-        import com.pomodairo.TaskManager;
+        import com.pomodairo.core.TaskManager;
+        import com.pomodairo.components.Display;
         import com.pomodairo.components.PomoItemInput;
         import com.pomodairo.components.StatisticsWindow;
         import com.pomodairo.components.config.BaseConfigPanel;
         import com.pomodairo.components.config.ConfirmPanel;
         import com.pomodairo.components.config.SettingsPanel;
+        import com.pomodairo.core.TimeManager;
         import com.pomodairo.db.Storage;
         import com.pomodairo.events.ConfigurationUpdatedEvent;
         import com.pomodairo.events.GuiChangeEvent;
@@ -57,9 +59,11 @@
         private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
 
         private var taskManager:TaskManager = TaskManager.instance;
+        private var timeManager:TimeManager = new TimeManager();
         private var twitterManager:TwitterManager = new TwitterManager();
+        private var eventDispatcher:PomodoroEventDispatcher;
 
-        private function beforeInit():void {
+        private function initilizeHandler():void {
 
             PomodoroEventDispatcher.instance.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
 
@@ -87,23 +91,32 @@
 
             dialogList[CONFIG_DIALOG_ID] = new SettingsPanel();
             dialogList[CONFIRM_DIALOG_ID] = new ConfirmPanel();
+
+            eventDispatcher = PomodoroEventDispatcher.instance;
+            timeManager = new TimeManager();
         }
 
-        private function init():void {
+        private function creationComplete():void {
             checkForUpdates();
-            PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, closeTaskList);
-            PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, onPomodoroTimeout);
-            PomodoroEventDispatcher.instance.addEventListener(GuiChangeEvent.UPDATED, onGuiChange);
+            eventDispatcher.addEventListener(PomodoroEvent.START_POMODORO, closeTaskList);
+            eventDispatcher.addEventListener(PomodoroEvent.TIME_OUT, onPomodoroTimeout);
+            eventDispatcher.addEventListener(GuiChangeEvent.UPDATED, onGuiChange);
 
             // Display task list on startup
             toggleTaskList();
+        }
+
+
+        override protected function createChildren():void {
+            super.createChildren();
+            display.timer = timeManager;
         }
 
         private function checkForUpdates():void {
             appUpdater.configurationFile = new File("app:/updateConfig.xml");
             appUpdater.isCheckForUpdateVisible = false;
             appUpdater.addEventListener(UpdateEvent.INITIALIZED,
-                    updaterInitialised);
+                updaterInitialised);
             appUpdater.initialize();
         }
 
@@ -166,7 +179,7 @@
         }
 
         private function toggleViewState():void {
-            timerCanvas.toggleMiniView();
+            display.toggleMiniView();
         }
 
         private function onAddPomodoroClicked(event:Event = null):void {
@@ -240,8 +253,8 @@
                 return;
             }
 
-            if (timerCanvas.currentState == "minimal")
-                timerCanvas.toggleMiniView();
+            if (display.currentState == "minimal")
+                display.toggleMiniView();
 
             showPopup(dialogList[CONFIRM_DIALOG_ID]);
         }
@@ -253,17 +266,19 @@
 
         <!-- TopPanel -->
         <s:HGroup width="100%" height="32" gap="2">
-            <mx:Button id="settingsButton"
-                    width="32" height="32"
-                    icon="{EmbedImages.ICON_ADJUST_CLASS}"
-                    click="{showSettingsPanel()}"/>
 
-            <mx:Button id="taskList"
-                    width="32" height="32"
-                    icon="{EmbedImages.ICON_LIST_CLASS}"
-                    click="toggleTaskList()"
-                    toolTip="Open/close task list"/>
-
+            <mx:Button id="startTimerButton" width="32" height="32"
+                       click="{timeManager.startTimer(taskManager.activeTask)}"
+                       icon="{EmbedImages.ICON_PLAY_CLASS}"/>
+            <mx:Button id="stopTimerButton" width="32" height="32"
+                       click="timeManager.stopTimer();"
+                       icon="{EmbedImages.ICON_STOP_CLASS}"/>
+            <mx:Button id="stopBreakButton" width="32" height="32"
+                       click="timeManager.stopBreakTimer();"
+                       icon="{EmbedImages.ICON_STOP_CLASS}"/>
+            <mx:Button id="nextTaskButton"  height="32"
+                       click="display.onNextTaskClicked()"
+                       icon="{EmbedImages.ICON_FORWARD_CLASS}"/>
             <s:List id="tabsList"
                     left="0" top="0" height="32" right="0"
                     itemRenderer="com.pomodairo.components.ListMenuItemRenderer"
@@ -279,6 +294,17 @@
 
             <mx:Spacer width="100%"/>
 
+            <mx:Button id="settingsButton"
+                       width="32" height="32"
+                       icon="{EmbedImages.ICON_ADJUST_CLASS}"
+                       click="{showSettingsPanel()}"/>
+
+            <mx:Button id="taskList"
+                       width="32" height="32"
+                       icon="{EmbedImages.ICON_LIST_CLASS}"
+                       click="toggleTaskList()"
+                       toolTip="Open/close task list"/>
+
             <mx:Button right="56" top="0" height="32" id="toggleViewButton"
                     label="view" click="toggleViewState()"/>
             <mx:Button label="_" width="32" height="32" click="{minimize()}"
@@ -287,8 +313,7 @@
                     click="{lblClose_clickHandler(event)}" color="#FFFFFF"/>
         </s:HGroup>
 
-        <ns1:timer id="timerCanvas" height="96" width="100%"
-                pomodoroLengthInMinutes="25"/>
+        <ns1:Display id="display" height="96" width="100%"/>
 
     </s:VGroup>
 

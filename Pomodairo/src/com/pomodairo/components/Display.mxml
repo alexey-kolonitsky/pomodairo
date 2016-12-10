@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas
+	xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	backgroundAlpha="0.0"
+	initialize="init()"
+	creationComplete="created()"
+	verticalScrollPolicy="off" horizontalScrollPolicy="off">
+	
+	    <mx:Script>
+        <![CDATA[
+			import com.pomodairo.ConfigProperty;
+			import com.pomodairo.EmbedImages;
+			import com.pomodairo.EmbedStyle;
+			import com.pomodairo.Pomodoro;
+			import com.pomodairo.PomodoroEventDispatcher;
+			import com.pomodairo.RegexUtils;
+			import com.pomodairo.SoundPlayer;
+			import com.pomodairo.core.TaskManager;
+			import com.pomodairo.components.config.ConfigPanel;
+			import com.pomodairo.components.config.SoundConfigPanel;
+			import com.pomodairo.components.config.TimingConfigPanel;
+			import com.pomodairo.core.TimeManager;
+			import com.pomodairo.date.DateUtil;
+			import com.pomodairo.date.DateUtil;
+			import com.pomodairo.db.Storage;
+			import com.pomodairo.events.ConfigurationUpdatedEvent;
+			import com.pomodairo.events.GuiChangeEvent;
+			import com.pomodairo.events.PomodoroEvent;
+			import com.pomodairo.settings.ConfigItemName;
+
+			import flash.display.Sprite;
+			import flash.events.TimerEvent;
+			import flash.media.Sound;
+			import flash.media.SoundChannel;
+			import flash.utils.Timer;
+			import flash.utils.getTimer;
+
+			import mx.binding.utils.BindingUtils;
+			import mx.collections.ArrayCollection;
+			import mx.controls.ColorPicker;
+			import mx.controls.LinkButton;
+			import mx.core.SoundAsset;
+			import mx.effects.SoundEffect;
+			import mx.effects.easing.Linear;
+			import mx.effects.effectClasses.SoundEffectInstance;
+			import mx.managers.PopUpManager;
+			import mx.utils.ColorUtil;
+
+			private static var DEFAULT:String = "default";
+			private static var TIME_OUT:String = "timeout";
+			private static var BREAK:String = "break";
+			private static var BREAK_OVER:String = "break_over";
+
+			[Bindable]
+			public var taskManager:TaskManager = TaskManager.instance;
+
+			[Bindable]
+			public var appTitle:String = "pomodairo";
+
+			private const MIN_MASK:String = "00";
+			private const SEC_MASK:String = "00";
+
+
+			private var blinkTimer:Timer = new Timer(300, 0);
+
+			private var updateTaskbar:Boolean = true;
+
+			private var soundPlayer:SoundPlayer = new SoundPlayer();
+
+			public var timer:TimeManager;
+			public var eventDispatcher:PomodoroEventDispatcher = PomodoroEventDispatcher.instance;
+
+			private function init():void {
+
+
+				eventDispatcher.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
+				eventDispatcher.addEventListener(PomodoroEvent.LIST_EMPTY, onListEmpty);
+				eventDispatcher.addEventListener(PomodoroEvent.START_BREAK, setBreakTitle);
+				eventDispatcher.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
+
+				eventDispatcher.addEventListener(PomodoroEvent.START_POMODORO, onTimerEvent);
+				eventDispatcher.addEventListener(PomodoroEvent.STOP_POMODORO, onTimerEvent);
+				eventDispatcher.addEventListener(PomodoroEvent.TIMER_TICK, onTimerEvent);
+				eventDispatcher.addEventListener(PomodoroEvent.TIME_OUT, onTimerEvent);
+				eventDispatcher.addEventListener(PomodoroEvent.START_BREAK, onTimerEvent);
+				eventDispatcher.addEventListener(PomodoroEvent.STOP_BREAK, onTimerEvent);
+				eventDispatcher.addEventListener(PomodoroEvent.BREAK_TICK, onTimerEvent);
+			}
+
+			private function onTimerEvent(event:PomodoroEvent):void {
+				switch (event.type) {
+					case PomodoroEvent.START_POMODORO:
+						setTimerStyle(DEFAULT);
+						soundPlayer.playTicTocSound();
+						break;
+					case PomodoroEvent.TIME_OUT:
+						soundPlayer.playAlarm();
+						stopTicTocSound();
+						setTimerStyle(TIME_OUT);
+						startBlink();
+						if (currentState == "minimal") {
+							toggleMiniView();
+						}
+						break;
+					case PomodoroEvent.TIMER_TICK:
+						var d:Date = timer.time;
+						counter.text = miniCounter.text = DateUtil.w3cTime(d.minutesUTC, d.secondsUTC);
+
+						if (d.minutesUTC == 0) {
+							setTimerStyle(TIME_OUT);
+						}
+						updateAppTitle();
+						break;
+					case PomodoroEvent.STOP_POMODORO:
+						stopTicTocSound();
+						showStartButton();
+						break;
+					case PomodoroEvent.START_BREAK:
+						setTimerStyle(BREAK);
+						timeProgressBar.text = "On Break";
+						break;
+					case PomodoroEvent.STOP_BREAK:
+						startBlink();
+						soundPlayer.playAlarm();
+
+						var d:Date = timer.time;
+						counter.text = miniCounter.text = DateUtil.w3cTime(d.minutesUTC, d.secondsUTC);
+						break;
+					case PomodoroEvent.BREAK_TICK:
+						updateAppTitle();
+						break;
+				}
+			}
+
+			private function updateAppTitle():void {
+				if (updateTaskbar) {
+					var d:Date = this.timer.time;
+					var remaining:String = String(d.minutesUTC) + "'";
+					if (this.timer.isRunning) {
+						remaining = String(d.minutesUTC) + "'";
+						if (d.minutes == 0) {
+							remaining = String(d.seconds) + "''";
+						}
+					}
+					if (!this.timer.isBreak) {
+						if (taskManager.activeTask == null)
+							return;
+
+						var title:String = remaining + " " + taskManager.activeTask.name;
+						if (appTitle != title) {
+							appTitle = title;
+						}
+					}
+				}
+			}
+
+			private function created():void {
+
+				miniCounter.text = counter.text = DateUtil.w3cTime(timer.pomodoroTime.minutes);
+				counter.filters = [glow];
+				miniCounter.filters = [glow];
+			}
+
+			/**
+			 * This is triggered by an event that flags that a task has been selected.
+			 * This can originate from multiple locations.
+			 */
+			private function onPomodoroSelected(e:PomodoroEvent):void {
+				if (!e.pomodoro.done && !timer.isRunning) {
+					taskManager.setActive(e.pomodoro);
+					timer.stopBreakTimer();
+					showStartButton();
+				}
+			}
+
+			private function onListEmpty(event:PomodoroEvent):void {
+				showNewTaskButton();
+			}
+
+			private function onConfigurationChange(e:ConfigurationUpdatedEvent):void {
+
+
+				if (e.configElement.name == ConfigItemName.UPDATE_TASKBAR) {
+					this.updateTaskbar = e.configElement.value == "true";
+					if (!updateTaskbar) {
+						appTitle = "Pomodairo";
+					}
+				}
+			}
+
+			private function setTimerStyle(status:String):void {
+				switch (status) {
+					case DEFAULT:
+						counter.setStyle("color", EmbedStyle.POMODORO_TIMER_COLOR);
+						miniCounter.setStyle("color", EmbedStyle.POMODORO_TIMER_COLOR);
+						timeProgressBar.setStyle("color", EmbedStyle.POMODORO_TIMER_COLOR);
+						glow.color = EmbedStyle.POMODORO_TIMER_COLOR;
+						counter.filters = [glow];
+						miniCounter.filters = [glow];
+						stopBlink();
+						counter.visible = true;
+						break;
+
+					case TIME_OUT:
+						counter.setStyle("color", EmbedStyle.POMODORO_TIMEOUT_COLOR);
+						miniCounter.setStyle("color", EmbedStyle.POMODORO_TIMEOUT_COLOR);
+						timeProgressBar.setStyle("color", EmbedStyle.POMODORO_TIMEOUT_COLOR);
+						glow.color = EmbedStyle.POMODORO_TIMEOUT_COLOR;
+						counter.filters = [glow];
+						miniCounter.filters = [glow];
+						break;
+
+					case BREAK:
+						counter.setStyle("color", EmbedStyle.POMODORO_BREACK_COLOR);
+						miniCounter.setStyle("color", EmbedStyle.POMODORO_BREACK_COLOR);
+						timeProgressBar.setStyle("color", EmbedStyle.POMODORO_BREACK_COLOR);
+						glow.color = EmbedStyle.POMODORO_BREACK_COLOR;
+						counter.filters = [glow];
+						miniCounter.filters = [glow];
+						stopBlink();
+						counter.visible = true;
+						break;
+				}
+			}
+
+
+			private function setBreakTitle(evt:Event = null):void {
+				if (updateTaskbar) {
+					var title:String = "*break* " + taskManager.activeTask.name;
+					if (appTitle != title) {
+						appTitle = title;
+					}
+				}
+			}
+
+			private function showStartButton():void {
+
+				miniCounter.text = counter.text = DateUtil.w3cTime(timer.pomodoroTime.minutes);
+				var pomodoro:Pomodoro = taskManager.activeTask;
+				timeProgressBar.text = pomodoro.shortDescription;
+				appTitle = "pomodairo";
+				setTimerStyle(DEFAULT);
+			}
+
+			private function showNewTaskButton():void {
+				miniCounter.text = counter.text = DateUtil.w3cTime(timer.pomodoroTime.minutes);
+			}
+
+			public function createPomodoro():void {
+				var input:PomoItemInput = new PomoItemInput();
+				input.type = Pomodoro.TYPE_POMODORO;
+				input.selectAfterCreate = true;
+				PopUpManager.addPopUp(input, this, true);
+				PopUpManager.centerPopUp(input);
+			}
+
+			private function setDoneSelectNextPomodoro():void {
+				trace("Done / Next pomodoro.");
+			}
+
+			public function startBlink():void {
+				blinkTimer.addEventListener(TimerEvent.TIMER, toggleText);
+				blinkTimer.start();
+				if (currentState == "minimal") {
+					toggleMiniView();
+				}
+			}
+
+			public function stopBlink():void {
+				blinkTimer.stop();
+			}
+
+			public function toggleText(event:TimerEvent):void {
+				counter.visible = !counter.visible;
+			}
+
+			public function onNextTaskClicked(event:Event = null):void {
+				trace("Next task clicked...");
+				var result:Boolean = taskManager.nextTask();
+				if (!result) {
+					trace("There is no next task!");
+					showNewTaskButton();
+				}
+			}
+
+			private function stopTicTocSound():void {
+				soundPlayer.stopTicTocSound();
+			}
+
+			public function toggleMiniView():void {
+				if (currentState == null) {
+					currentState = "minimal";
+				} else {
+					currentState = null;
+				}
+				var evt:GuiChangeEvent = new GuiChangeEvent();
+				evt.miniView = currentState == "minimal";
+				PomodoroEventDispatcher.instance.dispatchEvent(evt);
+			}
+			]]>
+    </mx:Script>
+    
+    <mx:Style>
+        @font-face 
+        {
+            font-family: Digital;
+			src: url("/assets/digital-7mono.ttf");
+			embedAsCFF: false;
+        }
+
+        .ClockText 
+        { 
+            font-family: Digital; 
+            font-size: 80pt;    
+        }
+		
+		.MiniClockText 
+		{ 
+			font-family: Digital; 
+			font-size: 28pt;    
+		}
+
+    </mx:Style>
+	    <mx:states>
+	    	    <mx:State name="minimal">
+	    	    	    <mx:RemoveChild target="{counter}"/>
+						<mx:SetProperty target="{miniCounter}" name="visible" value="true"/>
+	    	    </mx:State>
+	    </mx:states>
+
+	
+	<!-- Clock Counter(s) -->
+	<!-- Regular Counter -->
+	<mx:Label id="counter"
+			  height="64" top="-8" horizontalCenter="0"
+			  textAlign="center"
+			  styleName="ClockText"
+			  color="{EmbedStyle.POMODORO_TIMER_COLOR}" />
+
+	<mx:GlowFilter id="glow" color="#FFFF00" alpha="1" blurX="8" blurY="8" strength="1"/>
+
+
+		<s:Label id="timeProgressBar"
+			color="{EmbedStyle.POMODORO_TIMER_COLOR}"
+		 	bottom="0" right="0" left="0" height="32"
+			text="{taskManager.activeTask.shortDescription}"/>
+	
+	<!-- Mini View Objects (not visible by default) -->
+	<mx:Label id="miniCounter" x="240" y="-1" styleName="MiniClockText" color="#FFFF00" visible="false"/>
+	
+</mx:Canvas>
+
+

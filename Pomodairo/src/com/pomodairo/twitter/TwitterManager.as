@@ -1,7 +1,7 @@
 package com.pomodairo.twitter
 {
 	import com.pomodairo.PomodoroEventDispatcher;
-	import com.pomodairo.TaskManager;
+	import com.pomodairo.core.TaskManager;
 	import com.pomodairo.components.config.TwitterConfigPanel;
 	import com.pomodairo.events.ConfigurationUpdatedEvent;
 	import com.pomodairo.events.PomodoroEvent;

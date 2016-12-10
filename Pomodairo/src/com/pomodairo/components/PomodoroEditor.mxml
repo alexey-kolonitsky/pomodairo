@@ -11,10 +11,10 @@
 	
 	<mx:Script>
         <![CDATA[
-		import com.pomodairo.EmbedImages;
-		import com.pomodairo.TaskManager;
+        import com.pomodairo.EmbedImages;
+        import com.pomodairo.core.TaskManager;
 
-		import mx.controls.Alert;
+        import mx.controls.Alert;
 
         import com.pomodairo.db.Storage;
         import com.pomodairo.Pomodoro;
@@ -27,8 +27,8 @@
         public var descriptionInstructions:String = "Enter description (press escape to cancel)";
         public var estimateInstructions:String = "Enter estimate (press escape to cancel)";
 
-		[Bindalbe]
-		public var pomodoro:Pomodoro;
+        [Bindalbe]
+        public var pomodoro:Pomodoro;
 
         [Bindable]
         public var currentText:String = descriptionInstructions;
@@ -135,17 +135,17 @@
             currentText = estimateInstructions;
         }
 
-		private function onRemovePomodoroClicked(event:Event = null):void {
-			if (pomodoro == null) {
-				trace("WARNING: TaskListCanvas.onEditPomodoroClicked: Pomodoro is not selected");
-				return;
-			}
+        private function onRemovePomodoroClicked(event:Event = null):void {
+            if (pomodoro == null) {
+                trace("WARNING: TaskListCanvas.onEditPomodoroClicked: Pomodoro is not selected");
+                return;
+            }
 
-			Storage.instance.remove(pomodoro);
-			if (TaskManager.instance.activeTask && TaskManager.instance.activeTask.id == pomodoro.id)
-				TaskManager.instance.findNextTask();
-			exit();
-		}
+            Storage.instance.remove(pomodoro);
+            if (TaskManager.instance.activeTask && TaskManager.instance.activeTask.id == pomodoro.id)
+                TaskManager.instance.findNextTask();
+            exit();
+        }
 
         private function copyToClipboard():void {
             if (pomodoro == null) {
@@ -155,7 +155,6 @@
 
             System.setClipboard(pomodoro.name);
         }
-
         ]]>
     </mx:Script>
     

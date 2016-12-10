@@ -1,5 +1,6 @@
-package com.pomodairo
+package com.pomodairo.core
 {
+import com.pomodairo.*;
 	import com.pomodairo.db.Storage;
 import com.pomodairo.events.PomodoroEvent;
 import com.pomodairo.settings.ConfigManager;

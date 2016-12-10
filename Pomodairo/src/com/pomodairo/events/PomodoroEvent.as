@@ -20,6 +20,7 @@ package com.pomodairo.events
 		public static var TIMER_TICK:String = "timer tick";
 		public static var START_BREAK:String = "break started";
 		public static var STOP_BREAK:String = "break stopped";
+		public static const BREAK_TICK:String = "break tick";
 		
 		public var pomodoro:Pomodoro;
 		
