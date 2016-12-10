@@ -64,5 +64,9 @@ import flash.events.EventDispatcher;
 		public function startBreak(activeTask:Pomodoro):void {
 			sendEvent(PomodoroEvent.START_BREAK, activeTask, null);
 		}
+
+		public function pomodoroSelected(pomo:Pomodoro):void {
+			sendEvent(PomodoroEvent.SELECTED, pomo, null);
+		}
 	}
 }

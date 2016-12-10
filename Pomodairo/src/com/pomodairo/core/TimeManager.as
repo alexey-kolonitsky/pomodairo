@@ -84,6 +84,10 @@ public class TimeManager  {
         return breakTimer.running;
     }
 
+    public function get isReady():Boolean {
+        return activeTask == true;
+    }
+
 
     public var taskManager:TaskManager;
 
@@ -105,12 +109,17 @@ public class TimeManager  {
 //
         eventDispatcher = PomodoroEventDispatcher.instance;
         eventDispatcher.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigChanged);
+        eventDispatcher.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
 
         pomodoroTimer = new Timer(TIMER_INTERVAL);
         pomodoroTimer.addEventListener(TimerEvent.TIMER, updateTimer);
 
         breakTimer = new Timer(TIMER_INTERVAL);
         breakTimer.addEventListener(TimerEvent.TIMER, updateBreakTimer);
+    }
+
+    private function onPomodoroSelected(event:PomodoroEvent):void {
+        activeTask = event.pomodoro;
     }
 
     /**
@@ -155,8 +164,10 @@ public class TimeManager  {
     }
 
     public function stopBreakTimer():void {
-        breakTimer.stop();
-        eventDispatcher.stopBreak(activeTask);
+        if (isBreak) {
+            breakTimer.stop();
+            eventDispatcher.stopBreak(activeTask);
+        }
     }
 
     public function startTimer(activeTask:Pomodoro):void {
@@ -177,10 +188,19 @@ public class TimeManager  {
         delayBeforeBreakStartTimer.start();
     }
 
+    public function stop():void {
+        if (isBreak) {
+            stopBreakTimer();
+        }
+        if (isRunning) {
+            stopTimer();
+        }
+    }
+
     /**
      * Stop the Timer
      */
-    public function stopTimer(event:Event = null):void {
+    public function stopTimer():void {
         pomodoroTimer.stop();
         eventDispatcher.stopTimer(activeTask);
     }

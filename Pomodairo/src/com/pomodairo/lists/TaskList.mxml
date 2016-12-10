@@ -68,9 +68,6 @@
 			list.dataProvider = new ArrayCollection(db.dataset);
 		}
 
-		private function onUsersDataGridChanged(event:Event):void {
-		}
-
 		private function onDragComplete(event:Event):void {
 			updatePrios();
 		}
@@ -95,10 +92,9 @@
 		private function onStartPomodoroClicked(event:Event = null):void {
 			var pom:Pomodoro = list.selectedItem as Pomodoro;
 			if (pom) {
-				var evt:PomodoroEvent = new PomodoroEvent(PomodoroEvent.SELECTED);
-				evt.pomodoro = pom;
-				PomodoroEventDispatcher.instance.dispatchEvent(evt);
-				onPomodoroSelected(evt);
+				PomodoroEventDispatcher.instance.pomodoroSelected(pom);
+				trace("Pomodoro selected: " + pom.name);
+				interruptionButton.enabled = true;
 			} else {
 				trace("TaskListCanvas onStartPomodoroClicked pomodoro not selected");
 			}
@@ -157,15 +153,6 @@
 			PopUpManager.centerPopUp(input);
 		}
 
-		private function onPomodoroSelected(event:PomodoroEvent):void {
-			trace("Pomodoro selected: " + event.pomodoro.name);
-//			unplannedButton.enabled = true;
-			interruptionButton.enabled = true;
-
-		}
-
-		[Bindable]
-		public var lastRollOverIndex:int;
 		]]>
 	</mx:Script>
 
@@ -206,11 +193,9 @@
 		borderVisible="false"
 		doubleClick="{showName()}"
         itemRenderer="com.pomodairo.components.PomodoroListRenderer"
-		itemRollOver="{lastRollOverIndex = event.itemIndex}"
 		click="onStartPomodoroClicked(event);"
 		dragMoveEnabled="true"
-		dragComplete="onDragComplete(event)"
-		change="onUsersDataGridChanged(event)" width="100%">
+		dragComplete="onDragComplete(event)">
 	</s:List>
 
 

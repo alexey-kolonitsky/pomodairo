@@ -102,8 +102,30 @@
             eventDispatcher.addEventListener(PomodoroEvent.TIME_OUT, onPomodoroTimeout);
             eventDispatcher.addEventListener(GuiChangeEvent.UPDATED, onGuiChange);
 
+            //Playback buttons
+            eventDispatcher.addEventListener(PomodoroEvent.SELECTED, playbackEvents);
+
             // Display task list on startup
             toggleTaskList();
+        }
+
+        private function playbackEvents(event:PomodoroEvent):void {
+            switch (event.type) {
+                case PomodoroEvent.SELECTED:
+                    startTimerButton.enabled = true;
+                    stopBreakButton.enabled = true;
+                    break;
+
+                case PomodoroEvent.START_BREAK:
+                    startTimerButton.enabled = true;
+                    stopBreakButton.enabled = false;
+                    break;
+
+                case PomodoroEvent.START_POMODORO:
+                    startTimerButton.enabled = false;
+                    stopBreakButton.enabled = true;
+                    break;
+            }
         }
 
 
@@ -270,11 +292,8 @@
             <mx:Button id="startTimerButton" width="32" height="32"
                        click="{timeManager.startTimer(taskManager.activeTask)}"
                        icon="{EmbedImages.ICON_PLAY_CLASS}"/>
-            <mx:Button id="stopTimerButton" width="32" height="32"
-                       click="timeManager.stopTimer();"
-                       icon="{EmbedImages.ICON_STOP_CLASS}"/>
             <mx:Button id="stopBreakButton" width="32" height="32"
-                       click="timeManager.stopBreakTimer();"
+                       click="timeManager.stop();"
                        icon="{EmbedImages.ICON_STOP_CLASS}"/>
             <mx:Button id="nextTaskButton"  height="32"
                        click="display.onNextTaskClicked()"
