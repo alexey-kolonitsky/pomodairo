@@ -156,10 +156,8 @@
 			}
 
 			private function created():void {
-
 				miniCounter.text = counter.text = DateUtil.w3cTime(timer.pomodoroTime.minutes);
-				counter.filters = [glow];
-				miniCounter.filters = [glow];
+				miniCounter.filters = counter.filters = [glow];
 			}
 
 			/**
@@ -322,12 +320,13 @@
 		}
 
     </mx:Style>
-	    <mx:states>
-	    	    <mx:State name="minimal">
-	    	    	    <mx:RemoveChild target="{counter}"/>
-						<mx:SetProperty target="{miniCounter}" name="visible" value="true"/>
-	    	    </mx:State>
-	    </mx:states>
+
+	<mx:states>
+		<mx:State name="minimal">
+			<mx:RemoveChild target="{counter}"/>
+			<mx:SetProperty target="{miniCounter}" name="visible" value="true"/>
+		</mx:State>
+	</mx:states>
 
 	
 	<!-- Clock Counter(s) -->
@@ -340,11 +339,10 @@
 
 	<mx:GlowFilter id="glow" color="#FFFF00" alpha="1" blurX="8" blurY="8" strength="1"/>
 
-
-		<s:Label id="timeProgressBar"
-			color="{EmbedStyle.POMODORO_TIMER_COLOR}"
-		 	bottom="0" right="0" left="0" height="32"
-			text="{taskManager.activeTask.shortDescription}"/>
+	<s:Label id="timeProgressBar"
+		color="{EmbedStyle.POMODORO_TIMER_COLOR}"
+		bottom="0" right="0" left="0" height="32"
+		text="{taskManager.activeTask.shortDescription}"/>
 	
 	<!-- Mini View Objects (not visible by default) -->
 	<mx:Label id="miniCounter" x="240" y="-1" styleName="MiniClockText" color="#FFFF00" visible="false"/>
