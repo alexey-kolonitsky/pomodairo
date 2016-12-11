@@ -17,6 +17,7 @@
         import com.pomodairo.settings.ConfigManager;
 
         import mx.collections.ArrayCollection;
+        import mx.events.ItemClickEvent;
 
 
         private var configManager:ConfigManager;
@@ -54,7 +55,17 @@
         private function update():void {
             var timePassed:Boolean = getTimer() - _lastUpdate > UPDATE_DELAY;
             if (_needUpdate && timePassed) {
-                db.getPomodorosOfDay(timeline.startDate, timeline.dateCount, pomodoroFilter.text);
+                switch (statisticPeriod.selectedIndex) {
+                    case 0:
+                        db.getPomodorosOfDay(timeline.startDate, timeline.dateCount, pomodoroFilter.text);
+                        break;
+                    case 1:
+                        db.getPomodorosPerDay();
+                        break;
+                    case 2:
+                        db.getRealityFactors();
+                        break;
+                }
                 _needUpdate = false;
             }
         }
@@ -75,6 +86,9 @@
             color="{EmbedStyle.SECTION_TEXT_COLOR}"
             fontWeight="bold"
             paddingLeft="4"/>
+        <mx:ToggleButtonBar id="statisticPeriod" dataProvider="{['T', 'D', 'W']}" itemClick="{needUpdate()}">
+
+        </mx:ToggleButtonBar>
         <mx:Label id="labelDates" />
         <s:Spacer width="100%" />
         <s:BitmapImage source="{EmbedImages.ICON_SEARCH}" width="24" height="24"/>

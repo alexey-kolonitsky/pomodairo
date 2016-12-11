@@ -249,8 +249,8 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			dbStatement.text = "SELECT created, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions FROM pomodoro GROUP BY created";
-			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosPerDayResult);
+			dbStatement.text = "SELECT strftime('%Y-%m-%d', created) AS name, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions FROM pomodoro GROUP BY name";
+			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
 			dbStatement.execute();
 		}
 		
@@ -258,10 +258,10 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		{
 			// Created pomodoros per week, not the pomodoros done!
 			var dbStatement:SQLStatement = new SQLStatement();
-			//dbStatement.itemClass = Pomodoro;
+			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			dbStatement.text = "SELECT strftime('%W',created)+1 AS week, round(cast(sum(pomodoros) as real)/sum(estimated),2) AS factor, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY week";
-			dbStatement.addEventListener(SQLEvent.RESULT, realityFactorResult);
+			dbStatement.text = "SELECT strftime('%Y%W',created) AS week, strftime('%Y week %W',created) AS name, round(cast(sum(pomodoros) as real)/sum(estimated),2) AS factor, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY week";
+			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
 			dbStatement.execute();
 		}
 		

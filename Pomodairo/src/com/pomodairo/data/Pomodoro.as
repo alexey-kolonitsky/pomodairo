@@ -26,6 +26,10 @@ package com.pomodairo.data
 		public var parent:int = 0;
 		public var visible:Boolean = true;
 		public var ordinal:int = 0;
+
+		public var week:String;
+		public var delta:Number;
+		public var factor:Number;
 		
 		// Descriptions
 		public var pomodorosDescription:String = "Number of pomodoros used";
