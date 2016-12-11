@@ -72,8 +72,13 @@
             public var timer:TimeManager;
             public var eventDispatcher:PomodoroEventDispatcher = PomodoroEventDispatcher.instance;
 
-            private function init():void {
+			[Bindable]
+			public var caption:String;
 
+			[Bindable]
+			public var captionColor:uint;
+
+            private function init():void {
 
                 eventDispatcher.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
                 eventDispatcher.addEventListener(PomodoroEvent.LIST_EMPTY, onListEmpty);
@@ -119,7 +124,7 @@
                         break;
                     case PomodoroEvent.START_BREAK:
                         setTimerStyle(BREAK);
-                        timeProgressBar.text = "On Break";
+						caption = "On Break";
                         break;
                     case PomodoroEvent.STOP_BREAK:
                         startBlink();
@@ -193,10 +198,9 @@
                     case DEFAULT:
                         counter.setStyle("color", EmbedStyle.POMODORO_TIMER_COLOR);
                         miniCounter.setStyle("color", EmbedStyle.POMODORO_TIMER_COLOR);
-                        timeProgressBar.setStyle("color", EmbedStyle.POMODORO_TIMER_COLOR);
+                        captionColor = EmbedStyle.POMODORO_TIMER_COLOR;
                         glow.color = EmbedStyle.POMODORO_TIMER_COLOR;
-                        counter.filters = [glow];
-                        miniCounter.filters = [glow];
+						miniCounter.filters = counter.filters = [glow];
                         stopBlink();
                         counter.visible = true;
                         break;
@@ -204,19 +208,17 @@
                     case TIME_OUT:
                         counter.setStyle("color", EmbedStyle.POMODORO_TIMEOUT_COLOR);
                         miniCounter.setStyle("color", EmbedStyle.POMODORO_TIMEOUT_COLOR);
-                        timeProgressBar.setStyle("color", EmbedStyle.POMODORO_TIMEOUT_COLOR);
+						captionColor = EmbedStyle.POMODORO_TIMEOUT_COLOR;
                         glow.color = EmbedStyle.POMODORO_TIMEOUT_COLOR;
-                        counter.filters = [glow];
-                        miniCounter.filters = [glow];
+						miniCounter.filters =  counter.filters = [glow];
                         break;
 
                     case BREAK:
                         counter.setStyle("color", EmbedStyle.POMODORO_BREACK_COLOR);
                         miniCounter.setStyle("color", EmbedStyle.POMODORO_BREACK_COLOR);
-                        timeProgressBar.setStyle("color", EmbedStyle.POMODORO_BREACK_COLOR);
+                        captionColor =  EmbedStyle.POMODORO_BREACK_COLOR;
                         glow.color = EmbedStyle.POMODORO_BREACK_COLOR;
-                        counter.filters = [glow];
-                        miniCounter.filters = [glow];
+						miniCounter.filters = counter.filters = [glow];
                         stopBlink();
                         counter.visible = true;
                         break;
@@ -237,7 +239,7 @@
 
                 miniCounter.text = counter.text = DateUtil.w3cTime(timer.pomodoroTime.minutes);
                 var pomodoro:Pomodoro = taskManager.activeTask;
-                timeProgressBar.text = pomodoro.shortDescription;
+                caption = pomodoro.shortDescription;
                 appTitle = "pomodairo";
                 setTimerStyle(DEFAULT);
             }
@@ -332,10 +334,6 @@
 
 	<mx:GlowFilter id="glow" color="#FFFF00" alpha="1" blurX="8" blurY="8" strength="1"/>
 
-	<s:Label id="timeProgressBar"
-		color="{EmbedStyle.POMODORO_TIMER_COLOR}"
-		bottom="0" right="0" left="0" height="32"
-		text="{taskManager.activeTask.shortDescription}"/>
 	
 	<!-- Mini View Objects (not visible by default) -->
 	<mx:Label id="miniCounter" x="240" y="-1" styleName="MiniClockText" color="#FFFF00" visible="false"/>
