@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Canvas
-    xmlns:mx="http://www.adobe.com/2006/mxml"
+    xmlns:fx="http://ns.adobe.com/mxml/2009"
+    xmlns:s="library://ns.adobe.com/flex/spark"
+    xmlns:mx="library://ns.adobe.com/flex/mx"
     xmlns:lists="com.pomodairo.lists.*"
     initialize="init()">
 
-    <mx:Script>
+    <fx:Script>
 		<![CDATA[
         import com.pomodairo.EmbedImages;
         import com.pomodairo.data.Pomodoro;
@@ -18,18 +20,20 @@
         private var configManager:ConfigManager;
         private var db:Storage = Storage.instance;
 
-        [Bindable]
-        public var tabs:ArrayCollection = new ArrayCollection([EmbedImages.ICON_LIST, EmbedImages.ICON_HISTORY, EmbedImages.ICON_STATS, EmbedImages.ICON_STATS]);
-
-        [Bindable]
-        public var tabsList:List;
+//        [Bindable]
+//        public var tabs:ArrayCollection = new ArrayCollection([
+//            EmbedImages.ICON_LIST,
+//            EmbedImages.ICON_STATS,
+//            EmbedImages.ICON_STATS,
+//            EmbedImages.ICON_HISTORY
+//        ]);
 
         private function init():void {
             configManager = ConfigManager.instance;
             configManager.initialize();
             db.initAndOpenDatabase();
             db.initViews();
-            showSelectedPanel();
+            showSelectedPanel(0);
         }
 
 
@@ -48,21 +52,14 @@
             db.getAllItems();
         }
 
-        public function tabsList_clickHandler(event:MouseEvent):void {
-            trace("Selected Item: " + tabsList.selectedIndex);
-            if (selectedTab != tabsList.selectedIndex) {
-                showSelectedPanel();
-            }
-        }
+        public var selectedTab:int = 0;
 
-        private var selectedTab:int = 0;
-
-        private function showSelectedPanel():void {
+        public function showSelectedPanel(index:int):void {
+            selectedTab = index;
             taskList.includeInLayout = taskList.visible = false;
             pomodorosOfDayPanel.includeInLayout = pomodorosOfDayPanel.visible = false;
             pomodorosPerDayPanel.includeInLayout = pomodorosPerDayPanel.visible = false;
             realityFactorPanel.includeInLayout = realityFactorPanel.visible = false;
-            selectedTab = tabsList ? tabsList.selectedIndex : 0;
 
             switch (selectedTab) {
                 case 0:
@@ -80,14 +77,14 @@
             }
         }
         ]]>
-	</mx:Script>
+	</fx:Script>
 
-    <lists:TaskList id="taskList" left="0" top="0" right="0" bottom="0"/>
+    <lists:TaskList id="taskList" left="0" top="32" right="0" bottom="0"/>
 
-    <lists:HistoryList id="pomodorosOfDayPanel" left="0" top="0" right="0" bottom="0"/>
+    <lists:HistoryList id="pomodorosOfDayPanel" left="0" top="32" right="0" bottom="0"/>
 
-    <lists:StatisticPerDayList id="pomodorosPerDayPanel" left="0" top="0" right="0" bottom="0"/>
+    <lists:StatisticPerDayList id="pomodorosPerDayPanel" left="0" top="32" right="0" bottom="0"/>
 
-    <lists:StatisticPerWeekList id="realityFactorPanel" left="0" top="0" right="0" bottom="0"/>
+    <lists:StatisticPerWeekList id="realityFactorPanel" left="0" top="32" right="0" bottom="0"/>
 
 </mx:Canvas>

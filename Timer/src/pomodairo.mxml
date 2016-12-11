@@ -156,23 +156,25 @@
         }
 
 
-        private function toggleTaskList():void {
-            if (!listContainer.visible) {
+        private function toggleTaskList(tabIndex:int = 0):void {
+
+            if (listContainer.visible && listContainer.selectedTab == tabIndex) {
+                closeTaskList();
+            } else if (listContainer.visible && listContainer.selectedTab != tabIndex) {
+                listContainer.showSelectedPanel(tabIndex);
+            } else if (!listContainer.visible ) {
+                listContainer.showSelectedPanel(tabIndex);
                 listContainer.visible = true;
-                tabsList.visible = true;
                 var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
                 setHeight = isNaN(setHeight) ? 0 : setHeight;
 
                 this.height = setHeight > Capabilities.screenResolutionY || setHeight < DefaultConfig.FULL_HEIGHT ? DefaultConfig.FULL_HEIGHT : setHeight;
-            } else {
-                closeTaskList();
             }
         }
 
         private function closeTaskList(event:PomodoroEvent = null):void {
             this.height = DefaultConfig.SHORT_HEIGHT;
             listContainer.visible = false;
-            tabsList.visible = false;
         }
 
         private function beforeClose():void {
@@ -291,18 +293,6 @@
             <mx:Button id="nextTaskButton"  height="32"
                        click="display.onNextTaskClicked()"
                        icon="{EmbedImages.ICON_FORWARD_CLASS}"/>
-            <s:List id="tabsList"
-                    left="0" top="0" height="32" right="0"
-                    itemRenderer="com.pomodairo.components.ListMenuItemRenderer"
-                    dataProvider="{pomodoroListContainer.tabs}" selectedIndex="0"
-                    click="{pomodoroListContainer.tabsList_clickHandler(event)}"
-                    contentBackgroundAlpha="0" borderVisible="false"
-                    color="#adadad">
-                <s:layout>
-                    <s:HorizontalLayout />
-                </s:layout>
-            </s:List>
-
 
             <mx:Spacer width="100%"/>
 
@@ -315,6 +305,11 @@
                        width="32" height="32"
                        icon="{EmbedImages.ICON_LIST_CLASS}"
                        click="toggleTaskList()"
+                       toolTip="Open/close task list"/>
+            <mx:Button id="historyList"
+                       width="32" height="32"
+                       icon="{EmbedImages.ICON_HISTORY_CLASS}"
+                       click="toggleTaskList(1)"
                        toolTip="Open/close task list"/>
 
             <mx:Button right="56" top="0" height="32" id="toggleViewButton"
@@ -329,15 +324,10 @@
 
     </s:VGroup>
 
-    <mx:Canvas id="listContainer"
+    <ns1:PomodoroListContainer  id="listContainer"
         x="0" y="{DefaultConfig.SHORT_HEIGHT}" height="100%" width="100%"
         visible="false" showEffect="fadein" hideEffect="fadeout"
-        backgroundAlpha="0">
-
-        <ns1:PomodoroListContainer id="pomodoroListContainer" height="100%" width="100%"
-            tabsList="{tabsList}"/>
-
-    </mx:Canvas>
+        backgroundAlpha="0"/>
 
     <ns1:ResizeLine bottom="0" left="0" right="0" height="4"
         backgroundColor="0xFFFFFF" backgroundAlpha="0.2"

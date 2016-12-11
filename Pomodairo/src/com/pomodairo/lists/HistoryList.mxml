@@ -16,6 +16,9 @@
         import com.pomodairo.core.Storage;
         import com.pomodairo.settings.ConfigManager;
 
+        import mx.collections.ArrayCollection;
+
+
         private var configManager:ConfigManager;
         private var db:Storage = Storage.instance;
 
