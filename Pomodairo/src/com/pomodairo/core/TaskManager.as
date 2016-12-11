@@ -23,19 +23,22 @@ import mx.collections.ArrayCollection;
 
 		private var configManager:ConfigManager = ConfigManager.instance;
 
+		private var eventDispatcher:PomodoroEventDispatcher;
+
 		public function TaskManager() {
 			configManager.defaultSettingsFilePath = DEFAULT_SETTINGS_FILE_PATH;
 			configManager.initialize();
+
+			eventDispatcher = PomodoroEventDispatcher.instance;
 
 			db.initAndOpenDatabase();
 			openTasks = db.getOpenPomodoros();
 		}
 
 		public function findNextTask():void {
-			var result:Boolean = TaskManager.instance.nextTask();
+			var result:Boolean = nextTask();
 			if (result == false) {
-				var emptyListEvent:PomodoroEvent = new PomodoroEvent(PomodoroEvent.LIST_EMPTY);
-				PomodoroEventDispatcher.instance.dispatchEvent(emptyListEvent);
+				eventDispatcher.sendEvent(PomodoroEvent.LIST_EMPTY, null, null);
 			}
 		}
 		
@@ -60,6 +63,7 @@ import mx.collections.ArrayCollection;
 				activeTask = Pomodoro(openTasks.getItemAt(currentIndex+1));
 			}
 			trace("Next task is '" + activeTask.name + "'.");
+			eventDispatcher.sendEvent(PomodoroEvent.NEXT_TASK_SELECTED, activeTask, null);
 			return true;
 		}
 

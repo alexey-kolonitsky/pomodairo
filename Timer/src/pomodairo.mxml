@@ -95,6 +95,10 @@
 
             //Playback buttons
             eventDispatcher.addEventListener(PomodoroEvent.SELECTED, playbackEvents);
+            eventDispatcher.addEventListener(PomodoroEvent.NEXT_TASK_SELECTED, playbackEvents);
+            eventDispatcher.addEventListener(PomodoroEvent.START_BREAK, playbackEvents);
+            eventDispatcher.addEventListener(PomodoroEvent.START_POMODORO, playbackEvents);
+            eventDispatcher.addEventListener(PomodoroEvent.STOP_POMODORO, playbackEvents);
 
             // Display task list on startup
             toggleTaskList();
@@ -105,8 +109,10 @@
         private function playbackEvents(event:PomodoroEvent):void {
             switch (event.type) {
                 case PomodoroEvent.SELECTED:
+                case PomodoroEvent.NEXT_TASK_SELECTED:
                     startTimerButton.enabled = true;
                     stopBreakButton.enabled = true;
+                    captionLabel.text = event.pomodoro.shortDescription;
                     break;
 
                 case PomodoroEvent.START_BREAK:
@@ -117,6 +123,11 @@
                 case PomodoroEvent.START_POMODORO:
                     startTimerButton.enabled = false;
                     stopBreakButton.enabled = true;
+                    break;
+
+                case PomodoroEvent.STOP_POMODORO:
+                    startTimerButton.enabled = true;
+                    stopBreakButton.enabled = false;
                     break;
             }
         }
@@ -334,8 +345,7 @@
             <mx:Label id="captionLabel"
                      styleName="MiniClockText"
                     color="{display.captionColor}"
-                    width="230" fontFamily="Digital" fontSize="14"
-                    text="{display.caption}"/>
+                    width="230" fontFamily="Digital" fontSize="14"/>
 
             <mx:Button id="taskList"
                        width="32" height="32"

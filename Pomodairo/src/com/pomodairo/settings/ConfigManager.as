@@ -33,6 +33,7 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 		public function ConfigManager() {
 			_providers = new Dictionary();
 			_settings = new ConfigCollection();
+			_dbProvider = Storage.instance;
 		}
 
 		public function hasConfig(key:String):Boolean {

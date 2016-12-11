@@ -73,10 +73,7 @@
             public var eventDispatcher:PomodoroEventDispatcher = PomodoroEventDispatcher.instance;
 
 			[Bindable]
-			public var caption:String;
-
-			[Bindable]
-			public var captionColor:uint;
+			public var captionColor:uint = EmbedStyle.POMODORO_TIMER_COLOR;
 
             private function init():void {
 
@@ -124,7 +121,6 @@
                         break;
                     case PomodoroEvent.START_BREAK:
                         setTimerStyle(BREAK);
-						caption = "On Break";
                         break;
                     case PomodoroEvent.STOP_BREAK:
                         startBlink();
@@ -239,7 +235,6 @@
 
                 miniCounter.text = counter.text = DateUtil.w3cTime(timer.pomodoroTime.minutes);
                 var pomodoro:Pomodoro = taskManager.activeTask;
-                caption = pomodoro.shortDescription;
                 appTitle = "pomodairo";
                 setTimerStyle(DEFAULT);
             }

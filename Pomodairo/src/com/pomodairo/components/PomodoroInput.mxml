@@ -25,7 +25,7 @@
         public var reference:Pomodoro;
 
         [Bindable]
-        public var currentText:String = descriptionInstructions;
+        public var currentText:String = "";
 
         private function init():void {
             if (type == Pomodoro.TYPE_INTERRUPTION) {
@@ -134,6 +134,7 @@
             dispatchEvent(new Event("exit"));
             input.text = "";
             estimatedInput.text = "";
+            descriptionInstructions = "";
         }
 
         ]]>
