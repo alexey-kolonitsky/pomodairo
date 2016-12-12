@@ -129,7 +129,11 @@
                         var d:Date = timer.time;
                         counter.text = miniCounter.text = DateUtil.w3cTime(d.minutesUTC, d.secondsUTC);
                         break;
+
                     case PomodoroEvent.BREAK_TICK:
+                        var d:Date = timer.time;
+                        counter.text = miniCounter.text = DateUtil.w3cTime(d.minutesUTC, d.secondsUTC);
+
                         updateAppTitle();
                         break;
                 }
@@ -167,7 +171,7 @@
              * This can originate from multiple locations.
              */
             private function onPomodoroSelected(e:PomodoroEvent):void {
-                if (!e.pomodoro.done && !timer.isRunning) {
+                if (e.pomodoro != null && !e.pomodoro.done && !timer.isRunning) {
                     taskManager.setActive(e.pomodoro);
                     timer.stopBreakTimer();
                     showStartButton();

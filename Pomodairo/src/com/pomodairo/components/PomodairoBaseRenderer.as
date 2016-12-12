@@ -65,16 +65,15 @@ public class PomodairoBaseRenderer extends ItemRenderer {
 			graphics.lineStyle(1, this.getStyle("color"));
 			graphics.moveTo(28, unscaledHeight / 2);
 			graphics.lineTo(unscaledWidth - 28, unscaledHeight / 2);
-		} else {
-			if (_estimated == 0) {
-				setStyle('color', 0x777777);
-			}
-			if (_estimated < data.pomodoros) {
-				setStyle('color', 0xCC0000);
-			}
-			if (_actual > 0) {
-				setStyle('fontWeight', 'bold');
-			}
+		}
+		if (_estimated == 0) {
+			setStyle('color', 0x777777);
+		}
+		if (_estimated < data.pomodoros) {
+			setStyle('color', 0xCC0000);
+		}
+		if (_actual > 0) {
+			setStyle('fontWeight', 'bold');
 		}
 	}
 

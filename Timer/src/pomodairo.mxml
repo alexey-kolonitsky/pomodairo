@@ -112,7 +112,9 @@
                 case PomodoroEvent.NEXT_TASK_SELECTED:
                     startTimerButton.enabled = true;
                     stopBreakButton.enabled = true;
-                    captionLabel.text = event.pomodoro.shortDescription;
+                    if (!timeManager.isRunning) {
+                        captionLabel.text = event.pomodoro.shortDescription;
+                    }
                     break;
 
                 case PomodoroEvent.START_BREAK:
@@ -136,13 +138,13 @@
         override protected function createChildren():void {
             super.createChildren();
             display.timer = timeManager;
+            listContainer.timeManager = timeManager;
         }
 
         private function checkForUpdates():void {
             appUpdater.configurationFile = new File("app:/updateConfig.xml");
             appUpdater.isCheckForUpdateVisible = false;
-            appUpdater.addEventListener(UpdateEvent.INITIALIZED,
-                updaterInitialised);
+            appUpdater.addEventListener(UpdateEvent.INITIALIZED, updaterInitialised);
             appUpdater.initialize();
         }
 
@@ -165,7 +167,6 @@
             nativeWindow.notifyUser(NotificationType.CRITICAL);
             nativeWindow.orderToFront();
         }
-
 
         private function toggleTaskList(tabIndex:int = 0):void {
 

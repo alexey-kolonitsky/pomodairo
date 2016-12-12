@@ -9,6 +9,7 @@
     <fx:Script>
 		<![CDATA[
         import com.pomodairo.EmbedImages;
+        import com.pomodairo.core.TimeManager;
         import com.pomodairo.data.Pomodoro;
         import com.pomodairo.core.Storage;
         import com.pomodairo.settings.ConfigManager;
@@ -27,6 +28,9 @@
 //            EmbedImages.ICON_STATS,
 //            EmbedImages.ICON_HISTORY
 //        ]);
+
+        [Bindable]
+        public var timeManager:TimeManager;
 
         private function init():void {
             configManager = ConfigManager.instance;
@@ -79,7 +83,7 @@
         ]]>
 	</fx:Script>
 
-    <lists:TaskList id="taskList" left="0" top="0" right="0" bottom="0"/>
+    <lists:TaskList id="taskList" timeManager="{timeManager}" left="0" top="0" right="0" bottom="0"/>
 
     <lists:HistoryList id="pomodorosOfDayPanel" left="0" top="0" right="0" bottom="0"/>
 

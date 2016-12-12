@@ -76,8 +76,10 @@ public class TimeManager  {
         return result;
     }
 
+    private var _isRunning = false;
+
     public function get isRunning():Boolean {
-        return pomodoroTimer.running;
+        return _isRunning ;
     }
 
     public function get isBreak():Boolean {
@@ -85,15 +87,14 @@ public class TimeManager  {
     }
 
     public function get isReady():Boolean {
-        return activeTask == true;
+        return _activeTask != null;
     }
 
+    private var _activeTask:Pomodoro;
 
-    public var taskManager:TaskManager;
-
-    private var activeTask:Pomodoro;
-
-
+    public function get activeTask():Pomodoro {
+        return _activeTask;
+    }
 
     public function TimeManager(
 //        pomodoroTime:TimeSpan,
@@ -110,6 +111,7 @@ public class TimeManager  {
         eventDispatcher = PomodoroEventDispatcher.instance;
         eventDispatcher.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigChanged);
         eventDispatcher.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
+        eventDispatcher.addEventListener(PomodoroEvent.NEXT_TASK_SELECTED, onPomodoroSelected);
 
         pomodoroTimer = new Timer(TIMER_INTERVAL);
         pomodoroTimer.addEventListener(TimerEvent.TIMER, updateTimer);
@@ -119,7 +121,9 @@ public class TimeManager  {
     }
 
     private function onPomodoroSelected(event:PomodoroEvent):void {
-        activeTask = event.pomodoro;
+        if (!isRunning) {
+            _activeTask = event.pomodoro;
+        }
     }
 
     /**
@@ -129,12 +133,13 @@ public class TimeManager  {
      */
     private function updateTimer(evt:TimerEvent):void {
         if (getTimer() >= baseTimer) {
-            eventDispatcher.timeout(activeTask);
+            eventDispatcher.timeout(_activeTask);
             _pomodoroCounter++;
             pomodoroTimer.stop();
+            _activeTask = null;
             scheduleBreakTimerStart();
         } else {
-            eventDispatcher.tick(activeTask);
+            eventDispatcher.tick(_activeTask);
         }
     }
 
@@ -144,29 +149,30 @@ public class TimeManager  {
             // Check long break
             if (getTimer() >= baseTimer + _longBreakTime.time) {
                 trace("Long break over. Pomodoros so far: " + _pomodoroCounter);
-                eventDispatcher.stopBreak(activeTask);
+                eventDispatcher.stopBreak(_activeTask);
                 breakTimer.stop();
             }
         } else {
             // Check short break
             if (getTimer() >= baseTimer + _breakTime.time) {
                 trace("Short break over. Pomodoros so far: " + _pomodoroCounter);
-                eventDispatcher.stopBreak(activeTask);
+                eventDispatcher.stopBreak(_activeTask);
                 breakTimer.stop();
             }
         }
+        eventDispatcher.sendEvent(PomodoroEvent.BREAK_TICK, _activeTask, null);
     }
 
     private function startBreakTimer(evt:TimerEvent):void {
         baseTimer = getTimer();
         breakTimer.start();
-        eventDispatcher.startBreak(activeTask);
+        eventDispatcher.startBreak(_activeTask);
     }
 
     public function stopBreakTimer():void {
         if (isBreak) {
             breakTimer.stop();
-            eventDispatcher.stopBreak(activeTask);
+            eventDispatcher.stopBreak(_activeTask);
         }
     }
 
@@ -176,9 +182,11 @@ public class TimeManager  {
         baseTimer += _pomodoroTime.time + 1000;
         // baseTimer += 5*1000;
         pomodoroTimer.start();
+        _isRunning = true;
+        _activeTask = activeTask;
 
         // Dispatch event
-        eventDispatcher.startTimer(activeTask);
+        eventDispatcher.sendEvent(PomodoroEvent.START_POMODORO, _activeTask);
     }
 
 
@@ -201,8 +209,9 @@ public class TimeManager  {
      * Stop the Timer
      */
     public function stopTimer():void {
+        _isRunning = false;
         pomodoroTimer.stop();
-        eventDispatcher.stopTimer(activeTask);
+        eventDispatcher.sendEvent(PomodoroEvent.STOP_POMODORO, _activeTask);
     }
 
     private function onConfigChanged(event:ConfigurationUpdatedEvent):void {

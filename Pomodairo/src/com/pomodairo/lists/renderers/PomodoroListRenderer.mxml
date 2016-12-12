@@ -9,6 +9,7 @@
 
     <fx:Script>
         <![CDATA[
+        import com.pomodairo.EmbedStyle;
         import com.pomodairo.components.*;
         import com.pomodairo.data.Pomodoro;
         import com.pomodairo.core.PomodoroEventDispatcher;
@@ -16,9 +17,12 @@
         import com.pomodairo.events.PomodoroEvent;
 
         private var _pomodoro:Pomodoro = null;
+        private var _isRunning:Boolean = false;
+
 
         override public function set data(value:Object):void {
             super.data = value;
+            destroy();
             _pomodoro = data as Pomodoro;
             if (_pomodoro == null) {
                 nameLabel.text = "";
@@ -35,8 +39,30 @@
                 _estimated = _pomodoro.estimated;
                 _actual = _pomodoro.pomodoros;
                 _unplanned = _pomodoro.interruptions + _pomodoro.unplanned;
+                _isRunning = _pomodoro.isRunning;
+                _pomodoro.addEventListener(PomodoroEvent.POMODORO_CHANGED, onStartPomodoro);
             }
             invalidateDisplayList();
+        }
+
+        private function destroy():void {
+            if (_pomodoro != null) {
+                _pomodoro.removeEventListener(PomodoroEvent.POMODORO_CHANGED, onStartPomodoro);
+            }
+        }
+
+        private function onStartPomodoro(event:PomodoroEvent):void {
+            _isRunning = _pomodoro.isRunning;
+            invalidateDisplayList();
+        }
+
+        override protected function updateDisplayList(unscaledWidth:Number,
+                                                      unscaledHeight:Number):void {
+            super.updateDisplayList(unscaledWidth, unscaledHeight);
+
+            if (_isRunning) {
+                setStyle('color', EmbedStyle.POMODORO_TIMER_COLOR);
+            }
         }
 
         private function onDonePomodoroClicked(event:Event = null):void {

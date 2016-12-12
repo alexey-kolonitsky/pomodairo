@@ -22,6 +22,7 @@ package com.pomodairo.events
 		public static var START_BREAK:String = "break started";
 		public static var STOP_BREAK:String = "break stopped";
 		public static const BREAK_TICK:String = "break tick";
+		public static const POMODORO_CHANGED:String = "pomodoro changed";
 		
 		public var pomodoro:Pomodoro;
 		

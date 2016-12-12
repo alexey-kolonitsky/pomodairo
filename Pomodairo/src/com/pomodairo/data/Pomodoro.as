@@ -1,6 +1,8 @@
 package com.pomodairo.data
 {
-	import flash.events.Event;
+import com.pomodairo.events.PomodoroEvent;
+
+import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
 	import mx.formatters.DateFormatter;
@@ -97,6 +99,17 @@ package com.pomodairo.data
 			}
 			
 			return "[" + created + closed + "] " + type + shortDescription + " " + (interruptions+unplanned) + "'";
+		}
+
+		private var _isRunning:Boolean;
+
+		public function get isRunning():Boolean {
+			return _isRunning;
+		}
+
+		public function set isRunning(value:Boolean):void {
+			_isRunning = value;
+			dispatchEvent(new PomodoroEvent(PomodoroEvent.POMODORO_CHANGED));
 		}
 	}
 }

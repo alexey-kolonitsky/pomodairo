@@ -47,7 +47,7 @@ import mx.collections.ArrayCollection;
 			
 			if(openTasks.length == 0) {
 				activeTask = null;
-				return false;
+				eventDispatcher.sendEvent(PomodoroEvent.LIST_EMPTY);
 			}
 
 			var currentIndex:int = -1;

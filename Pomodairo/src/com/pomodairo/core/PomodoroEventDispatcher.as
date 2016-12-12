@@ -30,8 +30,8 @@ import flash.events.EventDispatcher;
 		}
 
 		public function sendEvent(type:String,
-								   pomodoro:Pomodoro,
-								   value:String):void {
+								   pomodoro:Pomodoro = null,
+								   value:String = null):void {
 			var event:PomodoroEvent = new PomodoroEvent(type);
 			event.pomodoro = pomodoro;
 			event.value = value;
@@ -46,15 +46,6 @@ import flash.events.EventDispatcher;
 			sendEvent(PomodoroEvent.BREAK_TICK, activeTask, null);
 		}
 
-		public function startTimer(activeTask:Pomodoro):void {
-
-			sendEvent(PomodoroEvent.START_POMODORO, activeTask, null);
-		}
-
-		public function stopTimer(activeTask:Pomodoro):void {
-			sendEvent(PomodoroEvent.STOP_POMODORO, activeTask, null);
-		}
-
 		public function timeout(activeTask:Pomodoro):void {
 			sendEvent(PomodoroEvent.TIME_OUT, activeTask, null);
 		}
@@ -65,10 +56,6 @@ import flash.events.EventDispatcher;
 
 		public function startBreak(activeTask:Pomodoro):void {
 			sendEvent(PomodoroEvent.START_BREAK, activeTask, null);
-		}
-
-		public function pomodoroSelected(pomo:Pomodoro):void {
-			sendEvent(PomodoroEvent.SELECTED, pomo, null);
 		}
 	}
 }

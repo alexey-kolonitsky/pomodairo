@@ -15,6 +15,7 @@
 		import com.pomodairo.EmbedStyle;
 		import com.pomodairo.components.*;
 		import com.pomodairo.components.popup.PomoItemInput;
+		import com.pomodairo.core.TimeManager;
 
 		import mx.collections.ArrayCollection;
 		import mx.core.WindowedApplication;
@@ -32,12 +33,11 @@
 		[Bindable]
 		private var db:Storage = Storage.instance;
 
-		[Bindable]
-		private var taskMenu:NativeMenu = new NativeMenu();
-
 		private var taskManager:TaskManager = TaskManager.instance;
 
 		private var eventDispatcher:PomodoroEventDispatcher = PomodoroEventDispatcher.instance;
+
+		public var timeManager:TimeManager;
 
 		override protected function keyUpHandler(event:KeyboardEvent):void {
 			switch (event.keyCode) {
@@ -68,20 +68,32 @@
 			list.dataProvider = new ArrayCollection(db.dataset);
 
 			eventDispatcher.addEventListener(PomodoroEvent.NEXT_TASK_SELECTED, onNextTaskSelected);
+			eventDispatcher.addEventListener(PomodoroEvent.START_POMODORO, onNextTaskSelected);
+			eventDispatcher.addEventListener(PomodoroEvent.STOP_POMODORO, onNextTaskSelected);
+			findSelectedAndActiveTask();
 		}
 
 		private function onNextTaskSelected(event:PomodoroEvent):void {
+			findSelectedAndActiveTask();
+		}
+
+		private function findSelectedAndActiveTask():void {
 			for (var i:int = 0; i < list.dataProvider.length; i++) {
 				var item:Pomodoro = list.dataProvider.getItemAt(i) as Pomodoro;
-				if (event.pomodoro.id == item.id) {
+				if (timeManager != null && timeManager.activeTask != null) {
+					item.isRunning = (timeManager.activeTask.id == item.id) && timeManager.isRunning;
+				}
+				if (taskManager != null
+					&& taskManager.activeTask != null
+					&& taskManager.activeTask.id == item.id) {
 					list.selectedIndex = i;
-					return;
 				}
 			}
 		}
 
 		private function dataset_changedHandler(event:Event):void {
 			list.dataProvider = new ArrayCollection(db.dataset);
+			findSelectedAndActiveTask();
 		}
 
 		private function onDragComplete(event:Event):void {
@@ -96,7 +108,6 @@
 			}
 		}
 
-
 		private function onAddPomodoroClicked(event:Event = null):void {
 			var input:PomoItemInput = new PomoItemInput();
 			input.type = Pomodoro.TYPE_POMODORO;
@@ -108,19 +119,11 @@
 		private function onStartPomodoroClicked(event:Event = null):void {
 			var pom:Pomodoro = list.selectedItem as Pomodoro;
 			if (pom) {
-				PomodoroEventDispatcher.instance.pomodoroSelected(pom);
+				eventDispatcher.sendEvent(PomodoroEvent.SELECTED, pom);
 				trace("Pomodoro selected: " + pom.name);
 //				interruptionButton.enabled = true;
 			} else {
 				trace("TaskListCanvas onStartPomodoroClicked pomodoro not selected");
-			}
-		}
-
-		private function findNextTask():void {
-			var result:Boolean = taskManager.nextTask();
-			if (result == false) {
-				var emptyListEvent:PomodoroEvent = new PomodoroEvent(PomodoroEvent.LIST_EMPTY);
-				PomodoroEventDispatcher.instance.dispatchEvent(emptyListEvent);
 			}
 		}
 
@@ -195,15 +198,12 @@
 			icon="{EmbedImages.ICON_CLEANING_CLASS}"/>
 	</s:BorderContainer>
 
-	<s:BorderContainer top="32" right="0" left="0" height="32"
-					   backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
-					   borderVisible="false">
-
+	<s:BorderContainer
+		top="32" right="0" left="0" height="32"
+		backgroundColor="{EmbedStyle.SECTION_BACKGROUND_COLOR}"
+		borderVisible="false">
 		<components:PomodoroInput id="pomodoroInput" width="100%" />
-
 	</s:BorderContainer>
-
-
 
 	<s:List id="list"
 		top="64" right="0" bottom="0" left="0"
