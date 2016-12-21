@@ -25,8 +25,6 @@ import flash.utils.getTimer;
 
 public class TimeManager  {
 
-    public static const CHANGED:String = "timeChanged";
-
     public var eventDispatcher:PomodoroEventDispatcher;
     public var config:ConfigManager;
 
@@ -75,7 +73,7 @@ public class TimeManager  {
 
     }
 
-    public function get isLogBreak():Boolean {
+    public function get isLongBreak():Boolean {
         var result:Boolean = _pomodoroCounter % _longBreakInterval == 0;
         return result;
     }
@@ -152,26 +150,17 @@ public class TimeManager  {
 
     private function updateBreakTimer(evt:TimerEvent):void {
         // Check if break time is over
-        if (isLogBreak) {
-            // Check long break
-            if (getTimer() >= baseTimer + _longBreakTime.time) {
-                trace("Long break over. Pomodoros so far: " + _pomodoroCounter);
-                eventDispatcher.sendEvent(PomodoroEvent.STOP_BREAK, _activeTask);
-                breakTimer.stop();
-            }
-        } else {
-            // Check short break
-            if (getTimer() >= baseTimer + _breakTime.time) {
-                trace("Short break over. Pomodoros so far: " + _pomodoroCounter);
-                eventDispatcher.sendEvent(PomodoroEvent.STOP_BREAK, _activeTask);
-                breakTimer.stop();
-            }
+        if (getTimer() >= baseTimer) {
+            trace("Long break over. Pomodoros so far: " + _pomodoroCounter);
+            eventDispatcher.sendEvent(PomodoroEvent.STOP_BREAK, _activeTask);
+            breakTimer.stop();
         }
         eventDispatcher.sendEvent(PomodoroEvent.BREAK_TICK, _activeTask, null);
     }
 
     private function startBreakTimer(evt:TimerEvent):void {
         baseTimer = getTimer();
+        baseTimer += isLongBreak ? _longBreakTime.time : _breakTime.time;
         breakTimer.start();
         eventDispatcher.startBreak(_activeTask);
     }
