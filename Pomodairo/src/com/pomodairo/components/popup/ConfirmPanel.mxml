@@ -2,22 +2,50 @@
 <config:BaseConfigPanel
 	xmlns:config="com.pomodairo.components.config.*"
 	xmlns:mx="http://www.adobe.com/2006/mxml"
-	height="108">
+	height="108"
+	creationComplete="{init()}">
 
 
 	<mx:Script>
         <![CDATA[
-		import com.pomodairo.components.config.*;
-		import com.pomodairo.core.Storage;
 		import com.pomodairo.settings.ConfigItemName;
+		import com.pomodairo.settings.ConfigManager;
 
 		import mx.core.Application;
 		import mx.core.WindowedApplication;
 
-		private function btnExit_clickHandler(event:MouseEvent):void {
-			if (confirmApplicationExitCheckbox.selected);
-			Storage.instance.setConfigurationValue(ConfigItemName.CONFIRM_APPLICATION_EXIT, "false");
+		private var confirmOnExit:Boolean = false;
 
+		private function init():void {
+			populate();
+			applyGuiValues();
+		}
+
+		override public function populate():void {
+			var conf:ConfigManager = ConfigManager.instance;
+			if (conf.hasConfig(ConfigItemName.CONFIRM_APPLICATION_EXIT)) {
+				confirmOnExit = conf.getFloat(ConfigItemName.CONFIRM_APPLICATION_EXIT);
+			}
+		}
+
+		private function applyGuiValues():void {
+			dontAskMeCheckbox.selected = !confirmOnExit;
+		}
+
+		override public function save():void {
+			confirmOnExit = !dontAskMeCheckbox.selected;
+
+			saveConfigItem(ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmOnExit);
+
+			exit();
+			notifyConfiguration();
+		}
+
+		override public function notifyConfiguration():void {
+			// Notify the world
+		}
+
+		override public function exit():void {
 			var app:WindowedApplication = Application.application as WindowedApplication;
 			app.close();
 		}
@@ -27,12 +55,12 @@
 	<mx:Text right="8" left="8" bottom="80" top="8"
 		textAlign="center" text="Are you shure want to exit Pomodoro?"/>
 
-	<mx:CheckBox id="confirmApplicationExitCheckbox"
+	<mx:CheckBox id="dontAskMeCheckbox"
 		bottom="48" horizontalCenter="0" selected="false"
 		label="Don't ask me again" />
 
 	<mx:Button id="btnExit" width="64" bottom="8" horizontalCenter="34" label="Exit"
-		click="{btnExit_clickHandler(event)}" />
+		click="{save(); exit();}" />
 
 	<mx:Button id="btnCancel" width="64" bottom="8" horizontalCenter="-34" label="Cancel"
 		click="exit()" />

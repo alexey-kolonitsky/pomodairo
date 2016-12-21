@@ -58,21 +58,20 @@
 		longBreakLength = longBreakSlider.value;
 		longBreakInterval = longBreakSelect.value;
 
-		Storage.instance.setConfigurationValue(ConfigItemName.POMODORO_LENGTH, "" + pomodoroLength);
-		Storage.instance.setConfigurationValue(ConfigItemName.SHORT_BREAK_LENGTH, "" + shortBreakLength);
-		Storage.instance.setConfigurationValue(ConfigItemName.LONG_BREAK_LENGTH, "" + longBreakLength);
-		Storage.instance.setConfigurationValue(ConfigItemName.LONG_BREAK_INTERVAL, "" + longBreakInterval);
+		saveConfigItem(ConfigItemName.POMODORO_LENGTH, "" + pomodoroLength);
+		saveConfigItem(ConfigItemName.SHORT_BREAK_LENGTH, "" + shortBreakLength);
+		saveConfigItem(ConfigItemName.LONG_BREAK_LENGTH, "" + longBreakLength);
+		saveConfigItem(ConfigItemName.LONG_BREAK_INTERVAL, "" + longBreakInterval);
 		exit();
-
 		notifyConfiguration();
 	}
 
 	override public function notifyConfiguration():void {
 		// Notify the world
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.POMODORO_LENGTH, "" + pomodoroLength));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.SHORT_BREAK_LENGTH, "" + shortBreakLength));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.LONG_BREAK_LENGTH, "" + longBreakLength));
-		PomodoroEventDispatcher.instance.dispatchEvent(new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, ConfigItemName.LONG_BREAK_INTERVAL, "" + longBreakInterval));
+		dispatchConfigChangeEvent(ConfigItemName.POMODORO_LENGTH, "" + pomodoroLength);
+		dispatchConfigChangeEvent(ConfigItemName.SHORT_BREAK_LENGTH, "" + shortBreakLength);
+		dispatchConfigChangeEvent(ConfigItemName.LONG_BREAK_LENGTH, "" + longBreakLength);
+		dispatchConfigChangeEvent(ConfigItemName.LONG_BREAK_INTERVAL, "" + longBreakInterval);
 	}
 	]]>
     </mx:Script>

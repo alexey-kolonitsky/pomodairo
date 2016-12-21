@@ -10,52 +10,52 @@
 	-->
 	<mx:Script>
 		<![CDATA[
-		import com.pomodairo.data.Pomodoro;
-		import com.pomodairo.core.Storage;
+        import com.pomodairo.data.Pomodoro;
+        import com.pomodairo.core.Storage;
 
-		private var db:Storage = new Storage();
+        private var db:Storage = new Storage();
 
-		private function init():void {
-			db.initAndOpenDatabase();
-			db.getAllItems();
-		}
+        private function init():void {
+            db.initialize();
+            db.getAllItems();
+        }
 
-		private function onUsersDataGridChanged(event:Event):void {
-		}
+        private function onUsersDataGridChanged(event:Event):void {
+        }
 
-		private function onRemovePomodoroClicked(event:MouseEvent):void {
-			remove(pomodorosDataGrid.selectedItem as Pomodoro);
-			db.getAllItems();
-		}
+        private function onRemovePomodoroClicked(event:MouseEvent):void {
+            remove(pomodorosDataGrid.selectedItem as Pomodoro);
+            db.getAllItems();
+        }
 
-		private function remove(pom:Pomodoro):void {
-			db.remove(pom);
-		}
+        private function remove(pom:Pomodoro):void {
+            db.remove(pom);
+        }
 
-		private function onAddPomodoroClicked(event:MouseEvent):void {
-			var pom:Pomodoro = new Pomodoro();
-			pom.name = nameInput.text;
-			pom.pomodoros = new Number(countInput.text);
-			pom.done = doneInput.selected;
-			db.addPomodoro(pom);
-			db.getAllItems();
-		}
+        private function onAddPomodoroClicked(event:MouseEvent):void {
+            var pom:Pomodoro = new Pomodoro();
+            pom.name = nameInput.text;
+            pom.pomodoros = new Number(countInput.text);
+            pom.done = doneInput.selected;
+            db.addPomodoro(pom);
+            db.getAllItems();
+        }
 
-		private function refresh(event:MouseEvent):void {
-			db.getAllItems();
-		}
+        private function refresh(event:MouseEvent):void {
+            db.getAllItems();
+        }
 
-		private function cleanup(event:MouseEvent):void {
-			for each (var pom:Pomodoro in db.dataset) {
-				if (pom.type == Pomodoro.TYPE_INTERRUPTION) {
-					remove(pom);
-				} else if (pom.done) {
-					remove(pom);
-				}
-			}
-			db.getAllItems();
-		}
-		]]>
+        private function cleanup(event:MouseEvent):void {
+            for each (var pom:Pomodoro in db.dataset) {
+                if (pom.type == Pomodoro.TYPE_INTERRUPTION) {
+                    remove(pom);
+                } else if (pom.done) {
+                    remove(pom);
+                }
+            }
+            db.getAllItems();
+        }
+        ]]>
 	</mx:Script>
 	
 	<mx:Label text="Pomodairo DB Viewer" color="#F4F4F4" fontSize="14" fontWeight="bold" fontFamily="Verdana"/>

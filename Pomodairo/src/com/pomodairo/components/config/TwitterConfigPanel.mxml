@@ -55,9 +55,9 @@
         doPost = postCheckbox.selected;
         groupUsername = groupUsernameField.text;
 
-        Storage.instance.setConfigurationValue(ConfigItemName.ENABLED, "" + twitterEnabled);
-        Storage.instance.setConfigurationValue(ConfigItemName.POST_POMODOROS, "" + doPost);
-        Storage.instance.setConfigurationValue(ConfigItemName.GROUP_USERNAME, "" + groupUsername);
+        Storage.instance.updateConfig(ConfigItemName.ENABLED, "" + twitterEnabled);
+        Storage.instance.updateConfig(ConfigItemName.POST_POMODOROS, "" + doPost);
+        Storage.instance.updateConfig(ConfigItemName.GROUP_USERNAME, "" + groupUsername);
         exit();
 
         notifyConfiguration();

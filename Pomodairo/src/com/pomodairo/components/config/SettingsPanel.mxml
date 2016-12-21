@@ -35,8 +35,8 @@
 		<config:SoundConfigPanel id="soundConfigPanel" width="100%"  />
 		<config:AdvancedConfigPanel id="advancedConfigPanel" width="100%" />
 		<s:HGroup width="100%" horizontalAlign="center">
-			<mx:Button label="Save" click="save()" width="63"/>
-			<mx:Button label="Cancel" click="exit()"/>
+			<mx:Button label="Save" click="{save(); exit();}" width="63"/>
+			<mx:Button label="Cancel" click="{exit();}"/>
 		</s:HGroup>
 	</s:VGroup>
 

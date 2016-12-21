@@ -80,11 +80,11 @@
         alarmSound = alarmFileLocationInput.text;
         clockSound = clockFileLocationInput.text;
 
-        Storage.instance.setConfigurationValue(ConfigItemName.SOUND_VOLUME, "" + volume);
-        Storage.instance.setConfigurationValue(ConfigItemName.SOUND_ENABLED, "" + soundEnabled);
-        Storage.instance.setConfigurationValue(ConfigItemName.FADE_TICKING_SOUND, "" + fadeTicking);
-        Storage.instance.setConfigurationValue(ConfigItemName.ALARM_SOUND_FILE, "" + alarmSound);
-        Storage.instance.setConfigurationValue(ConfigItemName.CLOCK_SOUND_FILE, "" + clockSound);
+		saveConfigItem(ConfigItemName.SOUND_VOLUME, "" + volume);
+		saveConfigItem(ConfigItemName.SOUND_ENABLED, "" + soundEnabled);
+		saveConfigItem(ConfigItemName.FADE_TICKING_SOUND, "" + fadeTicking);
+		saveConfigItem(ConfigItemName.ALARM_SOUND_FILE, "" + alarmSound);
+		saveConfigItem(ConfigItemName.CLOCK_SOUND_FILE, "" + clockSound);
 
         notifyConfiguration();
     }

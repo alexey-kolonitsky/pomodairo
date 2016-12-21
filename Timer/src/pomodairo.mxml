@@ -3,18 +3,18 @@
     xmlns:fx="http://ns.adobe.com/mxml/2009"
     xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns:mx="library://ns.adobe.com/flex/mx"
-        xmlns:ns1="com.pomodairo.components.*"
-        showFlexChrome="false" layout="absolute"
-        verticalScrollPolicy="off" horizontalScrollPolicy="off"
-        height="200" width="320"
-        backgroundColor="#292929"
-        showStatusBar="false"
-        title="{display.appTitle}"
-        initialize="initilizeHandler()"
-        creationComplete="creationComplete()"
-        closing="beforeClose()"
-        windowResize="resizeHandler(event)"
-        close="shutdown()">
+    xmlns:ns1="com.pomodairo.components.*"
+    showFlexChrome="false" layout="absolute"
+    verticalScrollPolicy="off" horizontalScrollPolicy="off"
+    height="200" width="320"
+    backgroundColor="#292929"
+    showStatusBar="false"
+    title="{display.appTitle}"
+    initialize="initializeHandler()"
+    creationComplete="creationComplete()"
+    closing="beforeClose()"
+    windowResize="resizeHandler(event)"
+    close="shutdown()">
 
 
     <fx:Script>
@@ -47,14 +47,44 @@
 
         private var appUpdater:ApplicationUpdaterUI = new ApplicationUpdaterUI();
 
-        private var taskManager:TaskManager = TaskManager.instance;
-        private var timeManager:TimeManager = new TimeManager();
-        private var twitterManager:TwitterManager = new TwitterManager();
+        private var taskManager:TaskManager;
+        private var timeManager:TimeManager;
+        private var twitterManager:TwitterManager;
+
         private var eventDispatcher:PomodoroEventDispatcher;
+        private var storage:Storage;
+        private var config:ConfigManager;
 
-        private function initilizeHandler():void {
+        private function initializeHandler():void {
 
-            PomodoroEventDispatcher.instance.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
+            //------------------------------------------------------------------
+            // Create core managers
+            //------------------------------------------------------------------
+
+            // 1. Create global event dispatcher
+            eventDispatcher = PomodoroEventDispatcher.instance;
+
+            // 2. Create and initialize data storage.
+            storage = Storage.instance;
+
+            // 4. Init Settings manager
+            config = ConfigManager.instance;
+
+            // 5. Primary
+            taskManager = TaskManager.instance;
+            timeManager = new TimeManager();
+
+            // 6. Optional managers
+            twitterManager = new TwitterManager();
+
+            //------------------------------------------------------------------
+            // Initialize
+            //------------------------------------------------------------------
+
+            // 3. Init and open storage
+            storage.initialize();
+
+            eventDispatcher.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
 
             var remember:Boolean = ConfigManager.instance.getBoolean(ConfigItemName.REMEMBER_POSITION);
             if (remember) {
@@ -81,15 +111,11 @@
             dialogList[CONFIG_DIALOG_ID] = new SettingsPanel();
             dialogList[CONFIRM_DIALOG_ID] = new ConfirmPanel();
 
-            eventDispatcher = PomodoroEventDispatcher.instance;
-            timeManager = new TimeManager();
-
             EmbedStyle.registerFonts();
         }
 
         private function creationComplete():void {
             checkForUpdates();
-            eventDispatcher.addEventListener(PomodoroEvent.START_POMODORO, closeTaskList);
             eventDispatcher.addEventListener(PomodoroEvent.TIME_OUT, onPomodoroTimeout);
             eventDispatcher.addEventListener(GuiChangeEvent.UPDATED, onGuiChange);
 
@@ -119,10 +145,12 @@
 
                 case PomodoroEvent.START_BREAK:
                     startTimerButton.enabled = true;
-                    stopBreakButton.enabled = false;
+                    stopBreakButton.enabled = true;
                     break;
 
                 case PomodoroEvent.START_POMODORO:
+                    taskListVisibleOnStart = taskList.visible;
+                    closeTaskList();
                     startTimerButton.enabled = false;
                     stopBreakButton.enabled = true;
                     break;
@@ -130,6 +158,9 @@
                 case PomodoroEvent.STOP_POMODORO:
                     startTimerButton.enabled = true;
                     stopBreakButton.enabled = false;
+                    if (taskListVisibleOnStart) {
+                        toggleTaskList(taskListLastTab);
+                    }
                     break;
             }
         }
@@ -168,15 +199,20 @@
             nativeWindow.orderToFront();
         }
 
+        private var taskListVisibleOnStart:Boolean = false;
+        private var taskListLastTab:int = 0;
+
         private function toggleTaskList(tabIndex:int = 0):void {
 
             if (listContainer.visible && listContainer.selectedTab == tabIndex) {
                 closeTaskList();
             } else if (listContainer.visible && listContainer.selectedTab != tabIndex) {
                 listContainer.showSelectedPanel(tabIndex);
+                taskListLastTab = tabIndex;
             } else if (!listContainer.visible) {
                 listContainer.showSelectedPanel(tabIndex);
                 listContainer.visible = true;
+                taskListLastTab = tabIndex;
                 var setHeight:Number = ConfigManager.instance.getFloat(ConfigItemName.WINDOW_HEIGHT);
                 setHeight = isNaN(setHeight) ? 0 : setHeight;
 
@@ -190,10 +226,10 @@
         }
 
         private function beforeClose():void {
-            Storage.instance.setConfigurationValue("window.x", "" + this.nativeWindow.x);
-            Storage.instance.setConfigurationValue("window.y", "" + this.nativeWindow.y);
-            Storage.instance.setConfigurationValue("window.height", "" + this.height);
-            Storage.instance.setConfigurationValue("window.width", "" + this.width);
+            Storage.instance.updateConfig("window.x", "" + this.nativeWindow.x);
+            Storage.instance.updateConfig("window.y", "" + this.nativeWindow.y);
+            Storage.instance.updateConfig("window.height", "" + this.height);
+            Storage.instance.updateConfig("window.width", "" + this.width);
         }
 
         private function onGuiChange(event:GuiChangeEvent):void {
@@ -227,7 +263,7 @@
             if (this.height == value)
                 return;
 
-            Storage.instance.setConfigurationValue('window.height', '' + this.height);
+            Storage.instance.updateConfig('window.height', '' + this.height);
         }
 
         public static const STATISTIC_DIALOG_ID:String = "statistic";
@@ -244,7 +280,12 @@
                     break;
 
                 case CONFIG_DIALOG_ID:
+                    var dialog:IFlexDisplayObject = dialogList[action];
+                    showPopup(dialog);
+                    break;
+
                 case CONFIRM_DIALOG_ID:
+
                     var dialog:IFlexDisplayObject = dialogList[action];
                     showPopup(dialog);
                     break;
@@ -277,13 +318,14 @@
         }
 
         private function lblClose_clickHandler(event:MouseEvent):void {
-            if (ConfigManager.instance.getBoolean(ConfigItemName.REMEMBER_POSITION) == false) {
+            if (config.getBoolean(ConfigItemName.CONFIRM_APPLICATION_EXIT) == false) {
                 close();
                 return;
             }
 
-            if (display.currentState == "minimal")
+            if (display.currentState == "minimal") {
                 display.toggleMiniView();
+            }
 
             showPopup(dialogList[CONFIRM_DIALOG_ID]);
         }

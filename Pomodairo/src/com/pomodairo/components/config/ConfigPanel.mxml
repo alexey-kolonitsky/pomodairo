@@ -60,10 +60,10 @@
 
             ConfigManager.instance.setBoolean(ConfigItemName.REMEMBER_POSITION, rememberPosition);
 
-            Storage.instance.setConfigurationValue(ConfigItemName.REMEMBER_POSITION, "" + rememberPosition);
-            Storage.instance.setConfigurationValue(ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop);
-            Storage.instance.setConfigurationValue(ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar);
-            Storage.instance.setConfigurationValue(ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit);
+			saveConfigItem(ConfigItemName.REMEMBER_POSITION, "" + rememberPosition);
+			saveConfigItem(ConfigItemName.ALWAYS_ON_TOP, "" + alwaysOnTop);
+			saveConfigItem(ConfigItemName.UPDATE_TASKBAR, "" + updateTaskbar);
+			saveConfigItem(ConfigItemName.CONFIRM_APPLICATION_EXIT, "" + confirmApplicationExit);
 
             exit();
             notifyConfiguration();

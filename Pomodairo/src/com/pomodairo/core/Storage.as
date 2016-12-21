@@ -30,8 +30,27 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 
 		/** Database default file name  */
 		public static var DATABASE_FILE:String = "pomodairo-1.1.db";
-		
-		public static var instance:Storage = new Storage();
+
+		//-----------------------------
+		// Instance
+		//-----------------------------
+
+		public static var _instance:Storage;
+
+		public static function get instance():Storage {
+			if (_instance == null) {
+				_instance = new Storage();
+			}
+			return _instance;
+		}
+
+
+		//-----------------------------
+		// Injections
+		//-----------------------------
+
+		public var configManager:ConfigManager;
+
 		
 		[Bindable]
 		public var dataset:Array;
@@ -45,17 +64,9 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		[Bindable]
 		public var realityFactorDataset:ArrayCollection;
 
-//		[Bindable]
-//		public var datasetStatistics5:Array;
-
-//		[Bindable]
-//		public var datasetStatistics6:Array;
-
 			
 		private var sqlConnectionFile:File;
 		private var sqlConnection:SQLConnection;
-		private var dbCfgStatement:SQLStatement;
-
 		
 		public function Storage() {
 			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, startPomodoro);
@@ -96,11 +107,19 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		private function closePomodoro(e:PomodoroEvent):void {
 			markDone(e.pomodoro);
 		}
+
+		private var _initialized:Boolean = false;
 		
-		public function initAndOpenDatabase():void {
+		public function initialize():void {
+			configManager = ConfigManager.instance;
+
+			if (_initialized) {
+				return;
+			}
+			_initialized = true;
 
 			/** Database file location path */
-			var databaseFolderLocation:String = ConfigManager.instance.getConfig(ConfigItemName.DATABASE_LOCATION);
+			var databaseFolderLocation:String = configManager.getConfig(ConfigItemName.DATABASE_LOCATION);
 
 			if (databaseFolderLocation == null || databaseFolderLocation == "") {
 				sqlConnectionFile = File.userDirectory.resolvePath(DATABASE_FILE);
@@ -150,26 +169,23 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		
 		
 		private function createTable():void {
-			trace("Create new table");
+			trace("[INFO][Storage] createTable: Create new table");
 		 	var q:SQLStatement = new SQLStatement();
 		 	q.sqlConnection = sqlConnection;
-		 	
-		 	var sql:String = "CREATE TABLE IF NOT EXISTS pomodoro( " +
-		 				"id INTEGER PRIMARY KEY ASC, " +
-		 				"name TEXT, " +
-		 				"type TEXT, " +
-		 				"pomodoros INTEGER, " +
-		 				"unplanned INTEGER, " +
-		 				"interruptions INTEGER, " +
-		 				"created DATETIME, " +
-		 				"closed DATETIME, " +
-		 				"parent INTEGER, " +
-		 				"visible BOOLEAN, " +
-		 				"ordinal INTEGER, " +
-		 				"done BOOLEAN, " +
-		 				"estimated INTEGER )";
-		 					
-		 	q.text = sql;
+		 	q.text = "CREATE TABLE IF NOT EXISTS pomodoro( " +
+				"id INTEGER PRIMARY KEY ASC, " +
+				"name TEXT, " +
+				"type TEXT, " +
+				"pomodoros INTEGER, " +
+				"unplanned INTEGER, " +
+				"interruptions INTEGER, " +
+				"created DATETIME, " +
+				"closed DATETIME, " +
+				"parent INTEGER, " +
+				"visible BOOLEAN, " +
+				"ordinal INTEGER, " +
+				"done BOOLEAN, " +
+				"estimated INTEGER )";
 		 	q.addEventListener( SQLErrorEvent.ERROR, createError );
 		 	q.execute();
 		}
@@ -377,23 +393,21 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dispatchEvent(new Event(DATASET_CHANGED));
 		}
 		
-		private function onDBStatementInsertResult(event:SQLEvent):void
-		{
+		private function onDBStatementInsertResult(event:SQLEvent):void {
 			var statement:SQLStatement = event.currentTarget as SQLStatement;
 			statement.removeEventListener(SQLEvent.RESULT, onDBStatementInsertResult);
 
-		    if (sqlConnection.totalChanges >= 1)
-		    {
+		    if (sqlConnection.totalChanges >= 1) {
 		    	getAllPomodoros();
 		    }
 		}
 
 		private function createError(event:SQLErrorEvent):void {
-		 	trace( 'Create Table Failed. Message: '+event );
+		 	trace('[INFO][Storage] createError: Create Table Failed. Message: ' + event);
 		}
 		
 		private function createResult(event:SQLEvent):void {
-		 	trace( 'Query Created Successfully' );
+		 	trace('[INFO][Storage] createResult: Query Created Successfully');
 		}
 		
 		public function addPomodoro(pom:Pomodoro):void
@@ -528,25 +542,27 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		/* ----------------------------------------------------
 			        CONFIGURATION TABLE STUFF
 		   ---------------------------------------------------- */
-		   
+
+		private var dbCfgStatement:SQLStatement;
+
 		/**
 		 * New since 1.4. This method will create a configuration table if none exists.
 		 */
 		private function checkConfigurationTable():void {
 		 	var q:SQLStatement = new SQLStatement();
 		 	q.sqlConnection = sqlConnection;
-		 	q.text = "CREATE TABLE IF NOT EXISTS config(name TEXT PRIMARY KEY, value TEXT )";
-		 	q.addEventListener( SQLEvent.RESULT, createResult );
-		 	q.addEventListener( SQLErrorEvent.ERROR, createError );
+		 	q.text = "CREATE TABLE IF NOT EXISTS config(name TEXT PRIMARY KEY, value TEXT)";
+		 	q.addEventListener(SQLEvent.RESULT, createResult);
+		 	q.addEventListener(SQLErrorEvent.ERROR, createError);
 		 	q.execute();
 		}
 		
-		public function getAllConfig():void
-		{
+		public function getAllConfig():void {
+			trace("[INFO][Storage] getAllConfig");
 			dbCfgStatement = new SQLStatement();
 			dbCfgStatement.itemClass = ConfigProperty;
 			dbCfgStatement.sqlConnection = sqlConnection;
-			dbCfgStatement.text = "SELECT * FROM config";
+			dbCfgStatement.text = "SELECT * FROM Config";
 			dbCfgStatement.addEventListener(SQLEvent.RESULT, getSelectConfigResult);
 			dbCfgStatement.execute();
 		}
@@ -558,33 +574,23 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		    }
 		}
 		
-		private function onConfigInsertResult(event:SQLEvent):void
-		{
-		    if (sqlConnection.totalChanges >= 1)
-		    {
+		private function updateConfigResult(event:SQLEvent):void {
+		    if (sqlConnection.totalChanges >= 1)  {
 		    	getAllConfig();
 		    }
 		}
 				
-		public function setConfigurationValue(name:String, value:String):void
-		{
-			var cfg:ConfigProperty = new ConfigProperty();
-			cfg.name = name;
-			cfg.value = value;
-			setConfiguration(cfg);
-		}
-		
-		public function setConfiguration(prop:ConfigProperty):void
-		{
+		public function updateConfig(name:String, value:String):void {
+			trace("[INFO][Storage] setConfigurationValue name='" + name + "', value='" + value + "'");
 			dbCfgStatement.text = "REPLACE INTO Config (name,value) VALUES (:name, :value)";
-			dbCfgStatement.parameters[":name"] = prop.name;
-			dbCfgStatement.parameters[":value"] = prop.value;
-			dbCfgStatement.addEventListener(SQLEvent.RESULT, onConfigInsertResult);
-			dbCfgStatement.execute();
+			dbCfgStatement.parameters[":name"] = name;
+			dbCfgStatement.parameters[":value"] = value;
+			dbCfgStatement.addEventListener(SQLEvent.RESULT, updateConfigResult);
+			dbCfgStatement.execute()
 		}
 		
-		public function removeConfiguration(key:String):void
-		{
+		public function removeConfig(key:String):void {
+			trace("[INFO][Storage] removeConfig, key='" + key + "'");
 			dbCfgStatement.text = "DELETE FROM Config WHERE name=:name";
 			dbCfgStatement.parameters[":name"] = key;
 			dbCfgStatement.execute();
