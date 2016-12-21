@@ -3,15 +3,21 @@
  */
 package com.pomodairo.settings {
 
-import com.pomodairo.data.ConfigProperty;
-import com.pomodairo.core.Storage;
-import com.pomodairo.settings.providers.LocalDBStorageProvider;
+	import com.pomodairo.core.PomodoroEventDispatcher;
+	import com.pomodairo.data.ConfigProperty;
+	import com.pomodairo.core.Storage;
+	import com.pomodairo.events.ConfigurationUpdatedEvent;
+	import com.pomodairo.settings.providers.LocalDBStorageProvider;
 	import com.pomodairo.settings.providers.LocalFSStorageProvider;
 	import com.pomodairo.settings.providers.LocalSOStorageProvider;
+
+	import flash.events.EventDispatcher;
 
 	import flash.utils.Dictionary;
 
 	public class ConfigManager {
+
+		public var eventDispatcher:PomodoroEventDispatcher;
 
 		private static var _instance:ConfigManager;
 
@@ -26,14 +32,29 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 		private var _settings:ConfigCollection;
 		private var _fsProvider:LocalFSStorageProvider;
 		private var _soProvider:LocalSOStorageProvider;
-		private var _dbProvider:Storage;
+
+		public var dbProvider:Storage;
 
 		public var defaultSettingsFilePath:String;
 
 		public function ConfigManager() {
+			trace("[INFO][ConfigManager] constructor");
+			eventDispatcher = PomodoroEventDispatcher.instance;
 			_providers = new Dictionary();
 			_settings = new ConfigCollection();
-			_dbProvider = Storage.instance;
+		}
+
+		public function initialize():void {
+			trace("[INFO][ConfigManager] initialize");
+			_fsProvider = new LocalFSStorageProvider(defaultSettingsFilePath);
+			_fsProvider.load();
+			setDefaultValueFrom(_fsProvider.getKeyValuePairs());
+
+			_soProvider = new LocalSOStorageProvider();
+			_settings.setString(ConfigItemName.DATABASE_LOCATION, _soProvider.getString(ConfigItemName.DATABASE_LOCATION), true);
+
+			_providers[SettingItemStorage.LOCAL_FS_STORAGE] = _fsProvider;
+			_providers[SettingItemStorage.LOCAL_SO_STORAGE] = _soProvider;
 		}
 
 		public function hasConfig(key:String):Boolean {
@@ -48,7 +69,7 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 			if (key == ConfigItemName.DATABASE_LOCATION) {
 				_soProvider.setString(key, value);
 			} else {
-				_dbProvider.setConfigurationValue(key, value);
+				dbProvider.updateConfig(key, value);
 			}
 		}
 
@@ -76,21 +97,13 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 			return parseFloat(getConfig(key));
 		}
 
+		public function getInt(key:String):int {
+			return parseInt(getConfig(key));
+		}
+
 		public function clearConfig(key:String):void {
 			var item:ConfigItem = _settings.getItem(key);
 			item.userValue = null;
-		}
-
-		public function initialize():void {
-			_fsProvider = new LocalFSStorageProvider(defaultSettingsFilePath);
-			_fsProvider.load();
-			setDefaultValueFrom(_fsProvider.getKeyValuePairs());
-
-			_soProvider = new LocalSOStorageProvider();
-			_settings.setString(ConfigItemName.DATABASE_LOCATION, _soProvider.getString(ConfigItemName.DATABASE_LOCATION), true);
-
-			_providers[SettingItemStorage.LOCAL_FS_STORAGE] = _fsProvider;
-			_providers[SettingItemStorage.LOCAL_SO_STORAGE] = _soProvider;
 		}
 
 		public function setDefaultValueFrom(pairs:Vector.<ConfigProperty>):void {
@@ -113,13 +126,14 @@ import com.pomodairo.settings.providers.LocalDBStorageProvider;
 				if (item == null) {
 					item = new ConfigItem();
 					item.name = pair.name;
-					item.userValue = pair.value;
 					_settings.addItem(item);
-				} else {
+				}
+				if (item.userValue != pair.value){
 					item.userValue = pair.value;
+					trace("[INFO][ConfigManager] serUserValue " + item.name + "=" + item.userValue);
+					eventDispatcher.sendConfigItemUpdateEvent(item);
 				}
 			}
 		}
-
 	}
 }

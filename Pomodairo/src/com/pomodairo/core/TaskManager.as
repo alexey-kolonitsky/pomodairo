@@ -10,29 +10,42 @@ import mx.collections.ArrayCollection;
 	
 	public class TaskManager
 	{
-		public static const DEFAULT_SETTINGS_FILE_PATH:String = "assets/settings.properties";
 
-		public static var instance:TaskManager = new TaskManager();
-		
+		private static var _instance:TaskManager;
+
+		public static function get instance():TaskManager {
+			if (_instance == null) {
+				_instance = new TaskManager();
+			}
+			return _instance;
+		}
+
+		//-----------------------------
+		// Injected
+		//-----------------------------
+
+		public var storage:Storage;
+
+		public var configManager:ConfigManager;
+
+		public var eventDispatcher:PomodoroEventDispatcher;
+
+
+		//-----------------------------
+		// Properties
+		//-----------------------------
+
 		[Bindable]
-		public var activeTask:Pomodoro; 		
-
-		private var db:Storage = Storage.instance;
+		public var activeTask:Pomodoro;
 		
 		private var openTasks:ArrayCollection = new ArrayCollection();
 
-		private var configManager:ConfigManager = ConfigManager.instance;
-
-		private var eventDispatcher:PomodoroEventDispatcher;
-
 		public function TaskManager() {
-			configManager.defaultSettingsFilePath = DEFAULT_SETTINGS_FILE_PATH;
-			configManager.initialize();
+			trace("[INFO][TaskManager] constructor");
+		}
 
-			eventDispatcher = PomodoroEventDispatcher.instance;
-
-			db.initAndOpenDatabase();
-			openTasks = db.getOpenPomodoros();
+		public function initialize():void {
+			openTasks = storage.getOpenPomodoros();
 		}
 
 		public function findNextTask():void {
@@ -90,7 +103,7 @@ import mx.collections.ArrayCollection;
 		
 		private function refresh():void {
 			// TODO: Call refresh method.
-			openTasks = db.getOpenPomodoros();
+			openTasks = storage.getOpenPomodoros();
 		}
 		
 		private function getItemIndex(item:Pomodoro):int {

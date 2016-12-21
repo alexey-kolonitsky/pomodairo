@@ -79,7 +79,7 @@ import com.swfjunkie.tweetr.Tweetr;
 			
 			public function clearSharedCredentials():void {
 				ConfigManager.instance.clearConfig(ConfigItemName.OAUTH_TOKEN);
-				Storage.instance.removeConfiguration(ConfigItemName.OAUTH_TOKEN_SECRET);
+				Storage.instance.removeConfig(ConfigItemName.OAUTH_TOKEN_SECRET);
 			}
 			
 			//--------------------------------------------------------------------------

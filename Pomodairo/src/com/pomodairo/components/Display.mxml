@@ -3,7 +3,6 @@
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:s="library://ns.adobe.com/flex/spark"
 	backgroundAlpha="0.0"
-	initialize="init()"
 	creationComplete="created()"
 	verticalScrollPolicy="off" horizontalScrollPolicy="off">
 	
@@ -54,7 +53,9 @@
             private static var BREAK_OVER:String = "break_over";
 
             [Bindable]
-            public var taskManager:TaskManager = TaskManager.instance;
+            public var taskManager:TaskManager;
+			public var timer:TimeManager;
+			public var eventDispatcher:PomodoroEventDispatcher;
 
             [Bindable]
             public var appTitle:String = "pomodairo";
@@ -69,14 +70,12 @@
 
             private var soundPlayer:SoundPlayer = new SoundPlayer();
 
-            public var timer:TimeManager;
-            public var eventDispatcher:PomodoroEventDispatcher = PomodoroEventDispatcher.instance;
-
 			[Bindable]
 			public var captionColor:uint = EmbedStyle.POMODORO_TIMER_COLOR;
 
-            private function init():void {
+            public function init():void {
 
+				trace("[INFO][Display] initialize");
                 eventDispatcher.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
                 eventDispatcher.addEventListener(PomodoroEvent.LIST_EMPTY, onListEmpty);
                 eventDispatcher.addEventListener(PomodoroEvent.START_BREAK, setBreakTitle);
@@ -122,8 +121,9 @@
                     case PomodoroEvent.START_BREAK:
                         setTimerStyle(BREAK);
                         break;
-                    case PomodoroEvent.STOP_BREAK:
+					case PomodoroEvent.STOP_BREAK:
                         startBlink();
+						//Don't play on click by button
                         soundPlayer.playAlarm();
 
                         var d:Date = timer.time;
@@ -182,15 +182,24 @@
                 showNewTaskButton();
             }
 
-            private function onConfigurationChange(e:ConfigurationUpdatedEvent):void {
+            private function onConfigurationChange(event:ConfigurationUpdatedEvent):void {
 
-
-                if (e.configElement.name == ConfigItemName.UPDATE_TASKBAR) {
-                    this.updateTaskbar = e.configElement.value == "true";
-                    if (!updateTaskbar) {
-                        appTitle = "Pomodairo";
-                    }
-                }
+				switch (event.configElement.name) {
+					case ConfigItemName.POMODORO_LENGTH:
+					case ConfigItemName.SHORT_BREAK_LENGTH:
+					case ConfigItemName.LONG_BREAK_LENGTH:
+					case ConfigItemName.LONG_BREAK_INTERVAL:
+						if (timer.isIdle) {
+							miniCounter.text = counter.text = DateUtil.w3cTime(timer.pomodoroTime.minutes);
+						}
+						break;
+					case ConfigItemName.UPDATE_TASKBAR:
+						this.updateTaskbar = event.configElement.value == "true";
+						if (!updateTaskbar) {
+							appTitle = "Pomodairo";
+						}
+						break;
+				}
             }
 
             private function setTimerStyle(status:String):void {

@@ -3,7 +3,9 @@ package com.pomodairo.core
 import com.pomodairo.*;
 import com.pomodairo.data.Pomodoro;
 import com.pomodairo.date.TimeSpan;
+import com.pomodairo.events.ConfigurationUpdatedEvent;
 import com.pomodairo.events.PomodoroEvent;
+import com.pomodairo.settings.ConfigItem;
 
 import flash.events.Event;
 import flash.events.EventDispatcher;
@@ -14,13 +16,7 @@ import flash.events.EventDispatcher;
 	 */
 	public class PomodoroEventDispatcher extends EventDispatcher
 	{
-
 		private static var _instance:PomodoroEventDispatcher;
-		
-		public function PomodoroEventDispatcher()
-		{
-			super(null);
-		}
 		
 		public static function get instance():PomodoroEventDispatcher {
 			if (_instance == null) {
@@ -29,13 +25,15 @@ import flash.events.EventDispatcher;
 			return _instance;
 		}
 
-		public function sendEvent(type:String,
-								   pomodoro:Pomodoro = null,
-								   value:String = null):void {
+		public function PomodoroEventDispatcher() {
+			super(null);
+		}
+
+		public function sendEvent(type:String, pomodoro:Pomodoro = null, value:String = null):void {
 			var event:PomodoroEvent = new PomodoroEvent(type);
 			event.pomodoro = pomodoro;
 			event.value = value;
-			PomodoroEventDispatcher.instance.dispatchEvent(event);
+			dispatchEvent(event);
 		}
 
 		public function tick(activeTask:Pomodoro):void {
@@ -50,12 +48,13 @@ import flash.events.EventDispatcher;
 			sendEvent(PomodoroEvent.TIME_OUT, activeTask, null);
 		}
 
-		public function stopBreak(activeTask:Pomodoro):void {
-			sendEvent(PomodoroEvent.STOP_BREAK, activeTask, null);
-		}
-
 		public function startBreak(activeTask:Pomodoro):void {
 			sendEvent(PomodoroEvent.START_BREAK, activeTask, null);
+		}
+
+		public function sendConfigItemUpdateEvent(item:ConfigItem):void {
+			var event:ConfigurationUpdatedEvent = new ConfigurationUpdatedEvent(ConfigurationUpdatedEvent.UPDATED, item.name, item.userValue);
+			dispatchEvent(event);
 		}
 	}
 }

@@ -14,8 +14,8 @@
         import com.pomodairo.core.Storage;
         import com.pomodairo.settings.ConfigManager;
 
-        private var configManager:ConfigManager;
-        private var db:Storage = Storage.instance;
+        public var configManager:ConfigManager;
+        public var db:Storage;
 
         private function onRealityFactorsClicked(event:Event):void {
             db.getRealityFactors();

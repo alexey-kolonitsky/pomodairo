@@ -6,8 +6,7 @@
     xmlns:fx="http://ns.adobe.com/mxml/2009"
     xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns:mx="library://ns.adobe.com/flex/mx"
-    xmlns:components="com.pomodairo.components.*"
-    creationComplete="init()">
+    xmlns:components="com.pomodairo.components.*">
 
     <fx:Script><![CDATA[
         import com.pomodairo.EmbedImages;
@@ -20,8 +19,8 @@
         import mx.events.ItemClickEvent;
 
 
-        private var configManager:ConfigManager;
-        private var db:Storage = Storage.instance;
+        public var configManager:ConfigManager;
+        public var storage:Storage;
 
         public function copyTableToClipboard(title:String,
                                              data:Array):void {
@@ -35,7 +34,7 @@
         private var UPDATE_DELAY:Number = 1000;
         /* ms */
 
-        private function init():void {
+        public function init():void {
             _timer = new Timer(UPDATE_DELAY);
             _timer.addEventListener(TimerEvent.TIMER, timerTickHandler);
             _timer.start();
@@ -57,13 +56,13 @@
             if (_needUpdate && timePassed) {
                 switch (statisticPeriod.selectedIndex) {
                     case 0:
-                        db.getPomodorosOfDay(timeline.startDate, timeline.dateCount, pomodoroFilter.text);
+                        storage.getPomodorosOfDay(timeline.startDate, timeline.dateCount, pomodoroFilter.text);
                         break;
                     case 1:
-                        db.getPomodorosPerDay();
+                        storage.getPomodorosPerDay();
                         break;
                     case 2:
-                        db.getRealityFactors();
+                        storage.getRealityFactors();
                         break;
                 }
                 _needUpdate = false;
@@ -96,7 +95,7 @@
             contentBackgroundAlpha="0"
             color="{EmbedStyle.COMMON_TEXT_COLOR}" />
         <mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-            click="copyTableToClipboard('Pomodoros', db.pomodorosOfDayDataset.source)"/>
+            click="copyTableToClipboard('Pomodoros', storage.pomodorosOfDayDataset.source)"/>
     </s:BorderContainer>
 
     <components:TimeLine id="timeline" top="32" right="0" height="32" left="0"
@@ -106,7 +105,7 @@
 
     <!-- task list -->
     <s:List id="list"
-        dataProvider="{db.pomodorosOfDayDataset}"
+        dataProvider="{storage.pomodorosOfDayDataset}"
         top="64" right="0" bottom="0" left="0"
         contentBackgroundAlpha="0"
         borderVisible="false"

@@ -15,8 +15,8 @@
 
         import mx.controls.DateField;
 
-        private var configManager:ConfigManager;
-        private var db:Storage = Storage.instance;
+        public var configManager:ConfigManager;
+        public var db:Storage;
 
 
         private function onPomsPerDayClicked(event:Event):void {

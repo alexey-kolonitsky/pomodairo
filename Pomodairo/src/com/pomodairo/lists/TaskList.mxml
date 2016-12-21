@@ -2,40 +2,34 @@
 <mx:Canvas
 	xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:s="library://ns.adobe.com/flex/spark"
-	xmlns:popup="com.pomodairo.components.popup.*"
 	xmlns:components="com.pomodairo.components.*"
 	width="320" height="300"
-	initialize="init()" horizontalScrollPolicy="off"
+	horizontalScrollPolicy="off"
 	verticalScrollPolicy="off"
 	backgroundAlpha="0">
-	
+
 	<mx:Script>
 		<![CDATA[
 		import com.pomodairo.EmbedImages;
 		import com.pomodairo.EmbedStyle;
+		import com.pomodairo.TableUtils;
 		import com.pomodairo.components.*;
 		import com.pomodairo.components.popup.PomoItemInput;
+		import com.pomodairo.core.PomodoroEventDispatcher;
+		import com.pomodairo.core.Storage;
+		import com.pomodairo.core.TaskManager;
 		import com.pomodairo.core.TimeManager;
+		import com.pomodairo.data.Pomodoro;
+		import com.pomodairo.events.PomodoroEvent;
 
 		import mx.collections.ArrayCollection;
-		import mx.core.WindowedApplication;
-		import mx.events.PropertyChangeEvent;
 		import mx.managers.PopUpManager;
-		import mx.controls.Alert;
 
-		import com.pomodairo.events.PomodoroEvent;
-		import com.pomodairo.core.PomodoroEventDispatcher;
-		import com.pomodairo.data.Pomodoro;
-		import com.pomodairo.core.TaskManager;
-		import com.pomodairo.TableUtils;
-		import com.pomodairo.core.Storage;
+		public var storage:Storage;
 
-		[Bindable]
-		private var db:Storage = Storage.instance;
+		public var taskManager:TaskManager;
 
-		private var taskManager:TaskManager = TaskManager.instance;
-
-		private var eventDispatcher:PomodoroEventDispatcher = PomodoroEventDispatcher.instance;
+		public var eventDispatcher:PomodoroEventDispatcher;
 
 		public var timeManager:TimeManager;
 
@@ -61,11 +55,11 @@
 		}
 
 
-		private function init():void {
-			db.initAndOpenDatabase();
+		public function init():void {
+			trace("[INFO][TaskList] initialized");
 			list.addEventListener(KeyboardEvent.KEY_UP, keyUpHandler);
-			db.addEventListener(Storage.DATASET_CHANGED, dataset_changedHandler);
-			list.dataProvider = new ArrayCollection(db.dataset);
+			storage.addEventListener(Storage.DATASET_CHANGED, dataset_changedHandler);
+			list.dataProvider = new ArrayCollection(storage.dataset);
 
 			eventDispatcher.addEventListener(PomodoroEvent.NEXT_TASK_SELECTED, onNextTaskSelected);
 			eventDispatcher.addEventListener(PomodoroEvent.START_POMODORO, onNextTaskSelected);
@@ -92,8 +86,10 @@
 		}
 
 		private function dataset_changedHandler(event:Event):void {
-			list.dataProvider = new ArrayCollection(db.dataset);
-			findSelectedAndActiveTask();
+			if (storage != null) {
+				list.dataProvider = new ArrayCollection(storage.dataset);
+				findSelectedAndActiveTask();
+			}
 		}
 
 		private function onDragComplete(event:Event):void {
@@ -104,7 +100,7 @@
 			var i:int = list.selectedIndex - 1;
 			for each (var pom:Pomodoro in list.dataProvider) {
 				pom.ordinal = i--;
-				db.updateOrdinal(pom);
+				storage.updateOrdinal(pom);
 			}
 		}
 
@@ -128,16 +124,16 @@
 		}
 
 		private function onClosePomodoroClicked(event:Event = null):void {
-			for each (var pom:Pomodoro in db.dataset) {
+			for each (var pom:Pomodoro in storage.dataset) {
 				if (pom.done) {
 					pom.visible = false;
-					db.updateVisibility(pom);
+					storage.updateVisibility(pom);
 				}
 			}
 		}
 
 		public function copyTableToClipboard(event:Event = null):void {
-			var data:Array = db.dataset;
+			var data:Array = storage.dataset;
 			var tmpString:String = new TableUtils().getPomodorosTableAsCsv(data);
 			System.setClipboard(tmpString);
 		}
@@ -155,22 +151,23 @@
 			PopUpManager.addPopUp(input, this, true);
 			PopUpManager.centerPopUp(input);
 		}
-//
-//		private function newInterruption():void {
-//			var input:PomoItemInput = new PomoItemInput();
-//			input.type = Pomodoro.TYPE_INTERRUPTION;
-//			input.reference = taskManager.activeTask;
-//			PopUpManager.addPopUp(input, this, true);
-//			PopUpManager.centerPopUp(input);
-//		}
-//
-//		private function newUnplanned():void {
-//			var input:PomoItemInput = new PomoItemInput();
-//			input.type = Pomodoro.TYPE_UNPLANNED;
-//			input.reference = taskManager.activeTask;
-//			PopUpManager.addPopUp(input, this, true);
-//			PopUpManager.centerPopUp(input);
-//		}
+
+		//
+		//		private function newInterruption():void {
+		//			var input:PomoItemInput = new PomoItemInput();
+		//			input.type = Pomodoro.TYPE_INTERRUPTION;
+		//			input.reference = taskManager.activeTask;
+		//			PopUpManager.addPopUp(input, this, true);
+		//			PopUpManager.centerPopUp(input);
+		//		}
+		//
+		//		private function newUnplanned():void {
+		//			var input:PomoItemInput = new PomoItemInput();
+		//			input.type = Pomodoro.TYPE_UNPLANNED;
+		//			input.reference = taskManager.activeTask;
+		//			PopUpManager.addPopUp(input, this, true);
+		//			PopUpManager.centerPopUp(input);
+		//		}
 		]]>
 	</mx:Script>
 

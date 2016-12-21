@@ -69,6 +69,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		private var sqlConnection:SQLConnection;
 		
 		public function Storage() {
+			trace("[INFO][Storage] Constructor");
 			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, startPomodoro);
 			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, completeCurrentPomodoro);
 			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.NEW_INTERRUPTION, addInterruption);
@@ -111,8 +112,6 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		private var _initialized:Boolean = false;
 		
 		public function initialize():void {
-			configManager = ConfigManager.instance;
-
 			if (_initialized) {
 				return;
 			}
@@ -126,7 +125,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			} else {
 				var file:File = new File(databaseFolderLocation);
 				if (file.exists == false) {
-					trace("ERROR: Storage.initAndOpenDatabase: Invalid database location. Change it at settings");
+					trace("[ERROR][Storage] initialize: Invalid database location. Change it at settings");
 					sqlConnectionFile = File.userDirectory.resolvePath(DATABASE_FILE);
 				} else {
 					if (file.isDirectory)
@@ -139,15 +138,15 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			sqlConnection = new SQLConnection();
 			
 			if(sqlConnectionFile.exists) {
-				trace("Pomodairo database found: " + sqlConnectionFile.url);
+				trace("[INFO][Storage] initialize: load database from '" + sqlConnectionFile.url + "'");
 				sqlConnection.addEventListener(SQLEvent.OPEN, onSQLConnectionOpened);
 				sqlConnection.open(sqlConnectionFile, SQLMode.UPDATE);
 			} else {
-				trace("Creating pomodairo database: " + sqlConnectionFile.url);
+				trace("[INFO][Storage] initialize: create database at " + sqlConnectionFile.url + "'");
 				sqlConnection.open(sqlConnectionFile, SQLMode.CREATE);
 				createTable();
-				getAllPomodoros();
 			}
+			getAllPomodoros();
 			checkConfigurationTable();
 			getAllConfig();
 		}
@@ -190,8 +189,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		 	q.execute();
 		}
 
-		public function getAllPomodoros():void
-		{
+		public function getAllPomodoros():void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -202,8 +200,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}
 		
-		public function getOpenPomodoros():ArrayCollection
-		{
+		public function getOpenPomodoros():ArrayCollection {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -615,14 +612,11 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			  // Ignore migration errors
 			  // Alert.show("Migration reported error: "+err);
 			}
-
 		}
 
 		/* ----------------------------------------------------
 		        	END OF MIGRATION STUFF
 	   	  ---------------------------------------------------- */
-	   	  
-	   	  
 	}
 	
 }

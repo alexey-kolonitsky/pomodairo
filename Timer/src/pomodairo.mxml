@@ -39,6 +39,7 @@
         import com.pomodairo.settings.ConfigItemName;
         import com.pomodairo.settings.ConfigManager;
         import com.pomodairo.settings.DefaultConfig;
+        import com.pomodairo.settings.DefaultConfig;
         import com.pomodairo.twitter.TwitterManager;
 
         import mx.core.IFlexDisplayObject;
@@ -57,25 +58,54 @@
 
         private function initializeHandler():void {
 
-            //------------------------------------------------------------------
-            // Create core managers
-            //------------------------------------------------------------------
+            trace("[INFO][pomodairo] initialized");
 
             // 1. Create global event dispatcher
             eventDispatcher = PomodoroEventDispatcher.instance;
 
+            // Create config
+            config = ConfigManager.instance;
+            // Inject config
+            config.defaultSettingsFilePath = DefaultConfig.DEFAULT_SETTINGS_FILE_PATH;
+            // Initialize config
+            config.initialize();
+
+            //------------------------------------------------------------------
+            // Create core managers
+            //------------------------------------------------------------------
+
             // 2. Create and initialize data storage.
             storage = Storage.instance;
-
-            // 4. Init Settings manager
-            config = ConfigManager.instance;
 
             // 5. Primary
             taskManager = TaskManager.instance;
             timeManager = new TimeManager();
 
-            // 6. Optional managers
-            twitterManager = new TwitterManager();
+            //------------------------------------------------------------------
+            // Injection
+            //------------------------------------------------------------------
+
+            config.dbProvider = storage;
+
+            storage.configManager = config;
+
+            timeManager.eventDispatcher = eventDispatcher;
+            timeManager.config = config;
+
+            taskManager.eventDispatcher = eventDispatcher;
+            taskManager.configManager = config;
+            taskManager.storage = storage;
+
+            // UI
+            display.timer = timeManager;
+            display.taskManager = taskManager;
+            display.eventDispatcher = eventDispatcher;
+
+            listContainer.config = config;
+            listContainer.storage = storage;
+            listContainer.timeManager = timeManager;
+            listContainer.taskManager = taskManager;
+            listContainer.eventDispatcher = eventDispatcher;
 
             //------------------------------------------------------------------
             // Initialize
@@ -83,6 +113,20 @@
 
             // 3. Init and open storage
             storage.initialize();
+            storage.initViews();
+
+            timeManager.initialize();
+
+            taskManager.initialize();
+
+            //UI
+            display.init();
+            listContainer.init();
+
+
+            //------------------------------------------------------------------
+            // Initialize
+            //------------------------------------------------------------------
 
             eventDispatcher.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigurationChange);
 
@@ -165,13 +209,6 @@
             }
         }
 
-
-        override protected function createChildren():void {
-            super.createChildren();
-            display.timer = timeManager;
-            listContainer.timeManager = timeManager;
-        }
-
         private function checkForUpdates():void {
             appUpdater.configurationFile = new File("app:/updateConfig.xml");
             appUpdater.isCheckForUpdateVisible = false;
@@ -191,7 +228,7 @@
         }
 
         private function shutdown():void {
-            twitterManager.stop();
+//            twitterManager.stop();
         }
 
         private function onPomodoroTimeout(event:PomodoroEvent):void {
@@ -280,12 +317,7 @@
                     break;
 
                 case CONFIG_DIALOG_ID:
-                    var dialog:IFlexDisplayObject = dialogList[action];
-                    showPopup(dialog);
-                    break;
-
                 case CONFIRM_DIALOG_ID:
-
                     var dialog:IFlexDisplayObject = dialogList[action];
                     showPopup(dialog);
                     break;

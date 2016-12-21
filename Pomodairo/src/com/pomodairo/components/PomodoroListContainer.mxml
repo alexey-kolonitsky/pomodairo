@@ -1,67 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Canvas
     xmlns:fx="http://ns.adobe.com/mxml/2009"
-    xmlns:s="library://ns.adobe.com/flex/spark"
     xmlns:mx="library://ns.adobe.com/flex/mx"
-    xmlns:lists="com.pomodairo.lists.*"
-    initialize="init()">
+    xmlns:lists="com.pomodairo.lists.*">
 
     <fx:Script>
 		<![CDATA[
-        import com.pomodairo.EmbedImages;
+        import com.pomodairo.core.PomodoroEventDispatcher;
+        import com.pomodairo.core.Storage;
+        import com.pomodairo.core.TaskManager;
         import com.pomodairo.core.TimeManager;
         import com.pomodairo.data.Pomodoro;
-        import com.pomodairo.core.Storage;
         import com.pomodairo.settings.ConfigManager;
 
-        import mx.collections.ArrayCollection;
-
-        import spark.components.List;
-
-        private var configManager:ConfigManager;
-        private var db:Storage = Storage.instance;
-
-//        [Bindable]
-//        public var tabs:ArrayCollection = new ArrayCollection([
-//            EmbedImages.ICON_LIST,
-//            EmbedImages.ICON_STATS,
-//            EmbedImages.ICON_STATS,
-//            EmbedImages.ICON_HISTORY
-//        ]);
-
-        [Bindable]
+        public var config:ConfigManager;
+        public var storage:Storage;
         public var timeManager:TimeManager;
+        public var taskManager:TaskManager;
+        public var eventDispatcher:PomodoroEventDispatcher;
 
-        private function init():void {
-            configManager = ConfigManager.instance;
-            configManager.initialize();
-            db.initAndOpenDatabase();
-            db.initViews();
+        public var selectedTab:int = 0;
+
+        public function init():void {
+            trace("[INFO][PomodoroListContainer] initialized");
+            taskList.timeManager = timeManager;
+            taskList.storage = storage;
+            taskList.eventDispatcher = eventDispatcher;
+            taskList.taskManager = taskManager;
+            taskList.init();
+
+            historyList.configManager = config;
+            historyList.storage = storage;
+            historyList.init();
+
+            pomodorosPerDayPanel.db = storage;
+            pomodorosPerDayPanel.configManager = config;
+
+            realityFactorPanel.db = storage;
+            realityFactorPanel.configManager = config;
+
             showSelectedPanel(0);
         }
 
-
         private function remove(pom:Pomodoro):void {
-            db.remove(pom);
+            storage.remove(pom);
         }
 
         private function cleanup(event:MouseEvent):void {
-            for each (var pom:Pomodoro in db.dataset) {
+            for each (var pom:Pomodoro in storage.dataset) {
                 if (pom.type == Pomodoro.TYPE_INTERRUPTION) {
                     remove(pom);
                 } else if (pom.done) {
                     remove(pom);
                 }
             }
-            db.getAllItems();
+            storage.getAllItems();
         }
-
-        public var selectedTab:int = 0;
 
         public function showSelectedPanel(index:int):void {
             selectedTab = index;
             taskList.includeInLayout = taskList.visible = false;
-            pomodorosOfDayPanel.includeInLayout = pomodorosOfDayPanel.visible = false;
+            historyList.includeInLayout = historyList.visible = false;
             pomodorosPerDayPanel.includeInLayout = pomodorosPerDayPanel.visible = false;
             realityFactorPanel.includeInLayout = realityFactorPanel.visible = false;
 
@@ -70,7 +69,7 @@
                     taskList.includeInLayout = taskList.visible = true;
                     break;
                 case 1:
-                    pomodorosOfDayPanel.includeInLayout = pomodorosOfDayPanel.visible = true;
+                    historyList.includeInLayout = historyList.visible = true;
                     break;
                 case 2:
                     pomodorosPerDayPanel.includeInLayout = pomodorosPerDayPanel.visible = true;
@@ -83,9 +82,9 @@
         ]]>
 	</fx:Script>
 
-    <lists:TaskList id="taskList" timeManager="{timeManager}" left="0" top="0" right="0" bottom="0"/>
+    <lists:TaskList id="taskList" left="0" top="0" right="0" bottom="0"/>
 
-    <lists:HistoryList id="pomodorosOfDayPanel" left="0" top="0" right="0" bottom="0"/>
+    <lists:HistoryList id="historyList" left="0" top="0" right="0" bottom="0"/>
 
     <lists:StatisticPerDayList id="pomodorosPerDayPanel" left="0" top="0" right="0" bottom="0"/>
 

@@ -23,7 +23,7 @@
         private function init():void {
             configManager = ConfigManager.instance;
             configManager.initialize();
-            db.initAndOpenDatabase();
+            db.initialize();
             db.initViews();
         }
 

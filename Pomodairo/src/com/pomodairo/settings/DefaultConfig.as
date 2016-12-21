@@ -17,5 +17,8 @@ public class DefaultConfig {
     public static const SHORT_HEIGHT:Number = 150;
     public static const FULL_HEIGHT:Number = SHORT_HEIGHT + 300;
 
+    //
+    public static const DEFAULT_SETTINGS_FILE_PATH:String = "assets/settings.properties";
+
 }
 }

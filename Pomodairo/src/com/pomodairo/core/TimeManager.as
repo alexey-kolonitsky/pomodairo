@@ -2,8 +2,11 @@
  * Created by akalanitski on 10.12.2016.
  */
 package com.pomodairo.core {
+import com.pomodairo.data.ConfigProperty;
 import com.pomodairo.data.Pomodoro;
 import com.pomodairo.core.PomodoroEventDispatcher;
+import com.pomodairo.settings.ConfigItem;
+import com.pomodairo.settings.ConfigManager;
 import com.pomodairo.settings.DefaultConfig;
 import com.pomodairo.date.TimeSpan;
 import com.pomodairo.date.TimeSpan;
@@ -24,7 +27,8 @@ public class TimeManager  {
 
     public static const CHANGED:String = "timeChanged";
 
-    private var eventDispatcher:PomodoroEventDispatcher;
+    public var eventDispatcher:PomodoroEventDispatcher;
+    public var config:ConfigManager;
 
     private const TIMER_INTERVAL:int = 10;
     private const DELAY_BEFORE_BREAK_STARTS:int = 5000; // Milliseconds
@@ -86,6 +90,10 @@ public class TimeManager  {
         return breakTimer.running;
     }
 
+    public function get isIdle():Boolean {
+        return !_isRunning && !isRunning;
+    }
+
     public function get isReady():Boolean {
         return _activeTask != null;
     }
@@ -96,28 +104,27 @@ public class TimeManager  {
         return _activeTask;
     }
 
-    public function TimeManager(
-//        pomodoroTime:TimeSpan,
-//        breakTime:TimeSpan,
-//        longBreakTime:TimeSpan,
-//        longBreakInterval:uint
-    )
-    {
-//        _pomodoroTime = pomodoroTime;
-//        _breakTime = breakTime;
-//        _longBreakTime = longBreakTime;
-//        _longBreakInterval = longBreakInterval;
-//
-        eventDispatcher = PomodoroEventDispatcher.instance;
-        eventDispatcher.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigChanged);
-        eventDispatcher.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
-        eventDispatcher.addEventListener(PomodoroEvent.NEXT_TASK_SELECTED, onPomodoroSelected);
+    public function TimeManager() {
+        trace("[INFO][TimeManager] constructor");
 
         pomodoroTimer = new Timer(TIMER_INTERVAL);
         pomodoroTimer.addEventListener(TimerEvent.TIMER, updateTimer);
 
         breakTimer = new Timer(TIMER_INTERVAL);
         breakTimer.addEventListener(TimerEvent.TIMER, updateBreakTimer);
+    }
+
+    public function initialize():void {
+        trace("[INFO][TimeManager] initialize");
+
+        eventDispatcher.addEventListener(ConfigurationUpdatedEvent.UPDATED, onConfigChanged);
+        eventDispatcher.addEventListener(PomodoroEvent.SELECTED, onPomodoroSelected);
+        eventDispatcher.addEventListener(PomodoroEvent.NEXT_TASK_SELECTED, onPomodoroSelected);
+
+        _pomodoroTime = TimeSpan.fromMinutes(config.getFloat(ConfigItemName.POMODORO_LENGTH));
+        _breakTime = TimeSpan.fromMinutes(config.getFloat(ConfigItemName.SHORT_BREAK_LENGTH));
+        _longBreakTime = TimeSpan.fromMinutes(config.getFloat(ConfigItemName.LONG_BREAK_LENGTH));
+        _longBreakInterval = config.getFloat(ConfigItemName.LONG_BREAK_INTERVAL)
     }
 
     private function onPomodoroSelected(event:PomodoroEvent):void {
@@ -149,14 +156,14 @@ public class TimeManager  {
             // Check long break
             if (getTimer() >= baseTimer + _longBreakTime.time) {
                 trace("Long break over. Pomodoros so far: " + _pomodoroCounter);
-                eventDispatcher.stopBreak(_activeTask);
+                eventDispatcher.sendEvent(PomodoroEvent.STOP_BREAK, _activeTask);
                 breakTimer.stop();
             }
         } else {
             // Check short break
             if (getTimer() >= baseTimer + _breakTime.time) {
                 trace("Short break over. Pomodoros so far: " + _pomodoroCounter);
-                eventDispatcher.stopBreak(_activeTask);
+                eventDispatcher.sendEvent(PomodoroEvent.STOP_BREAK, _activeTask);
                 breakTimer.stop();
             }
         }
@@ -172,7 +179,7 @@ public class TimeManager  {
     public function stopBreakTimer():void {
         if (isBreak) {
             breakTimer.stop();
-            eventDispatcher.stopBreak(_activeTask);
+            eventDispatcher.sendEvent(PomodoroEvent.STOP_BREAK, _activeTask);
         }
     }
 
@@ -215,20 +222,24 @@ public class TimeManager  {
     }
 
     private function onConfigChanged(event:ConfigurationUpdatedEvent):void {
-        if (event.configElement.name == ConfigItemName.POMODORO_LENGTH) {
-            _pomodoroTime = TimeSpan.fromMinutes(parseFloat(event.configElement.value));
+        var configItem:ConfigProperty = event.configElement;
+        if (configItem == null) {
+            trace("[ERROR][TimeManager] onConfigChanged configItem is null");
+            return;
         }
-
-        if (event.configElement.name == ConfigItemName.SHORT_BREAK_LENGTH) {
-            _breakTime = TimeSpan.fromMinutes(parseFloat(event.configElement.value));
-        }
-
-        if (event.configElement.name == ConfigItemName.LONG_BREAK_LENGTH) {
-            _longBreakTime = TimeSpan.fromMinutes(parseFloat(event.configElement.value));
-        }
-
-        if (event.configElement.name == ConfigItemName.LONG_BREAK_INTERVAL) {
-            _longBreakInterval = parseInt(event.configElement.value);
+        switch (configItem.name) {
+            case ConfigItemName.POMODORO_LENGTH:
+                _pomodoroTime = TimeSpan.fromMinutes(parseFloat(event.configElement.value));
+                break;
+            case ConfigItemName.SHORT_BREAK_LENGTH:
+                _breakTime = TimeSpan.fromMinutes(parseFloat(event.configElement.value));
+                break;
+            case ConfigItemName.LONG_BREAK_LENGTH:
+                _longBreakTime = TimeSpan.fromMinutes(parseFloat(event.configElement.value));
+                break;
+            case ConfigItemName.LONG_BREAK_INTERVAL:
+                _longBreakInterval = parseInt(event.configElement.value);
+                break;
         }
     }
 }
