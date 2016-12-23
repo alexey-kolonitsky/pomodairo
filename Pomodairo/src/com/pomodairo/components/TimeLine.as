@@ -3,6 +3,7 @@
  */
 package com.pomodairo.components {
 import com.pomodairo.EmbedStyle;
+import com.pomodairo.data.Pomodoro;
 import com.pomodairo.date.DateUtil;
 import com.pomodairo.date.DateUtil;
 import com.pomodairo.date.DateUtil;
@@ -35,6 +36,8 @@ import mx.managers.CursorManager;
 
 public class TimeLine extends UIComponent {
 
+
+    private static const HYSTOHRAM_COLOR:uint = 0x009900;
     public static const MONTH_LABEL_HEIGHT:uint = 12;
 
     public static const CHANGD:String = "timelineValueChanged";
@@ -44,10 +47,19 @@ public class TimeLine extends UIComponent {
     public static const SCALE_DAY:String = "day";
     public static const SCALE_WEEK:String = "week";
 
-    private var monthNameBitmap:Vector.<BitmapData>;
-    private var yearBitmap:BitmapData;
-    private var tf:TextField = new TextField();
+    /** Original historgram data */
+    public var historyGroupByDay:Array = [];
 
+    /** Cashed histogram data per x-coordiname */
+    private var _indexPomodorosByIndex:Array = [];
+
+    /** Bitmaps with pre-rendered month names */
+    private var monthNameBitmap:Vector.<BitmapData>;
+
+    /** Bitmap with pre-rendered year name */
+    private var yearBitmap:BitmapData;
+
+    private var tf:TextField = new TextField();
 
     public function TimeLine() {
         _lastDay = new Date();
@@ -94,7 +106,7 @@ public class TimeLine extends UIComponent {
     private var _cursorDateBeforeDrag:Date;
     private var _dateCount:int;
 
-    public function get startDate():Date {
+    public function get cursorDate():Date {
         return _cursorDate;
     }
 
@@ -107,7 +119,7 @@ public class TimeLine extends UIComponent {
         super.updateDisplayList(unscaledWidth, unscaledHeight);
 
         if (unscaledWidth > 0 && unscaledHeight > 0) {
-            _firstDay = DateUtil.add(_lastDay, TimeSpan.fromDays(-unscaledWidth))
+            _firstDay = DateUtil.add(_lastDay, TimeSpan.fromDays(-unscaledWidth));
             drawBackground();
         }
     }
@@ -116,7 +128,7 @@ public class TimeLine extends UIComponent {
      * offset of cursor date in pixels from right border.
      */
     private function get cursorX():int {
-        var delta:int = DateUtil.substract(_lastDay, startDate).day;
+        var delta:int = DateUtil.substract(_lastDay, cursorDate).day;
         var result:int = unscaledWidth - delta;
         return result;
     }
@@ -149,8 +161,21 @@ public class TimeLine extends UIComponent {
                 }
             }
 
-            today.date--;
-            trace(today.fullYear + "-" + today.month + "-" + today.date + " ");
+            if (!mouseInRange()
+                && !_isDrag
+                && _hoveredDate != null
+                && today.fullYear == _hoveredDate.fullYear
+                && today.month == _hoveredDate.month) {
+                yPosition = 0;
+                stickHeight = unscaledHeight - 2;
+            }
+
+            //Draw histogram
+            var dateData:int = 0;
+            if (historyGroupByDay != null && historyGroupByDay.length) {
+                dateData = getHistogramData(i, today) * 1;
+            }
+
             graphics.beginFill(color);
             graphics.drawRect(xPosition, yPosition, 1, stickHeight);
             if (today.date == 1) {
@@ -166,12 +191,18 @@ public class TimeLine extends UIComponent {
                     graphics.drawRect(xPosition, yPosition + MONTH_LABEL_HEIGHT, yearBitmap.width, yearBitmap.height);
                 }
             }
+
+            if (dateData != 0) {
+                graphics.beginFill(HYSTOHRAM_COLOR);
+                graphics.drawRect(xPosition, yPosition + stickHeight - dateData, 1, dateData);
+            }
+
+            today.date--;
         }
 
         //Draw selected range and update cursorDate
         if (_isDrag) {
             moveBy(mouseStageX - mouseDownX);
-            graphics.beginFill(0xFFFF00, 0.5);
             dispatchEvent(new Event(CHANGD));
         }
 
@@ -184,6 +215,24 @@ public class TimeLine extends UIComponent {
             graphics.beginFill(0xFFFF00);
             graphics.drawRect(p.x, 0, 1, unscaledHeight);
         }
+    }
+
+    private function getHistogramData(index:int, today:Date):int {
+        var todayStr:String = DateUtil.w3cDate(today.fullYear, today.month + 1, today.date);
+        var result:int = 0;
+        if (index in _indexPomodorosByIndex) {
+            result = _indexPomodorosByIndex[index];
+        } else {
+            for (var i:int = 0; i < historyGroupByDay.length; i++) {
+                var oneDayPomodor:Pomodoro = historyGroupByDay[i];
+                if (todayStr == oneDayPomodor.name) {
+                    result = oneDayPomodor.pomodoros;
+                    _indexPomodorosByIndex[index] = result;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     private function moveBy(deltaDays:int):void {
@@ -207,11 +256,18 @@ public class TimeLine extends UIComponent {
     private var mouseStageY:Number = NaN;
     private var mouseDownX:Number = NaN;
     private var _isDrag:Boolean = false;
+    private var _hoveredDate:Date = null;
 
     private function mouseInRange():Boolean {
-        var localPoint = this.globalToLocal(new Point(mouseStageX, mouseStageY));
+        var localPoint:Point = this.globalToLocal(new Point(mouseStageX, mouseStageY));
         var result:Boolean = localPoint.x > cursorX && localPoint.x < (cursorX + cursorWidth);
         return result;
+    }
+
+    private function updateHoveredDate():void {
+        var localPoint:Point = this.globalToLocal(new Point(mouseStageX, mouseStageY));
+        var deltaDays:int = unscaledWidth - localPoint.x;
+        _hoveredDate = DateUtil.add(_lastDay, TimeSpan.fromDays(-deltaDays));
     }
 
     private function mouseUpHandler(event:MouseEvent):void {
@@ -253,6 +309,7 @@ public class TimeLine extends UIComponent {
         } else {
             Mouse.cursor = MouseCursor.BUTTON;
         }
+        updateHoveredDate();
         invalidateDisplayList();
     }
 

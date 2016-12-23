@@ -20,5 +20,8 @@ public class DefaultConfig {
     //
     public static const DEFAULT_SETTINGS_FILE_PATH:String = "assets/settings.properties";
 
+    /** Database default file name  */
+    public static var DATABASE_FILE:String = "pomodairo-1.1.db";
+
 }
 }

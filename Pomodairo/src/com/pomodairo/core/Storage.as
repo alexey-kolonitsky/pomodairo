@@ -9,8 +9,9 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 	import com.pomodairo.events.PomodoroEvent;
 	import com.pomodairo.settings.ConfigItemName;
 	import com.pomodairo.settings.ConfigManager;
+import com.pomodairo.settings.DefaultConfig;
 
-	import flash.data.SQLConnection;
+import flash.data.SQLConnection;
 	import flash.data.SQLMode;
 	import flash.data.SQLResult;
 	import flash.data.SQLStatement;
@@ -27,9 +28,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 	public class Storage extends EventDispatcher
 	{
 		public static const DATASET_CHANGED:String = "datasetChanged";
-
-		/** Database default file name  */
-		public static var DATABASE_FILE:String = "pomodairo-1.1.db";
+		public static const HISTORY_UPDATED:String = "historyUpdated";
 
 		//-----------------------------
 		// Instance
@@ -45,18 +44,26 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		}
 
 
+
+		private var _initialized:Boolean = false;
+
+		public function get initialized():Boolean {
+			return _initialized;
+		}
+
+
 		//-----------------------------
 		// Injections
 		//-----------------------------
 
 		public var configManager:ConfigManager;
+		public var eventDispatcher:PomodoroEventDispatcher;
 
 		
 		[Bindable]
 		public var dataset:Array;
-		
-		[Bindable]
-		public var pomodorosOfDayDataset:ArrayCollection;
+
+		public var pomodorosOfDayDataset:Array;
 
 		[Bindable]
 		public var pomodorosPerDayDataset:ArrayCollection;
@@ -64,21 +71,13 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		[Bindable]
 		public var realityFactorDataset:ArrayCollection;
 
-			
-		private var sqlConnectionFile:File;
+
 		private var sqlConnection:SQLConnection;
 		
 		public function Storage() {
 			trace("[INFO][Storage] Constructor");
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.START_POMODORO, startPomodoro);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.TIME_OUT, completeCurrentPomodoro);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.NEW_INTERRUPTION, addInterruption);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.NEW_UNPLANNED, addUnplanned);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.NEW_POMODORO, addNewPomodoro);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.DONE, closePomodoro);
-			PomodoroEventDispatcher.instance.addEventListener(PomodoroEvent.EDITED, editPomodoro);
 		}
-		
+
 		private function startPomodoro(e:PomodoroEvent):void {
 			// Nothing to do here yet.
 		}
@@ -108,28 +107,25 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		private function closePomodoro(e:PomodoroEvent):void {
 			markDone(e.pomodoro);
 		}
-
-		private var _initialized:Boolean = false;
 		
 		public function initialize():void {
 			if (_initialized) {
 				return;
 			}
-			_initialized = true;
 
 			/** Database file location path */
 			var databaseFolderLocation:String = configManager.getConfig(ConfigItemName.DATABASE_LOCATION);
-
+			var sqlConnectionFile:File;
 			if (databaseFolderLocation == null || databaseFolderLocation == "") {
-				sqlConnectionFile = File.userDirectory.resolvePath(DATABASE_FILE);
+				sqlConnectionFile = File.userDirectory.resolvePath(DefaultConfig.DATABASE_FILE);
 			} else {
 				var file:File = new File(databaseFolderLocation);
 				if (file.exists == false) {
 					trace("[ERROR][Storage] initialize: Invalid database location. Change it at settings");
-					sqlConnectionFile = File.userDirectory.resolvePath(DATABASE_FILE);
+					sqlConnectionFile = File.userDirectory.resolvePath(DefaultConfig.DATABASE_FILE);
 				} else {
 					if (file.isDirectory)
-						sqlConnectionFile = new File(databaseFolderLocation+File.separator+DATABASE_FILE);
+						sqlConnectionFile = new File(databaseFolderLocation+File.separator+DefaultConfig.DATABASE_FILE);
 					else
 						sqlConnectionFile = file;
 				}
@@ -138,21 +134,28 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			sqlConnection = new SQLConnection();
 			
 			if(sqlConnectionFile.exists) {
-				trace("[INFO][Storage] initialize: load database from '" + sqlConnectionFile.url + "'");
+				trace("[INFO][Storage] initialize: Load database from '" + sqlConnectionFile.url + "'");
 				sqlConnection.addEventListener(SQLEvent.OPEN, onSQLConnectionOpened);
 				sqlConnection.open(sqlConnectionFile, SQLMode.UPDATE);
 			} else {
-				trace("[INFO][Storage] initialize: create database at " + sqlConnectionFile.url + "'");
+				trace("[INFO][Storage] initialize: Create database at " + sqlConnectionFile.url + "'");
 				sqlConnection.open(sqlConnectionFile, SQLMode.CREATE);
 				createTable();
 			}
-			getAllPomodoros();
-			checkConfigurationTable();
-			getAllConfig();
+
+			eventDispatcher.addEventListener(PomodoroEvent.START_POMODORO, startPomodoro);
+			eventDispatcher.addEventListener(PomodoroEvent.TIME_OUT, completeCurrentPomodoro);
+			eventDispatcher.addEventListener(PomodoroEvent.NEW_INTERRUPTION, addInterruption);
+			eventDispatcher.addEventListener(PomodoroEvent.NEW_UNPLANNED, addUnplanned);
+			eventDispatcher.addEventListener(PomodoroEvent.NEW_POMODORO, addNewPomodoro);
+			eventDispatcher.addEventListener(PomodoroEvent.DONE, closePomodoro);
+			eventDispatcher.addEventListener(PomodoroEvent.EDITED, editPomodoro);
+
+			_initialized = true;
 		}
 		
 		public function initViews():void {
-			getPomodorosOfDay(new Date());
+			getPromodorosByDate(new Date());
 			getPomodorosPerDay();
 			getRealityFactors();
 //			getPomodoroHashTags();
@@ -193,9 +196,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "select * from Pomodoro where (type='"+Pomodoro.TYPE_POMODORO+"' or type='"+Pomodoro.TYPE_UNPLANNED+"') and visible=true " +
-					"order by ordinal desc, done desc, closed, strftime('%Y/%m/%d',created)!=strftime('%Y/%m/%d','now') desc, pomodoros desc, estimated desc";
-			dbStatement.text = sqlQuery;
+			dbStatement.text = "SELECT * FROM Pomodoro WHERE (type='"+Pomodoro.TYPE_POMODORO+"' or type='"+Pomodoro.TYPE_UNPLANNED+"') and visible=true order by ordinal desc, done desc, closed, strftime('%Y/%m/%d',created)!=strftime('%Y/%m/%d','now') desc, pomodoros desc, estimated desc";
 			dbStatement.addEventListener(SQLEvent.RESULT, onDBStatementSelectResult);
 			dbStatement.execute();
 		}
@@ -239,41 +240,50 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			}
 		}
 
-		public function getPomodorosOfDay(day:Date, range:Number = -1, filter:String = ""):void
-		{ 
-			var filterSql:String = "";
-			if(filter != "") {
-				filterSql = " and name like '%"+filter+"%'";
-			}
+		public function getPromodorosByDate(day:Date, range:Number = -1, filter:String = ""):void {
+			trace("[INFO][Storage] getPomodorosByDate " + day + ", range=" + range + ", filter=");
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			var sqlQuery:String = "select name, substr(type,0,1) AS type, closed, estimated, pomodoros, unplanned, interruptions from Pomodoro where closed > strftime( '%J', :startDate ) and closed <= strftime( '%J', :endDate ) and (type='"+Pomodoro.TYPE_POMODORO+"' or type='"+Pomodoro.TYPE_UNPLANNED+"') and done=1"+filterSql;
-			dbStatement.text = sqlQuery;
-			dbStatement.parameters[":startDate"]= getStartDate(day, range);
-			dbStatement.parameters[":endDate"]= getEndDate(day, range);
+			dbStatement.text = "SELECT name, substr(type,0,1) AS type, closed, estimated, pomodoros, unplanned, interruptions FROM Pomodoro WHERE closed > strftime( '%J', :startDate ) AND closed <= strftime('%J', :endDate) AND done=1 AND (type=:typePomodoro or type=:typeUnplanned) ";
+			if (filter) {
+				dbStatement.text += "AND name like '%" + filter + "%'";
+			}
+			dbStatement.parameters[":startDate"] = getStartDate(day, range);
+			dbStatement.parameters[":endDate"] = getEndDate(day, range);
+			dbStatement.parameters[":typePomodoro"] = Pomodoro.TYPE_POMODORO;
+			dbStatement.parameters[":typeUnplanned"] = Pomodoro.TYPE_UNPLANNED;
 			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
 			dbStatement.execute();
 		}
 
-		public function getPomodorosPerDay():void
-		{
+		public function getPomodorosPerDay(eventHandler:Function = null):void {
+			trace("[INFO][Storage] getPomodorosPerDay ");
 			// Created pomodoros per day, not the pomodoros done!
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			dbStatement.text = "SELECT strftime('%Y-%m-%d', created) AS name, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions FROM pomodoro GROUP BY name";
-			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
+			dbStatement.text =
+				"SELECT strftime('%Y-%m-%d', created) AS name, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions "
+				+ "FROM Pomodoro "
+				+ "GROUP BY name ";
+			if (eventHandler == null) {
+				eventHandler = pomodorosOfDayResult1;
+			}
+			dbStatement.addEventListener(SQLEvent.RESULT, eventHandler);
 			dbStatement.execute();
 		}
 		
-		public function getRealityFactors():void
-		{
+		public function getRealityFactors():void {
+			trace("[INFO][Storage] getRealityFactors ");
 			// Created pomodoros per week, not the pomodoros done!
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
-			dbStatement.text = "SELECT strftime('%Y%W',created) AS week, strftime('%Y week %W',created) AS name, round(cast(sum(pomodoros) as real)/sum(estimated),2) AS factor, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta FROM pomodoro GROUP BY week";
+			dbStatement.text =
+				"SELECT strftime('%Y%W',created) AS week, strftime('%Y week %W',created) AS name, round(cast(sum(pomodoros) as real)/sum(estimated),2) AS factor, sum(estimated) AS estimated, sum(pomodoros) AS pomodoros, (sum(interruptions) + sum(unplanned)) AS interruptions, (sum(pomodoros)-sum(estimated)) AS delta "
+					+ "FROM Pomodoro "
+					+ "GROUP BY week ";
 			dbStatement.addEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
 			dbStatement.execute();
 		}
@@ -343,19 +353,29 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			return tempArray.sort(Array.CASEINSENSITIVE);
 		}
 		
-		private function pomodorosOfDayResult1(event:SQLEvent):void
-		{
+		private function pomodorosOfDayResult1(event:SQLEvent):void {
+
 			var statement:SQLStatement = event.currentTarget as SQLStatement;
 			statement.removeEventListener(SQLEvent.RESULT, pomodorosOfDayResult1);
-
 			var result:SQLResult = statement.getResult();
-		    if (result != null)
-		    {
-		    	pomodorosOfDayDataset = new ArrayCollection(result.data);
-		    }
+		    if (result != null && result.data != null && result.data.length > 0) {
+				trace("[INFO][Storage] historyResult, no result " + result.data.length);
+		    	pomodorosOfDayDataset = result.data;
+				dispatchEvent(new Event(Storage.HISTORY_UPDATED));
+		    } else {
+				pomodorosOfDayDataset = [];
+				dispatchEvent(new Event(Storage.HISTORY_UPDATED));
+				trace("[INFO][Storage] historyResult, no result");
+			}
 		}
-		private function pomodorosPerDayResult(event:SQLEvent):void
-		{
+
+		private function resultWrapper(event:SQLEvent):void {
+
+		}
+
+
+
+		private function pomodorosPerDayResult(event:SQLEvent):void {
 			var statement:SQLStatement = event.currentTarget as SQLStatement;
 			statement.removeEventListener(SQLEvent.RESULT, pomodorosPerDayResult);
 
@@ -365,8 +385,8 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		    	pomodorosPerDayDataset = new ArrayCollection(result.data);
 		    }
 		}
-		private function realityFactorResult(event:SQLEvent):void
-		{
+
+		private function realityFactorResult(event:SQLEvent):void {
 			var statement:SQLStatement = event.currentTarget as SQLStatement;
 			statement.removeEventListener(SQLEvent.RESULT, realityFactorResult);
 
@@ -407,16 +427,10 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		 	trace('[INFO][Storage] createResult: Query Created Successfully');
 		}
 		
-		public function addPomodoro(pom:Pomodoro):void
-		{
+		public function addPomodoro(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.sqlConnection = sqlConnection;
-			var sqlInsert:String = "insert into Pomodoro " +
-					"(name, type, pomodoros, estimated, unplanned, interruptions, created, closed, done, parent, visible, ordinal) " +
-					"values" +
-					"(:name, :type, :pomodoros, :estimated, :unplanned, :interruptions, :created, :closed, :done, :parent, :visible, :ordinal);";
-
-			dbStatement.text = sqlInsert;
+			dbStatement.text = "INSERT INTO Pomodoro  (name, type, pomodoros, estimated, unplanned, interruptions, created, closed, done, parent, visible, ordinal) VALUES (:name, :type, :pomodoros, :estimated, :unplanned, :interruptions, :created, :closed, :done, :parent, :visible, :ordinal);";
 			dbStatement.parameters[":name"] = pom.name;
 			dbStatement.parameters[":type"] = pom.type; 
 			dbStatement.parameters[":pomodoros"] = pom.pomodoros; 
@@ -450,8 +464,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 		}
 	
 	
-		public function remove(pom:Pomodoro):void
-		{
+		public function remove(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -461,8 +474,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}
 		
-		public function markDone(pom:Pomodoro):void
-		{
+		public function markDone(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -474,8 +486,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}		
 		
-		public function updateVisibility(pom:Pomodoro):void
-		{
+		public function updateVisibility(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -486,8 +497,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}	
 		
-		public function updateOrdinal(pom:Pomodoro):void
-		{
+		public function updateOrdinal(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -498,8 +508,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}		
 		
-		public function increasePomodoroCount(pom:Pomodoro):void
-		{
+		public function increasePomodoroCount(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -512,8 +521,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}		
 		
-		public function increaseInterruptionCount(pom:Pomodoro):void
-		{
+		public function increaseInterruptionCount(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -523,8 +531,7 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.execute();
 		}		
 		
-		public function increaseUnplannedCount(pom:Pomodoro):void
-		{
+		public function increaseUnplannedCount(pom:Pomodoro):void {
 			var dbStatement:SQLStatement = new SQLStatement();
 			dbStatement.itemClass = Pomodoro;
 			dbStatement.sqlConnection = sqlConnection;
@@ -533,7 +540,6 @@ import com.pomodairo.components.config.AdvancedConfigPanel;
 			dbStatement.addEventListener(SQLEvent.RESULT, onDBStatementInsertResult);
 			dbStatement.execute();
 		}
-		
 		
 		
 		/* ----------------------------------------------------

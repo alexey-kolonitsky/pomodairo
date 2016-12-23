@@ -30,6 +30,13 @@ public class DateUtil {
         return strMin + ":" + strSec;
     }
 
+    public static function w3cDate(year:int = 0, month:int = 0, date:int = 0):String {
+        var strYear:String = String(year);
+        var strMonth:String = String(month < 10 ? "0" + month : month);
+        var strDate:String = String(date < 10 ? "0" + date : date);
+        return strYear + "-" + strMonth + "-" + strDate;
+    }
+
 
     public static function w3cFullTime(min:int, sec:int, ms:int):String {
         var strMin:String = String(min < 10 ? "0" + min : min);

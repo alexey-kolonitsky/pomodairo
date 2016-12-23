@@ -35,9 +35,32 @@
         /* ms */
 
         public function init():void {
+            trace("[INFO][HistoryList] init");
             _timer = new Timer(UPDATE_DELAY);
             _timer.addEventListener(TimerEvent.TIMER, timerTickHandler);
             _timer.start();
+
+            storage.getPomodorosPerDay(histogramDataHandler);
+            storage.addEventListener(Storage.HISTORY_UPDATED, updateHistory);
+        }
+
+        private function histogramDataHandler(event:SQLEvent):void {
+            var statement:SQLStatement = event.currentTarget as SQLStatement;
+            statement.removeEventListener(SQLEvent.RESULT, histogramDataHandler);
+            var result:SQLResult = statement.getResult();
+            if (result != null && result.data != null && result.data.length > 0) {
+                timeline.historyGroupByDay = result.data;
+                trace("[INFO][HistoryList] histogramDataHandler, length" + result.data.length);
+                dispatchEvent(new Event(Storage.HISTORY_UPDATED));
+            } else {
+                timeline.historyGroupByDay = [];
+                trace("[INFO][HistoryList] histogramDataHandler, no result");
+                dispatchEvent(new Event(Storage.HISTORY_UPDATED));
+            }
+        }
+
+        private function updateHistory(event:Event):void {
+            list.dataProvider = new ArrayCollection(storage.pomodorosOfDayDataset);
         }
 
         private function timerTickHandler(event:TimerEvent):void {
@@ -56,7 +79,7 @@
             if (_needUpdate && timePassed) {
                 switch (statisticPeriod.selectedIndex) {
                     case 0:
-                        storage.getPomodorosOfDay(timeline.startDate, timeline.dateCount, pomodoroFilter.text);
+                        storage.getPromodorosByDate(timeline.cursorDate, timeline.dateCount, pomodoroFilter.text);
                         break;
                     case 1:
                         storage.getPomodorosPerDay();
@@ -70,7 +93,7 @@
         }
 
         private function updateLabel():void {
-            labelDates.text = timeline.dateCount + " days, from " + timeline.startDate.fullYear + "-" + timeline.startDate.month + "-" + timeline.startDate.date;
+            labelDates.text = timeline.dateCount + " days, from " + timeline.cursorDate.fullYear + "-" + timeline.cursorDate.month + "-" + timeline.cursorDate.date;
         }
         ]]>
     </fx:Script>
@@ -95,7 +118,7 @@
             contentBackgroundAlpha="0"
             color="{EmbedStyle.COMMON_TEXT_COLOR}" />
         <mx:Button width="32" height="32" icon="{EmbedImages.ICON_COPY_CLASS}"
-            click="copyTableToClipboard('Pomodoros', storage.pomodorosOfDayDataset.source)"/>
+            click="copyTableToClipboard('Pomodoros', storage.pomodorosOfDayDataset)"/>
     </s:BorderContainer>
 
     <components:TimeLine id="timeline" top="32" right="0" height="32" left="0"
@@ -105,7 +128,6 @@
 
     <!-- task list -->
     <s:List id="list"
-        dataProvider="{storage.pomodorosOfDayDataset}"
         top="64" right="0" bottom="0" left="0"
         contentBackgroundAlpha="0"
         borderVisible="false"

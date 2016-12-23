@@ -88,6 +88,7 @@
             config.dbProvider = storage;
 
             storage.configManager = config;
+            storage.eventDispatcher = eventDispatcher;
 
             timeManager.eventDispatcher = eventDispatcher;
             timeManager.config = config;
@@ -112,8 +113,11 @@
             //------------------------------------------------------------------
 
             // 3. Init and open storage
+
             storage.initialize();
             storage.initViews();
+            storage.getAllConfig();
+            storage.getAllPomodoros();
 
             timeManager.initialize();
 
